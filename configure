@@ -2249,10 +2249,11 @@ case "$CXX" in
 esac
 LIBS="$LIBS $X_EXTRA_LIBS"
 CFLAGS="$CFLAGS $X_CFLAGS"
+CPPFLAGS="$CPPFLAGS $X_CFLAGS"
 LDFLAGS="$LDFLAGS $X_LIBS"
 X11_LIBS=""
 echo $ac_n "checking for XOpenDisplay in -lX11""... $ac_c" 1>&6
-echo "configure:2256: checking for XOpenDisplay in -lX11" >&5
+echo "configure:2257: checking for XOpenDisplay in -lX11" >&5
 ac_lib_var=`echo X11'_'XOpenDisplay | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -2260,7 +2261,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lX11 ${X_PRE_LIBS} $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2264 "configure"
+#line 2265 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -2271,7 +2272,7 @@ int main() {
 XOpenDisplay()
 ; return 0; }
 EOF
-if { (eval echo configure:2275: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:2276: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -2301,7 +2302,7 @@ fi
 
 
 echo $ac_n "checking for _Xlcmbcurmax in -lXintl""... $ac_c" 1>&6
-echo "configure:2305: checking for _Xlcmbcurmax in -lXintl" >&5
+echo "configure:2306: checking for _Xlcmbcurmax in -lXintl" >&5
 ac_lib_var=`echo Xintl'_'_Xlcmbcurmax | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -2309,7 +2310,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lXintl ${X_PRE_LIBS} ${X11_LIBS} $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2313 "configure"
+#line 2314 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -2320,7 +2321,7 @@ int main() {
 _Xlcmbcurmax()
 ; return 0; }
 EOF
-if { (eval echo configure:2324: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:2325: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -2341,7 +2342,7 @@ else
 fi
 
 echo $ac_n "checking for shmap in -lipc""... $ac_c" 1>&6
-echo "configure:2345: checking for shmap in -lipc" >&5
+echo "configure:2346: checking for shmap in -lipc" >&5
 ac_lib_var=`echo ipc'_'shmap | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -2349,7 +2350,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lipc ${X_PRE_LIBS} ${X11_LIBS} $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2353 "configure"
+#line 2354 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -2360,7 +2361,7 @@ int main() {
 shmap()
 ; return 0; }
 EOF
-if { (eval echo configure:2364: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:2365: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -2382,7 +2383,7 @@ fi
 
 XT_LIBS=""
 echo $ac_n "checking for XtToolkitInitialize in -lXt""... $ac_c" 1>&6
-echo "configure:2386: checking for XtToolkitInitialize in -lXt" >&5
+echo "configure:2387: checking for XtToolkitInitialize in -lXt" >&5
 ac_lib_var=`echo Xt'_'XtToolkitInitialize | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -2390,7 +2391,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lXt ${X_PRE_LIBS} ${X11_LIBS} $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2394 "configure"
+#line 2395 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -2401,7 +2402,7 @@ int main() {
 XtToolkitInitialize()
 ; return 0; }
 EOF
-if { (eval echo configure:2405: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:2406: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -2430,7 +2431,7 @@ fi
 
 XEXT_LIBS=""
 echo $ac_n "checking for XShapeQueryVersion in -lXext""... $ac_c" 1>&6
-echo "configure:2434: checking for XShapeQueryVersion in -lXext" >&5
+echo "configure:2435: checking for XShapeQueryVersion in -lXext" >&5
 ac_lib_var=`echo Xext'_'XShapeQueryVersion | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -2438,7 +2439,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lXext ${X_PRE_LIBS} ${X11_LIBS} $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2442 "configure"
+#line 2443 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -2449,7 +2450,7 @@ int main() {
 XShapeQueryVersion()
 ; return 0; }
 EOF
-if { (eval echo configure:2453: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:2454: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -2470,189 +2471,9 @@ else
 fi
 
 
-XAW_LIBS=""
-if test "$athena_includes" != "no" && test "$athena_libraries" != "no"
-then
-echo $ac_n "checking for XmuCvtStringToOrientation in -lXmu""... $ac_c" 1>&6
-echo "configure:2478: checking for XmuCvtStringToOrientation in -lXmu" >&5
-ac_lib_var=`echo Xmu'_'XmuCvtStringToOrientation | sed 'y%./+-%__p_%'`
-if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  ac_save_LIBS="$LIBS"
-LIBS="-lXmu ${X_PRE_LIBS} ${XAW_LIBS} ${XT_LIBS} ${XEXT_LIBS} ${X11_LIBS} $LIBS"
-cat > conftest.$ac_ext <<EOF
-#line 2486 "configure"
-#include "confdefs.h"
-/* Override any gcc2 internal prototype to avoid an error.  */
-/* We use char because int might match the return type of a gcc2
-    builtin and then its argument prototype would still apply.  */
-char XmuCvtStringToOrientation();
-
-int main() {
-XmuCvtStringToOrientation()
-; return 0; }
-EOF
-if { (eval echo configure:2497: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
-  rm -rf conftest*
-  eval "ac_cv_lib_$ac_lib_var=yes"
-else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -rf conftest*
-  eval "ac_cv_lib_$ac_lib_var=no"
-fi
-rm -f conftest*
-LIBS="$ac_save_LIBS"
-
-fi
-if eval "test \"`echo '$ac_cv_lib_'$ac_lib_var`\" = yes"; then
-  echo "$ac_t""yes" 1>&6
-  XAW_LIBS="-lXmu ${XAW_LIBS}"
-else
-  echo "$ac_t""no" 1>&6
-fi
-
-echo $ac_n "checking for XawTextSetInsertionPoint in -lXaw""... $ac_c" 1>&6
-echo "configure:2518: checking for XawTextSetInsertionPoint in -lXaw" >&5
-ac_lib_var=`echo Xaw'_'XawTextSetInsertionPoint | sed 'y%./+-%__p_%'`
-if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  ac_save_LIBS="$LIBS"
-LIBS="-lXaw ${X_PRE_LIBS} ${XAW_LIBS} ${XT_LIBS} ${XEXT_LIBS} ${X11_LIBS} $LIBS"
-cat > conftest.$ac_ext <<EOF
-#line 2526 "configure"
-#include "confdefs.h"
-/* Override any gcc2 internal prototype to avoid an error.  */
-/* We use char because int might match the return type of a gcc2
-    builtin and then its argument prototype would still apply.  */
-char XawTextSetInsertionPoint();
-
-int main() {
-XawTextSetInsertionPoint()
-; return 0; }
-EOF
-if { (eval echo configure:2537: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
-  rm -rf conftest*
-  eval "ac_cv_lib_$ac_lib_var=yes"
-else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -rf conftest*
-  eval "ac_cv_lib_$ac_lib_var=no"
-fi
-rm -f conftest*
-LIBS="$ac_save_LIBS"
-
-fi
-if eval "test \"`echo '$ac_cv_lib_'$ac_lib_var`\" = yes"; then
-  echo "$ac_t""yes" 1>&6
-  XAW_LIBS="-lXaw ${XAW_LIBS}"
-	cat >> confdefs.h <<\EOF
-#define HAVE_ATHENA 1
-EOF
-
-else
-  echo "$ac_t""no" 1>&6
-fi
-
-if test "$XAW_LIBS" = ""; then
-echo "configure: warning: The Athena widgets library '-lXaw' could not be found.
-                    If you have the athena library, please use the
-                    configure options '--with-athena-includes=DIR' and 
-                    '--with-athena-libraries=DIR' to specify the Xaw location.
-                    If you do not have the athena library, use the configure
-                    option '--without-athena' to suppress this message.
-                    See the file 'config.log' for further diagnostics." 1>&2
-fi
-fi
-if test "$XAW_LIBS" != ""; then
-for ac_hdr in X11/Xaw/Form.h X11/Xaw/Panner.h X11/Xaw/Porthole.h
-do
-ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
-echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-echo "configure:2576: checking for $ac_hdr" >&5
-if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  cat > conftest.$ac_ext <<EOF
-#line 2581 "configure"
-#include "confdefs.h"
-#include <$ac_hdr>
-EOF
-ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:2586: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
-ac_err=`grep -v '^ *+' conftest.out`
-if test -z "$ac_err"; then
-  rm -rf conftest*
-  eval "ac_cv_header_$ac_safe=yes"
-else
-  echo "$ac_err" >&5
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -rf conftest*
-  eval "ac_cv_header_$ac_safe=no"
-fi
-rm -f conftest*
-fi
-if eval "test \"`echo '$ac_cv_header_'$ac_safe`\" = yes"; then
-  echo "$ac_t""yes" 1>&6
-    ac_tr_hdr=HAVE_`echo $ac_hdr | sed 'y%abcdefghijklmnopqrstuvwxyz./-%ABCDEFGHIJKLMNOPQRSTUVWXYZ___%'`
-  cat >> confdefs.h <<EOF
-#define $ac_tr_hdr 1
-EOF
- 
-else
-  echo "$ac_t""no" 1>&6
-fi
-done
-
-for ac_hdr in X11/Xmu/Editres.h
-do
-ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
-echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-echo "configure:2616: checking for $ac_hdr" >&5
-if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  cat > conftest.$ac_ext <<EOF
-#line 2621 "configure"
-#include "confdefs.h"
-#include <$ac_hdr>
-EOF
-ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:2626: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
-ac_err=`grep -v '^ *+' conftest.out`
-if test -z "$ac_err"; then
-  rm -rf conftest*
-  eval "ac_cv_header_$ac_safe=yes"
-else
-  echo "$ac_err" >&5
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -rf conftest*
-  eval "ac_cv_header_$ac_safe=no"
-fi
-rm -f conftest*
-fi
-if eval "test \"`echo '$ac_cv_header_'$ac_safe`\" = yes"; then
-  echo "$ac_t""yes" 1>&6
-    ac_tr_hdr=HAVE_`echo $ac_hdr | sed 'y%abcdefghijklmnopqrstuvwxyz./-%ABCDEFGHIJKLMNOPQRSTUVWXYZ___%'`
-  cat >> confdefs.h <<EOF
-#define $ac_tr_hdr 1
-EOF
- 
-else
-  echo "$ac_t""no" 1>&6
-fi
-done
-
-fi
-
 XPM_LIBS=""
 echo $ac_n "checking for XpmCreatePixmapFromXpmImage in -lXpm""... $ac_c" 1>&6
-echo "configure:2656: checking for XpmCreatePixmapFromXpmImage in -lXpm" >&5
+echo "configure:2477: checking for XpmCreatePixmapFromXpmImage in -lXpm" >&5
 ac_lib_var=`echo Xpm'_'XpmCreatePixmapFromXpmImage | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -2660,7 +2481,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lXpm ${X_PRE_LIBS} ${X11_LIBS} $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2664 "configure"
+#line 2485 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -2671,7 +2492,7 @@ int main() {
 XpmCreatePixmapFromXpmImage()
 ; return 0; }
 EOF
-if { (eval echo configure:2675: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:2496: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -2700,17 +2521,17 @@ for ac_hdr in X11/xpm.h xpm.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-echo "configure:2704: checking for $ac_hdr" >&5
+echo "configure:2525: checking for $ac_hdr" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2709 "configure"
+#line 2530 "configure"
 #include "confdefs.h"
 #include <$ac_hdr>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:2714: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:2535: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -2743,7 +2564,7 @@ XP_LIBS=""
 if test "$motif_includes" != "no" && test "$motif_libraries" != "no"
 then
 echo $ac_n "checking for XpSelectInput in -lXp""... $ac_c" 1>&6
-echo "configure:2747: checking for XpSelectInput in -lXp" >&5
+echo "configure:2568: checking for XpSelectInput in -lXp" >&5
 ac_lib_var=`echo Xp'_'XpSelectInput | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -2751,7 +2572,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lXp ${X_PRE_LIBS} ${XPM_LIBS} ${XEXT_LIBS} ${XT_LIBS} ${XEXT_LIBS} ${X11_LIBS} ${LIBGEN} $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2755 "configure"
+#line 2576 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -2762,7 +2583,7 @@ int main() {
 XpSelectInput()
 ; return 0; }
 EOF
-if { (eval echo configure:2766: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:2587: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -2787,7 +2608,7 @@ else
 fi
 
 echo $ac_n "checking for XmCreateOptionMenu in -lXm""... $ac_c" 1>&6
-echo "configure:2791: checking for XmCreateOptionMenu in -lXm" >&5
+echo "configure:2612: checking for XmCreateOptionMenu in -lXm" >&5
 ac_lib_var=`echo Xm'_'XmCreateOptionMenu | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -2795,7 +2616,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lXm ${X_PRE_LIBS} ${XP_LIBS} ${XPM_LIBS} ${XEXT_LIBS} ${XT_LIBS} ${XEXT_LIBS} ${X11_LIBS} ${LIBGEN} $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2799 "configure"
+#line 2620 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -2806,7 +2627,7 @@ int main() {
 XmCreateOptionMenu()
 ; return 0; }
 EOF
-if { (eval echo configure:2810: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:2631: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -3000,7 +2821,6 @@ s%@X_EXTRA_LIBS@%$X_EXTRA_LIBS%g
 s%@X11_LIBS@%$X11_LIBS%g
 s%@XT_LIBS@%$XT_LIBS%g
 s%@XEXT_LIBS@%$XEXT_LIBS%g
-s%@XAW_LIBS@%$XAW_LIBS%g
 s%@XPM_LIBS@%$XPM_LIBS%g
 s%@MISSING_MOTIF@%$MISSING_MOTIF%g
 s%@XP_LIBS@%$XP_LIBS%g
