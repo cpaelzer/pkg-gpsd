@@ -29,7 +29,6 @@
 #include <Xm/Protocols.h>
 #include <X11/Shell.h>
 #include <sys/ioctl.h>
-#include <sys/termios.h>
 
 #include "nmea.h"
 #include "gps.h"
