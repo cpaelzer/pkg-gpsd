@@ -1,47 +1,62 @@
- /* Style Definitions */
+/* Style Definitions for Axiom pages.
+ *
+ * This used to be full of Microsoft Word crud and fixed font sizes.
+ * In general, 'medium' equates to an original font size of 12.0pt,
+ * 'small' to 10.0pt, 'x-small' to 8.0pt, 'large' to 14pt, x-large 
+ * to 18pt, xx-large to 24.0pt.
+ *
+ * If a browser has a basic 12-point size and uses the W3C recommended 
+ * factor of 1.2 this will work almost perfectly except at the high end, which
+ * should be about 21.  We still use some fixed margins, though, which
+ * could look a little odd if the browser default font is very large or small. 
+ */
+body
+	{background-color:white;
+	tab-interval:0.5in;}
+
 p, li, div
 	{margin:0in;
 	margin-bottom:.0001pt;
-	font-size:12.0pt;
+	font-size:medium;
 	font-family:Arial;
 	color:black;}
 h1
-	{margin-top:12.0pt;
+	{font-size:xx-large;
+	margin-top:0.5ex;
 	margin-right:0in;
 	margin-bottom:3.0pt;
 	margin-left:0in;
 	page-break-after:avoid;
-	font-size:24.0pt;
 	font-family:Arial;
 	color:black;
 	font-weight:normal;}
 h2
-	{margin-top:12.0pt;
+	{font-size:x-large;
+	margin-top:0.75ex;
 	margin-right:0in;
 	margin-bottom:3.0pt;
 	margin-left:0in;
 	page-break-after:avoid;
-	font-size:18.0pt;
 	font-family:Arial;
 	color:black;
 	font-weight:normal}
 h3
-	{margin-top:12.0pt;
+	{font-size:large;
+	margin-top:0.75ex;
 	margin-right:0in;
 	margin-bottom:3.0pt;
 	margin-left:0in;
 	page-break-after:avoid;
-	font-size:14.0pt;
 	font-family:Arial;
 	color:black;
 	font-weight:normal;}
 h4
-	{margin-top:12.0pt;
+	{font-size:medium;
+	margin-top:1ex;
 	margin-right:0in;
 	margin-bottom:3.0pt;
 	margin-left:0in;
 	page-break-after:avoid;
-	font-size:12.0pt;
 	font-family:Arial;
 	color:black;
 	font-weight:normal;}
@@ -50,16 +65,16 @@ h5
 	margin-right:0in;
 	margin-bottom:3.0pt;
 	margin-left:0in;
-	font-size:10.0pt;
+	font-size:small;
 	font-family:Arial;
 	color:black;
 	font-weight:normal;}
 h6
-	{margin-top:12.0pt;
+	{font-size:x-small;
+	margin-top:1.5ex;
 	margin-right:0in;
 	margin-bottom:3.0pt;
 	margin-left:0in;
-	font-size:8.0pt;
 	font-family:Arial;
 	color:black;
 	font-weight:normal;}
@@ -69,8 +84,7 @@ p.heading, li.heading, div.heading
 	margin-bottom:12.0pt;
 	margin-left:0in;
 	page-break-after:avoid;
-	mso-outline-level:7;
-	font-size:18.0pt;
+	font-size:x-large;
 	font-family:Arial;}
 a:link, span.MsoHyperlink
 	{/*color:#660000;*/
@@ -83,7 +97,7 @@ a:visited, span.MsoHyperlinkFollowed
 p.inversehead, li.inversehead, div.inversehead
 	{margin-right:0in;
 	margin-left:0in;
-	font-size:12.0pt;
+	font-size:medium;
 	font-family:"Times New Roman";}
 @page Section1
 	{size:8.5in 11.0in;

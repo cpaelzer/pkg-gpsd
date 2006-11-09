@@ -4,7 +4,7 @@
 <title>Description</title>
 </head>
 
-<body bgcolor="white" lang=EN-US style='tab-interval:.5in'>
+<body lang="EN-US">
 
 <div class="Section1">
 <h1>Axiom Sandpiper II</h1>
@@ -17,17 +17,21 @@ many of these are still available cheaply in 2006 via eBay and from
 electronics surplus stores.  They seem to be popular with radio
 hams.</p>
 
-<p>This is a SiRF device.  However, it doesn't come up in SiRF binary,
-nor have we ever seen it respond to the $PSRF we use as a SiRF probe.</p> 
+<p>&nbsp;</p>
+
+<p>This is a SiRF device based on the original SiRFstar I.  However,
+it <em>doesn't</em> come up in SiRF binary, nor have we ever seen it
+respond to the $PSRF that <code>gpsd</code> uses as a SiRF probe.
+Apparently this problem is not unique to the Sandpiper but <a
+href='https://lists.berlios.de/pipermail/gpsd-users/2006-November/002568.html'>general
+in SiRFStar 1 devices</a>.</p>
 
 <p>&nbsp;</p>
 
 <p>The material in these pages (other than this one) was extracted
 from descriptive materials supporting an eBay auction.  Material
 specific to the auction has been removed, leaving the technical
-content, vendor spec sheets, and manuals in place.  The very bulky
-but largely content-free manual for the Windows exerciser software 
-has been omitted.</p>
+content, vendor spec sheets, and manuals in place.</p>
 
 <h2>Interfacing to the bare module</h2>
 
@@ -60,7 +64,7 @@ expect a lock for about 90 to 120 seconds.</p>
 <h2>If it has an enclosure...</h2>
 
 <p>You may find your unit is enclosed in a black plastic case with a
-DB9 on a connector coming out of it and two connectors on it.  If
+DB9 on a cable coming out of it and two connectors on it.  If
 so,</p>
 
 <ul>
@@ -95,8 +99,6 @@ connector. It wants regulated 5VDC, positive center.</p>
 <p>The power connector is physically and electrically compatible with
 the semi-standard 5-volt power supplies used on routers and USB hubs.  The
 2.5A power supply from a dead Linksys router seems to do nicely.</p>
-
-
 </div>
 </body>
 </html>
