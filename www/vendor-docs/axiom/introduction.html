@@ -21,8 +21,9 @@ hams.</p>
 
 <p>This is a SiRF device based on the original SiRFstar I.  However,
 it <em>doesn't</em> come up in SiRF binary, nor have we ever seen it
-respond to the $PSRF that <code>gpsd</code> uses as a SiRF probe.
-Apparently this problem is not unique to the Sandpiper but <a
+respond to the $PSRF that <code>gpsd</code> uses as a SiRF probe,
+despite the manual's insistence that it should.  Apparently this
+problem is not unique to the Sandpiper but <a
 href='https://lists.berlios.de/pipermail/gpsd-users/2006-November/002568.html'>general
 in SiRFStar 1 devices</a>.</p>
 
@@ -90,15 +91,37 @@ assignments:</p>
 </li>
 
 <li>The brass-colored screw connector sticking out one side is an AMPS-style
-antenna connector.</li>
+antenna connector.  (AMPS is the U.S. standard for first-generation 
+analog cellphones.  This antenna type is now largely obsolete in its
+original application, but is still commonly used on OEM GPSes)</li>
 
-<li>The post-in-a-well connector on the bottom is the power
+<li>The post-in-a-well on the bottom is the power
 connector. It wants regulated 5VDC, positive center.</p>
 </ul>
 
-<p>The power connector is physically and electrically compatible with
-the semi-standard 5-volt power supplies used on routers and USB hubs.  The
-2.5A power supply from a dead Linksys router seems to do nicely.</p>
+<h2>Power supplies</h2>
+
+<p>Neither the bare board nor the cased unit comes with a power
+supply.  Fortunately, the board is electrically compatible with the
+5-volt wall warts used on many routers and USB hubs.  You may have
+problems <a href='http://en.wikipedia.org/wiki/DC_plug'>matching the
+barrel connector</a> on the cased unit, however.</p>
+
+<p>&nbsp;</p>
+
+<p>The
+model MS15-050250-1AD (5 VDC, 2.5A) power supply used with some
+Linksys blue boxes, including version 1 of the popular WRT54G, 
+seems to do nicely.  ESR has been using one with no problems; 
+he reports that he checked it with a VOM and it does indeed
+produce regulated power.</p>
+
+<p>&nbsp;</p>
+
+<p>Beware: newer Linkys blue boxes use a 12VDC power
+supply with the same barrel connector. If you plug one of there 
+into a Sandpiper you might very well burn it up!</p>
+
 </div>
 </body>
 </html>
