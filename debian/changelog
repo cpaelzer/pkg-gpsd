@@ -1,3 +1,14 @@
+gpsd (2.36~dev+r4603-1) experimental; urgency=low
+
+  * debian/libgps17.symbols:
+    - Chaging version information to unstable's version to produce the right
+      dependencies for people who build against experimental.
+  * debian/patches:
+    - Dropping gpxlogger-gps.h.dpatch, gpsfake-logfile-howto.dpatch
+      as they were integrated upstream.
+
+ -- Bernd Zeimetz <bzed@debian.org>  Fri, 21 Dec 2007 11:48:50 +0100
+
 gpsd (2.36~dev+r4543-1) experimental; urgency=low
 
   * Experimental build based on svn revision 4543.
