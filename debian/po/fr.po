@@ -1,0 +1,80 @@
+# Translators, if you are not familiar with the PO format, gettext
+# documentation is worth reading, especially sections dedicated to
+# this format, e.g. by running:
+# info -n '(gettext)PO Files'
+# info -n '(gettext)Header Entry'
+# Some information specific to po-debconf are available at
+# /usr/share/doc/po-debconf/README-trans
+# or http://www.debian.org/intl/l10n/po-debconf/README-trans
+# Developers do not need to manually edit POT or PO files.
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: gpsd 2.25\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2005-05-27 00:33+0200\n"
+"PO-Revision-Date: 2005-06-20 13:07+0200\n"
+"Last-Translator: Jean-Luc Coulon (f5ibh) <jean-luc.coulon@wanadoo.fr>\n"
+"Language-Team: French <debian-l10n-french@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-15\n"
+"Content-Transfer-Encoding: 8bit"
+
+#. Type: string
+#. Description
+#: ../gpsd.templates:3
+msgid "Which device is your GPS receiver attached to?"
+msgstr "Fichier de périphérique utilisé par votre récepteur GPS :"
+
+#. Type: string
+#. Description
+#: ../gpsd.templates:3
+msgid ""
+"Enter the device your GPS is attached to; this will probably be something "
+"like /dev/ttyS0 or /dev/ttyUSB0."
+msgstr ""
+"Veuillez indiquer le fichier de périphérique auquel est connecté votre "
+"récepteur GPS ; il s'agit vraisemblablement de /dev/ttyS0 ou /dev/ttyUSB0."
+
+#. Type: string
+#. Description
+#: ../gpsd.templates:3
+msgid "You can enter several devices, separated by spaces."
+msgstr "Vous pouvez entrer plusieurs périphériques, séparés par des espaces."
+
+#. Type: boolean
+#. Description
+#: ../gpsd.templates:12
+msgid "Should gpsd start on boot?"
+msgstr "Faut-il lancer gpsd au démarrage du système ?"
+
+#. Type: boolean
+#. Description
+#: ../gpsd.templates:12
+msgid ""
+"If your GPS receiver is permanently attached to your computer, you might "
+"want to start gpsd at boot time. Otherwise, you can run it by calling gpsd"
+"(1) at any time, or you can use the hotplug interface for USB devices."
+msgstr ""
+"Si votre récepteur GPS est connecté en permanence à votre ordinateur, il "
+"peut être intéressant de lancer gpsd au démarrage du système. Sinon, vous "
+"pourrez le lancer par la commande gpsd(1) à n'importe quel moment ou vous "
+"pourrez utiliser l'interface de hotplug pour les périphériques USB."
+
+#. Type: string
+#. Description
+#: ../gpsd.templates:19
+msgid "Options to gpsd:"
+msgstr "Options à passer à gpsd :"
+
+#. Type: string
+#. Description
+#: ../gpsd.templates:19
+msgid ""
+"You can give additional arguments when starting gpsd; see gpsd(1) for a list "
+"of options."
+msgstr ""
+"Il est possible de préciser des paramètres supplémentaires lors du lancement "
+"de gpsd ; veuillez consulter la page de manuel gpsd(1) pour une liste des "
+"paramètres disponibles."
+

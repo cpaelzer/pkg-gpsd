@@ -1,0 +1,31 @@
+#! /bin/sh
+# postrm script for gpsd
+
+set -e
+
+case "$1" in
+    remove)
+	dpkg-divert --package gpsd --remove --rename \
+	  --divert /usr/bin/gpsd.gpsdrive /usr/bin/gpsd
+	dpkg-divert --package gpsd --remove --rename \
+	  --divert /usr/share/man/man1/gpsd.gpsdrive.1.gz \
+	  /usr/share/man/man1/gpsd.1.gz
+    ;;
+
+    purge)
+	[ -f /etc/default/gpsd ] && rm /etc/default/gpsd
+	[ -L /etc/udev/rules.d/025_gpsd.rules ] && rm /etc/udev/rules.d/025_gpsd.rules
+    ;;
+
+    upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+    ;;
+
+    *)
+        echo "postrm called with unknown argument \`$1'" >&2
+        exit 1
+
+esac
+
+#DEBHELPER#
+
+exit 0

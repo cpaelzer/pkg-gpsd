@@ -1,0 +1,159 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# GNU copyright 1997 to 1999 by Joey Hess.
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+PACKAGE = gpsd
+
+include /usr/share/dpatch/dpatch.make
+
+# These are used for cross-compiling and for saving the configure script
+# from having to guess our platform (since we know it already)
+DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+
+
+CFLAGS = -Wall -g -fno-strict-aliasing \
+	 -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include \
+	 -I/usr/include/dbus-1.0 -I/usr/lib/dbus-1.0/include \
+	 -I/usr/X11R6/include
+
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O0
+else
+	CFLAGS += -O2
+endif
+ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
+	INSTALL_PROGRAM += -s
+endif
+
+config.status: configure
+	dh_testdir
+ifneq "$(wildcard /usr/share/misc/config.sub)" ""
+	cp -f /usr/share/misc/config.sub config.sub
+endif
+ifneq "$(wildcard /usr/share/misc/config.guess)" ""
+	cp -f /usr/share/misc/config.guess config.guess
+endif
+	CFLAGS="$(CFLAGS)" ./configure \
+		--host=$(DEB_HOST_GNU_TYPE) \
+		--build=$(DEB_BUILD_GNU_TYPE) \
+		--prefix=/usr \
+		--mandir=\$${prefix}/share/man \
+		--infodir=\$${prefix}/share/info \
+		--enable-dbus
+
+build: patch build-stamp
+
+build-stamp:  config.status
+	dh_testdir
+	$(MAKE)
+
+	touch build-stamp
+
+clean: unpatch
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp 
+	-$(MAKE) clean
+	-$(MAKE) distclean
+	dh_clean 
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k 
+	dh_installdirs
+
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/gpsd
+
+	# gpsd should be placed in /usr/bin, not /usr/sbin
+	mv debian/gpsd/usr/sbin/gpsd debian/gpsd/usr/bin/
+	rmdir debian/gpsd/usr/sbin
+
+	# remove rpath (required on amd64)
+	sh debian/remove_rpath.sh debian/gpsd/usr/bin/*
+
+	# install udev stuff
+	dh_install debian/gpsd.rules etc/udev/
+	chmod 755  debian/gpsd.hotplug.wrapper
+	dh_install debian/gpsd.hotplug.wrapper lib/udev/
+	dh_install gpsd.hotplug lib/udev/
+	
+	# install python stuff
+	dh_install gps*.py usr/share/python-support/gpsd/
+	chmod a-x debian/gpsd/usr/share/python-support/gpsd/*.py
+
+	# move clients to gpsd-clients package
+	mv debian/gpsd/usr/bin/cgps \
+	   debian/gpsd/usr/bin/cgpxlogger \
+	   debian/gpsd/usr/bin/gpsfake \
+	   debian/gpsd/usr/bin/gpsflash \
+	   debian/gpsd/usr/bin/gpspipe \
+	   debian/gpsd/usr/bin/gpsprof \
+	   debian/gpsd/usr/bin/gpxlogger \
+	   debian/gpsd/usr/bin/sirfmon \
+	   debian/gpsd/usr/bin/rtcmdecode \
+	   debian/gpsd/usr/bin/xgps \
+	   debian/gpsd/usr/bin/xgpsspeed \
+	     debian/gpsd-clients/usr/bin/
+	mv debian/gpsd/usr/share/man/man1/gpsfake.1 \
+	   debian/gpsd/usr/share/man/man1/gpsflash.1 \
+	   debian/gpsd/usr/share/man/man1/gpspipe.1 \
+	   debian/gpsd/usr/share/man/man1/gpsprof.1 \
+	   debian/gpsd/usr/share/man/man1/sirfmon.1 \
+	   debian/gpsd/usr/share/man/man1/rtcmdecode.1 \
+	     debian/gpsd-clients/usr/share/man/man1/
+	   
+	# install gps.1 as xgps.1 to avoid conflict with gps package
+	mv debian/gpsd/usr/share/man/man1/gps.1 \
+	     debian/gpsd-clients/usr/share/man/man1/xgps.1
+	rm debian/gpsd/usr/share/man/man1/xgps.1
+	rm debian/gpsd/usr/share/man/man1/xgpsspeed.1
+	rm debian/gpsd/usr/share/man/man1/cgps.1
+	rm debian/gpsd/usr/share/man/man1/cgpxlogger.1
+	dh_link -p gpsd-clients usr/share/man/man1/xgps.1.gz usr/share/man/man1/cgps.1.gz
+	dh_link -p gpsd-clients usr/share/man/man1/xgps.1.gz usr/share/man/man1/cgpxlogger.1.gz
+	dh_link -p gpsd-clients usr/share/man/man1/xgps.1.gz usr/share/man/man1/gpxlogger.1.gz
+	dh_link -p gpsd-clients usr/share/man/man1/xgps.1.gz usr/share/man/man1/xgpsspeed.1.gz
+
+	# install (stripped down version of) INSTALL as TROUBLESHOOTING
+	cp INSTALL debian/gpsd/usr/share/doc/gpsd/TROUBLESHOOTING
+
+	# install X11 app-defaults files
+	cp xgps.ad      debian/gpsd-clients/etc/X11/app-defaults/xgps
+	cp xgpsspeed.ad debian/gpsd-clients/etc/X11/app-defaults/xgpsspeed
+
+	# install lintian override file
+	cp debian/gpsd.lintian-overrides debian/gpsd/usr/share/lintian/overrides/gpsd
+	
+# Build architecture-independent files here.
+binary-indep: build install
+# We have nothing to do by default.
+
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs 
+	dh_installdocs
+	dh_installdebconf	
+	dh_installinit
+	dh_installman
+	dh_installmenu
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_pysupport
+	dh_makeshlibs
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install patch unpatch

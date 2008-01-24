@@ -1,0 +1,19 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 20_gpsfake_manpage.dpatch by Tilman Koschnick <til@subnetz.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Mark logfile argument in gpsfake manpage as required.
+
+@DPATCH@
+diff -urNad gpsd~/gpsfake.xml gpsd/gpsfake.xml
+--- gpsd~/gpsfake.xml	2006-06-11 00:08:26.069419936 +0200
++++ gpsd/gpsfake.xml	2006-06-11 00:08:42.873137668 +0200
+@@ -28,7 +28,7 @@
+       <arg choice='opt'>-r <replaceable>initcmd</replaceable></arg>
+       <arg choice='opt'>-s <replaceable>speed</replaceable></arg>
+       <arg choice='opt'>-v</arg>
+-      <arg choice='opt'><replaceable>logfile</replaceable></arg>
++      <arg choice='plain'><replaceable>logfile</replaceable></arg>
+ </cmdsynopsis>
+ </refsynopsisdiv>
+ 

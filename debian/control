@@ -1,0 +1,51 @@
+Source: gpsd
+Section: misc
+Priority: optional
+Maintainer: Tilman Koschnick <til@subnetz.org>
+Build-Depends: debhelper (>= 5), po-debconf, dpatch, python, python-support (>= 0.4), xmlto, docbook-xsl (>= 1.70.1.dfsg.1-0.1), chrpath, libxt-dev, lesstif2-dev, libxaw7-dev, libncurses-dev, libdbus-1-dev, libglib2.0-dev, libdbus-glib-1-dev
+Standards-Version: 3.7.2
+
+Package: gpsd
+Architecture: any
+Depends: netbase, lsb-base (>= 3.0-6), ${shlibs:Depends}, ${misc:Depends}
+Recommends: gpsd-clients, python (>= 2.3)
+Suggests: udev
+Description: GPS (Global Positioning System) daemon
+ gpsd is a service daemon that monitors one or more GPSes attached to a host
+ computer through serial or USB ports, making all data on the location/course/
+ velocity of the sensors available to be queried on TCP port 2947 of the host
+ computer.
+ .
+ With gpsd, multiple GPS client applications (such as navigational and war-
+ driving software) can share access to GPSes without contention or loss of
+ data. Also, gpsd responds to queries with a format that is substantially
+ easier to parse than the NMEA 0183 emitted by most GPSes.
+ .
+ The gpsd distribution includes a linkable C service library and a Python
+ module that developers of gpsd-aware applications can use to encapsulate
+ all communication with gpsd.
+ .
+ For a couple of clients, install the gpsd-clients package.
+ .
+  Homepage: http://gpsd.berlios.de/
+
+Package: gpsd-clients
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}
+Description: clients for the GPS daemon
+ gpsd is a service daemon that monitors one or more GPSes attached to a host
+ computer through serial or USB ports, making all data on the location/course/
+ velocity of the sensors available to be queried on TCP port 2947 of the host
+ computer.
+ .
+ With gpsd, multiple GPS client applications (such as navigational and war-
+ driving software) can share access to GPSes without contention or loss of
+ data. Also, gpsd responds to queries with a format that is substantially
+ easier to parse than the NMEA 0183 emitted by most GPSes.
+ .
+ This package contains auxiliary tools for diagnostic monitoring and profiling
+ of GPSes and feeding GPS-aware applications specified track data for
+ diagnostic purposes.
+ .
+  Homepage: http://gpsd.berlios.de/
+

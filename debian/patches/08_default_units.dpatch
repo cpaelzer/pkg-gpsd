@@ -1,0 +1,29 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 08_default_units.dpatch by Tilman Koschnick <til@subnetz.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Use metric units by default.
+
+@DPATCH@
+diff -urNad gpsd/xgps.ad /tmp/dpep.5dcHWD/gpsd/xgps.ad
+--- gpsd/xgps.ad	2005-05-21 17:59:46.354146248 +0200
++++ /tmp/dpep.5dcHWD/gpsd/xgps.ad	2005-05-27 00:43:27.366446337 +0200
+@@ -10,5 +10,5 @@
+ *climb*labelString:      Climb
+ *status*labelString: Status   
+ *quit*labelString:       Quit     
+-*speedunits:             mph
+-*altunits:               feet
++*speedunits:             kph
++*altunits:               meters
+diff -urNad gpsd/xgpsspeed.ad /tmp/dpep.5dcHWD/gpsd/xgpsspeed.ad
+--- gpsd/xgpsspeed.ad	2005-02-22 21:03:44.000000000 +0100
++++ /tmp/dpep.5dcHWD/gpsd/xgpsspeed.ad	2005-05-27 00:44:12.316509929 +0200
+@@ -15,5 +15,5 @@
+ *meter*width:		120
+ *meter*height:		120
+ *needleColor:		salmon1
+-*speedunits:		mph
+-*altunits:		feet
++*speedunits:		kph
++*altunits:		meters

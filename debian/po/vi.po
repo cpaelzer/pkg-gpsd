@@ -1,0 +1,92 @@
+# Vietnamese Translation for gpsd.
+# Copyright © 2005 Free Software Foundation, Inc.
+# Clytie Siddall <clytie@riverland.net.au>, 2005.
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: gpsd 2.25-1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2005-05-27 00:33+0200\n"
+"PO-Revision-Date: 2005-06-06 11:39+0930\n"
+"Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
+"Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+
+#.Type: string
+#.Description
+#:../gpsd.templates:3
+msgid "Which device is your GPS receiver attached to?"
+msgstr "Máy nhận tín hiệu GPS của bạn có kết nối đến thiết bị nào?"
+
+#.Type: string
+#.Description
+#:../gpsd.templates:3
+msgid ""
+"Enter the device your GPS is attached to; this will probably be something "
+"like /dev/ttyS0 or /dev/ttyUSB0."
+msgstr ""
+"Hãy nhập thiết bị đến mà máy nhận tín hiệu GPS của bạn có kết nối. Rất có "
+"thể là nó giống như «/dev/ttyS0» hay «/dev/ttyUSB0». "
+
+#.Type: string
+#.Description
+#:../gpsd.templates:3
+msgid "You can enter several devices, separated by spaces."
+msgstr "Bạn có thể nhập nhiều thiết bị, định giới bằng một dấu cách."
+
+#.Type: boolean
+#.Description
+#:../gpsd.templates:12
+msgid "Should gpsd start on boot?"
+msgstr "Trình nền gpsd nên khởi chạy khi khởi động hệ thống không?"
+
+#.Type: boolean
+#.Description
+#:../gpsd.templates:12
+msgid ""
+"If your GPS receiver is permanently attached to your computer, you might "
+"want to start gpsd at boot time. Otherwise, you can run it by calling gpsd"
+"(1) at any time, or you can use the hotplug interface for USB devices."
+msgstr ""
+"Nếu máy nhận GPS bạn có kết nối vĩnh viễn đến máy tính bạn, thì bạn có lẽ sẽ "
+"muốn khởi chạy trình này khi khởi động hệ thống. Nếu không, thì bạn có thể "
+"chạy trình này bằng cách gọi gpsd(1) vào bất cứ lúc nào, hoặc bạn có thể sử dụng giao diện cầm phít nóng cho thiết bị USB."
+
+#.Type: string
+#.Description
+#:../gpsd.templates:19
+msgid "Options to gpsd:"
+msgstr "Tùy chọn với gpsd:"
+
+#.Type: string
+#.Description
+#:../gpsd.templates:19
+msgid ""
+"You can give additional arguments when starting gpsd; see gpsd(1) for a list "
+"of options."
+msgstr ""
+"Bạn có thể cung cấp một số đối số thêm khi khởi chạy trình nền gpsd. Hãy xem "
+"trang hướng dẫn (man) cho gpsd(1) để tìm biết danh sách các tùy chọn ấy."
+
+#~ msgid ""
+#~ "You can leave this blank now and set the device with the -p option when "
+#~ "invoking gpsd."
+#~ msgstr ""
+#~ "Lúc này bạn có thể bỏ trường này rỗng, và lập thiết bị ấy dùng tùy chọn «-"
+#~ "p» khi gọi trình nền gpsd."
+
+#~ msgid "You need to set the device gpsd is connecting to."
+#~ msgstr "Bạn cần phải lập là trình nền gpsd đang kết nối đến thiết bị nào."
+
+#~ msgid ""
+#~ "You have requested that gpsd should start at boot time, but not given a "
+#~ "default device. You need to set a device with the -p option in the next "
+#~ "question, or gpsd won't be able to find your GPS."
+#~ msgstr ""
+#~ "Bạn đã chọn khởi chạy trình nền gpsd khi khởi động hệ thống, nhưng mà "
+#~ "chưa lập một thiết bị mặc định. Trong câu hỏi kế tiếp, bạn phải dùng tùy "
+#~ "chọn «-p» để lập thiết bị ấy: nếu không, thì trình gpsd sẽ không thể tìm "
+#~ "thấy máy GPS của bạn."

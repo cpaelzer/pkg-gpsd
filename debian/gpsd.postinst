@@ -1,0 +1,39 @@
+#! /bin/sh
+# postinst script for gpsd
+
+set -e
+
+. /usr/share/debconf/confmodule
+
+if [ "$1" = "configure" ] ; then
+
+	# udev: install symlink to gpsd.rules
+	#   udev handling got introduced in 2.32-2 - only create symlink once
+	#   on new package install or when upgrading from an older version
+	if dpkg --compare-versions "$2" lt "2.32-2" ; then
+		ln -sf ../gpsd.rules /etc/udev/rules.d/025_gpsd.rules
+	fi
+
+	# generate /etc/default/gpsd
+	db_get gpsd/device
+	DEVICES=$RET
+	db_get gpsd/start_daemon
+	START=$RET
+	db_get gpsd/daemon_options
+	OPTS=$RET
+	cat <<EOF > /etc/default/gpsd
+# Default settings for gpsd. This file is sourced from
+# /etc/init.d/gpsd.
+START_DAEMON="$START"
+DAEMON_OPTS="$OPTS"
+DEVICES="$DEVICES"
+EOF
+
+fi
+	
+#DEBHELPER#
+
+# tell debconf we are done. otherwise, it hangs waiting for the daemon.
+db_stop;
+
+exit 0

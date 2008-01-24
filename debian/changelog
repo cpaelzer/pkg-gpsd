@@ -1,0 +1,329 @@
+gpsd (2.33-4) unstable; urgency=low
+
+  * debian/patches/:
+    - add 23_hotplug_racecond.dpatch (closes: #321421)
+  * /etc/init.d/gpsd:
+    - order run levels in LSB headers
+
+  * Upload sponsored by Petter Reinholdtsen
+
+ -- Tilman Koschnick <til@subnetz.org>  Sat,  7 Oct 2006 21:41:37 +0200
+
+gpsd (2.33-3) unstable; urgency=low
+
+  * Acknowledging previous NMU, thanks to Kai Hendry (closes: #377773)
+  * remove rpath from binaries (required on amd64, ?)
+  * /etc/init.d/gpsd:
+    - require /etc/default/gpsd
+    - add Short-Description to LSB section
+    - use LSB logging functions
+    - remove 'S' from Default-Stop LSB header
+  * use python-support to install python modules
+  * debian/control:
+    - improve package description
+    - drop alternative build dependency on libxaw6-dev
+    - add build dependency on docbook-xsl (>= 1.71.0.dfsg.1-1), allowing to:
+  * debian/patches/:
+    - preserve <screen> environments in 22_manpage_linebreak.dpatch
+
+  * Upload sponsored by Petter Reinholdtsen
+
+ -- Tilman Koschnick <til@subnetz.org>  Sat,  7 Oct 2006 11:14:43 +0200
+
+gpsd (2.33-2.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * lesstif1 -> lesstif2 migration (Closes: #377773)
+
+ -- Kai Hendry <hendry@iki.fi>  Wed, 19 Jul 2006 09:38:34 +0900
+
+gpsd (2.33-2) unstable; urgency=low
+
+  * debian/gpsd.dirs:
+    - add /etc/udev/rules.d (closes: #377016)
+  * debian/gpsd.postrm:
+    - fix removal of /etc/udev/rules.d/025_gpsd.rules on purge
+
+  * Upload sponsored by Petter Reinholdtsen
+
+ -- Tilman Koschnick <til@subnetz.org>  Thu,  6 Jul 2006 10:03:58 +0200
+
+gpsd (2.33-1) unstable; urgency=low
+
+  * New upstream release
+  * debian/copyright:
+    - update author list
+  * debian/control:
+    - bump Standards-Version to 3.7.2 (no changes required)
+  * debian/patches/:
+    - rm 16_fix_manpages.dpatch (obsolete)
+    - add 19_gpsfake_fuser.dpatch
+    - add 20_gpsfake_manpage.dpatch (closes: #335480)
+    - add 21_autobaud_delay.dpatch: make connecting to Garmin eTrex more
+      reliable (closes: #303548, #321423)
+    - add 22_manpage_linebreak.dpatch
+  * /etc/init.d/gpsd:
+    - stop gracefully if gpsd is not running (closes: #374658)
+  * update lintian-overrides
+
+  * Upload sponsored by Petter Reinholdtsen
+
+ -- Tilman Koschnick <til@subnetz.org>  Mon, 26 Jun 2006 16:28:36 +0200
+
+gpsd (2.32-2) unstable; urgency=low
+
+  * switch from obsolete hotplug to udev interface, thanks to Marco d'Itri
+    (closes: #338745)
+  * debian/patches/:
+    - add 17_gpsd_manpage_section.dpatch
+  * debian/gpsd.postinst:
+    - always source /usr/share/debconf/confmodule
+  * debian/rules:
+    - add -I/usr/X11R6/include to CFLAGS until xorg migration is complete
+    - add -fno-strict-aliasing to CFLAGS to satisfy gcc 4.1
+
+ -- Tilman Koschnick <til@subnetz.org>  Sat, 29 Apr 2006 16:02:40 +0200
+
+gpsd (2.32-1) unstable; urgency=low
+
+  * New upstream release
+    - new program: cgpxlogger
+  * debian/copyright: update author list
+  * debian/control:
+    - drop optional dbus build dependencies for stable
+      (closes: #348318, #362565)
+    - drop optional build dependency on xlibs-dev to make lintian happy
+  * debian/patches/:
+    - rm 13_include_xm_fix.dpatch (included upstream)
+    - rm 15_link_lm_fix.dpatch (included upstream)
+    - add 16_fix_manpages.dpatch
+  * install gps.1.gz as xgps.1.gz to avoid conflict with gps package
+  * link gpxlogger.1.gz to xgps.1.gz
+  * drop debian/watch (doesn't work with BerliOS download page)
+  * fix Homepage line in description
+
+ -- Tilman Koschnick <til@subnetz.org>  Sun, 16 Apr 2006 20:54:34 +0200
+
+gpsd (2.30-2) unstable; urgency=low
+
+  * /etc/init.d/gpsd:
+    - add LSB formatted dependency info, thanks to Petter Reinholdtsen
+      (closes: #335347)
+    - do not chown $PIDFILE, thanks to Elmar Hoffmann (closes: #343733)
+  * debian/patches/:
+    - add 15_link_lm_fix.dpatch (closes: #340081)
+
+ -- Tilman Koschnick <til@subnetz.org>  Sun, 20 Nov 2005 14:11:28 +0100
+
+gpsd (2.30-1) unstable; urgency=low
+
+  * New upstream release
+  * debian/copyright: update author list
+  * debian/patches/:
+    - add 13_include_xm_fix.dpatch
+  * debconf templates:
+    - add Swedish translation, thanks to Daniel Nylander (closes: #333676)
+
+ -- Tilman Koschnick <til@subnetz.org>  Sat, 12 Nov 2005 22:40:18 +0100
+
+gpsd (2.29-1) unstable; urgency=low
+
+  * New upstream release
+    - new programs: cgps, gpsflash, gpspipe, gpxlogger, rtcmdecode
+  * move sirfmon to gpsd-clients package
+  * debian/patches/:
+    - rm 12_send_dbus_fix.dpatch (included upstream)
+  * update lintian-overrides
+
+ -- Tilman Koschnick <til@subnetz.org>  Fri, 19 Aug 2005 18:41:56 +0200
+
+gpsd (2.28-2) unstable; urgency=low
+
+  * recompile against libstdc++6
+
+ -- Tilman Koschnick <til@subnetz.org>  Fri,  8 Jul 2005 01:42:27 +0200
+
+gpsd (2.28-1) unstable; urgency=low
+
+  * New upstream release
+  * debian/patches/:
+    - rm 10_dbus_fix.dpatch (included upstream)
+    - rm 11_hotplug_fix.dpatch (obsolete)
+    - add 12_send_dbus_fix.dpatch
+  * update lintian-overrides
+
+ -- Tilman Koschnick <til@subnetz.org>  Wed,  6 Jul 2005 19:32:27 +0200
+
+gpsd (2.26-1) unstable; urgency=low
+
+  * New upstream release
+    - bugfix: gps.h refers to missing gpsutils.h (closes: #314998)
+  * compile with dbus support
+  * debian/patches/:
+    - rm 09_gpsdrive_fix.dpatch (obsolete)
+    - add 10_dbus_fix.dpatch
+    - add 11_hotplug_fix.dpatch
+  * update lintian-overrides
+  * debconf templates:
+    - update French translation, thanks to Jean-Luc Coulon (closes: #315364)
+  * bump Standards-Version to 3.6.2 (no changes required)
+
+ -- Tilman Koschnick <til@subnetz.org>  Fri, 24 Jun 2005 13:20:40 +0200
+
+gpsd (2.25-1) unstable; urgency=low
+
+  * New upstream release (closes: #301469)
+    - license change from GPL to BSD
+    - gpsd now starts as root and drops privileges afterwards; this is
+      required for the interface to ntpd, see README.Debian for details
+    - no default device /dev/gps anymore (closes: #303174)
+    - bugfix: libgps leaks socket fd when setsockopt or connect fails
+      (closes: #299427)
+    - hotplug support added
+    - new sirfmon program
+    - gpsprobe removed
+  * add dependency on netbase (closes: #299286)
+  * prefere build dependency on lesstif2 over lesstif
+  * debian/patches/:
+    - rm 03_documentation.dpatch
+    - rm 07_unit_options.dpatch (not accepted upstream, superseded by
+      less intrusive 08_default_units.dpatch)
+    - add 08_default_units.dpatch
+    - add 09_gpsdrive_fix.dpatch
+  * update lintian-overrides
+  * revise README.Debian
+  * debconf templates:
+    - add Czech translation, thanks to Miroslav Kure (closes: #310466)
+    - add Vietnamese translation, thanks to Clytie Siddall (closes: #311879)
+
+ -- Tilman Koschnick <til@subnetz.org>  Sat, 21 May 2005 15:02:25 +0200
+
+gpsd (2.13-1) unstable; urgency=low
+
+  * New upstream release
+    - new gpsfake, gpsprof programs
+  * add CAN number to previous changelog version
+  * debian/patches/:
+    - rm 05_gps_py_typo.dpatch (included upstream)
+    - rm 06_X11_ad_files.dpatch (included upstream)
+    - rm 08_maxchannels.dpatch (obsolete)
+    - rm 09_syslog_formatstring.dpatch (obsolete)
+  * update lintian-overrides
+
+ -- Tilman Koschnick <til@subnetz.org>  Tue, 22 Feb 2005 21:03:46 +0100
+
+gpsd (2.7-4) unstable; urgency=high
+
+  * setting urgency=high because of RC bugfix
+  * bugfix: remote security problem with format strings
+    - CAN-2004-1388
+    - add debian/patches/09_syslog_formatstring.dpatch
+    - thanks to Ulf Harnhammar, KF, Petter Reinholdtsen
+      (closes: #292347, #292370)
+  * fix lintian warnings
+    - change description of gpsd-clients
+    - add /usr/share/lintian/overrides/gpsd
+      (ignoring non-dev-pkg-with-shlib-symlink,
+      description-synopsis-starts-with-a-capital-letter)
+
+ -- Tilman Koschnick <til@subnetz.org>  Thu, 27 Jan 2005 13:31:03 +0100
+
+gpsd (2.7-3) unstable; urgency=low
+
+  * import bugfixes from upstream's SVN
+    - avoid potential buffer overrun and memory leak
+    - add debian/patches/08_maxchannels.dpatch
+
+ -- Tilman Koschnick <til@subnetz.org>  Wed, 19 Jan 2005 19:38:43 +0100
+
+gpsd (2.7-2) unstable; urgency=low
+
+  * X11 app-defaults files:
+    - include xgps*.ad
+    - add debian/patches/06_X11_ad_files.dpatch
+  * fix speedunits, altunits options:
+    - add debian/patches/07_unit_options.dpatch
+    - rm debian/patches/01_speedunits.dpatch (superseded by 07_unit_options)
+
+ -- Tilman Koschnick <til@subnetz.org>  Sun, 16 Jan 2005 14:06:26 +0100
+
+gpsd (2.7-1) unstable; urgency=low
+
+  * New upstream release
+  * added -P <pidfile> option
+    - use option in /etc/init.d/gpsd
+    - closes: #287737
+  * debian/patches/:
+    - upstream renames gps to xgps; rm 02_gps_to_xgps.dpatch (obsolete)
+    - add 01_speedunits.dpatch: use metric system by default
+      (closes: #289944)
+    - add 05_gps_py_typo.dpatch: fix syntax error in gps.py
+    
+ -- Tilman Koschnick <til@subnetz.org>  Fri, 14 Jan 2005 23:31:14 +0100
+
+gpsd (2.6-1) unstable; urgency=low
+
+  * New upstream release
+  * debian/patches/:
+    - rm 03_python_bindings.dpatch (obsolete)
+    - simplify documentation patches
+  * debconf templates:
+    - add Norwegian Bokmaal (nb) translation, thanks to Petter Reinholdtsen
+      (closes: #288271)
+
+ -- Tilman Koschnick <til@subnetz.org>  Sun,  2 Jan 2005 18:03:34 +0100
+
+gpsd (2.5-2) unstable; urgency=low
+
+  * debian/control:
+    - add alternative build-dependency on xlibs-dev
+    - set versioned build-dependency on debhelper to >= 4.1.25
+    - recommend python >= 2.3 for gpsd binary package (closes: #287147)
+  * debconf templates:
+    - add french translation, thanks to Jean-Luc Coulon (closes: #287265)
+  * gps.py:
+    - applied patch from upstream svn repository (r1169)
+    - bugfix: Python interface unable to handle multiline response, thanks to
+      Petter Reinholdtsen (closes: #287051)
+
+ -- Tilman Koschnick <til@subnetz.org>  Fri, 24 Dec 2004 13:38:27 +0100
+
+gpsd (2.5-1) unstable; urgency=low
+
+  * New upstream release
+    - bugfix: FTBFS on amd64/gcc-4.0, thanks to Andreas Jochens
+      (closes: #286906)
+    - bugfix: Python binding give AttributeError, thanks to Petter
+      Reinholdtsen (closes: #286955)
+  * debian/copyright:
+    - update list of authors
+  * python related changes:
+    - move python modules to /usr/lib/python2.3/site-packages/gpsd
+    - add /usr/lib/python2.3/site-packages/gpsd.pth
+    - rm debian/patches/03_python_syspath.dpatch (obsolete)
+  * debian/rules:
+    - properly clean sources in clean target, thanks to Petter Reinholdtsen
+      (closes: #286630)
+  * debian/control:
+    - add alternative build-dependency on libxaw6-dev (closes: #286637)
+    - add build-dependency on libxt-dev
+  * debian/gpsd-clients.menu
+    - add menu entries for xgps and xgpsspeed
+
+ -- Tilman Koschnick <til@subnetz.org>  Tue, 21 Dec 2004 12:19:05 +0100
+
+gpsd (2.4-1) unstable; urgency=low
+
+  * New upstream release
+  * debian/copyright: update list of authors
+  * rm debian/patches/01_missing_includes.dpatch (obsolete)
+  * add support for po-debconf
+  * debian/control: fix homepage URL
+
+ -- Tilman Koschnick <til@subnetz.org>  Mon, 20 Dec 2004 00:41:57 +0100
+
+gpsd (2.3-1) unstable; urgency=low
+
+  * Initial Release. (closes: #276376)
+
+ -- Tilman Koschnick <til@subnetz.org>  Tue, 23 Nov 2004 00:28:27 +0100

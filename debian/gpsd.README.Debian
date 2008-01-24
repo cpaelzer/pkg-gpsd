@@ -1,0 +1,40 @@
+gpsd for Debian
+---------------
+
+There are three different ways to run gpsd:
+
+- from the command line
+
+  Since gpsd expects to be started as root (see below for details), the gpsd
+  binary is located in /usr/sbin and is most likely not in the search PATH of
+  normal users.
+
+- through the udev interface
+
+  This works with some USB GPS devices, listed in /etc/udev/gpsd.rules.
+
+- as a service
+
+  The debian package provides a SysV style init script, /etc/init.d/gpsd, to
+  start gpsd at boot time. Run 'dpkg-reconfigure gpsd' to configure the
+  service.
+
+
+gpsd expects to be started as root. It needs root rights to open a shared
+memory segment to communicate with NTPd, and to open a control socket for
+device management if you have chosen this option. After startup, gpsd drops
+its privileges to the UID of 'nobody' and the GID of the group owning the
+first GPS device it is supposed to open. See gpsd(1) for a more detailed
+explanation.
+
+If you do not want to interface gpsd with ntpd, and not use a device control
+socket, there is no downside to starting gpsd as a unprivileged user/group.
+Make this user/group has r/w rights on the device the GPS is attached to.
+
+
+To keep the dependencies small, the client programs have been moved to a
+separate package, gpsd-clients. The python module gps.py has been made
+non-executable to avoid dependency on python (scripts importing these modules
+will depend on python anyway).
+
+ -- Tilman Koschnick <til@subnetz.org>, Sat, 21 May 2005 11:40:01 +0200

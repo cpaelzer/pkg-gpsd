@@ -1,0 +1,206 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 17_gpsd_manpage_section.dpatch by Tilman Koschnick <til@subnetz.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Move manpage of gpsd to section 1, to reflect its location in /usr/bin.
+
+@DPATCH@
+diff -urNad gpsd~/Makefile.am gpsd/Makefile.am
+--- gpsd~/Makefile.am	2006-04-16 17:53:16.000000000 +0200
++++ gpsd/Makefile.am	2006-04-29 16:41:55.528384744 +0200
+@@ -154,7 +154,7 @@
+ # Create Manpages
+ #
+ man_MANS = \
+-	gpsd.8 \
++	gpsd.1 \
+ 	gps.1 \
+ 	libgps.3 \
+ 	libgpsmm.3 \
+@@ -168,7 +168,7 @@
+ 	rtcm-104.5 \
+ 	srec.5
+ 
+-gpsd.8: gpsd.xml
++gpsd.1: gpsd.xml
+ 	-$(XMLTO) man gpsd.xml
+ 
+ gps.1 xgpsspeed.1: gps.xml
+diff -urNad gpsd~/Makefile.in gpsd/Makefile.in
+--- gpsd~/Makefile.in	2006-04-16 17:53:15.000000000 +0200
++++ gpsd/Makefile.in	2006-04-29 16:41:55.529384566 +0200
+@@ -470,7 +470,7 @@
+ # Create Manpages
+ #
+ man_MANS = \
+-	gpsd.8 \
++	gpsd.1 \
+ 	gps.1 \
+ 	libgps.3 \
+ 	libgpsmm.3 \
+@@ -1328,7 +1328,7 @@
+ packet_names.h: packet_states.h
+ 	sed -e '/^ *\([A-Z][A-Z0-9_]*\),/s//   "\1",/' <packet_states.h >packet_names.h
+ 
+-gpsd.8: gpsd.xml
++gpsd.1: gpsd.xml
+ 	-$(XMLTO) man gpsd.xml
+ 
+ gps.1 xgpsspeed.1: gps.xml
+diff -urNad gpsd~/gps.xml gpsd/gps.xml
+--- gpsd~/gps.xml	2006-04-29 16:41:55.371412741 +0200
++++ gpsd/gps.xml	2006-04-29 16:41:55.530384388 +0200
+@@ -201,7 +201,7 @@
+ </refsect1>
+ <refsect1 id='see_also'><title>SEE ALSO</title>
+ <para>
+-<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
++<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>gpsprof</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+diff -urNad gpsd~/gpsd.xml gpsd/gpsd.xml
+--- gpsd~/gpsd.xml	2006-04-16 17:53:15.000000000 +0200
++++ gpsd/gpsd.xml	2006-04-29 16:42:50.301615907 +0200
+@@ -4,10 +4,10 @@
+    "docbook/docbookx.dtd" [
+ <!ENTITY gpsdsock         "/var/run/gpsd.sock">
+ ]>
+-<refentry id='gpsd.8'>
++<refentry id='gpsd.1'>
+ <refmeta>
+ <refentrytitle>gpsd</refentrytitle>
+-<manvolnum>8</manvolnum>
++<manvolnum>1</manvolnum>
+ <refmiscinfo class='date'>9 Aug 2004</refmiscinfo>
+ </refmeta>
+ <refnamediv id='name'>
+diff -urNad gpsd~/gpsfake.xml gpsd/gpsfake.xml
+--- gpsd~/gpsfake.xml	2006-04-16 17:53:15.000000000 +0200
++++ gpsd/gpsfake.xml	2006-04-29 16:41:55.530384388 +0200
+@@ -115,7 +115,7 @@
+ </refsect1>
+ <refsect1 id='see_also'><title>SEE ALSO</title>
+ <para>
+-<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
++<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>gps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+diff -urNad gpsd~/gpsflash.xml gpsd/gpsflash.xml
+--- gpsd~/gpsflash.xml	2006-04-16 17:53:15.000000000 +0200
++++ gpsd/gpsflash.xml	2006-04-29 16:41:55.531384210 +0200
+@@ -89,7 +89,7 @@
+ </refsect1>
+ <refsect1 id='see_also'><title>SEE ALSO</title>
+ <para>
+-<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
++<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>gps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+diff -urNad gpsd~/gpsprof.xml gpsd/gpsprof.xml
+--- gpsd~/gpsprof.xml	2006-04-16 17:53:15.000000000 +0200
++++ gpsd/gpsprof.xml	2006-04-29 16:41:55.531384210 +0200
+@@ -164,7 +164,7 @@
+ </refsect1>
+ <refsect1 id='see_also'><title>SEE ALSO</title>
+ <para>
+-<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
++<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>gps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+diff -urNad gpsd~/libgps.xml gpsd/libgps.xml
+--- gpsd~/libgps.xml	2006-04-16 17:53:15.000000000 +0200
++++ gpsd/libgps.xml	2006-04-29 16:41:55.532384031 +0200
+@@ -203,7 +203,7 @@
+ 
+ <refsect1 id='see_also'><title>SEE ALSO</title>
+ <para>
+-<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
++<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>gps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>.
+ <citerefentry><refentrytitle>libgpsmm</refentrytitle><manvolnum>3</manvolnum></citerefentry>.
+diff -urNad gpsd~/libgpsd.xml gpsd/libgpsd.xml
+--- gpsd~/libgpsd.xml	2006-04-16 17:53:15.000000000 +0200
++++ gpsd/libgpsd.xml	2006-04-29 16:41:55.532384031 +0200
+@@ -147,7 +147,7 @@
+ 
+ <para>The low-level functions do not allocate or free any dynamic 
+ storage.  They can thus be used in a long-running application (such as
+-<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>
++<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>1</manvolnum></citerefentry>
+ itself) with a guarantee that they won't cause memory leaks.</para>
+ 
+ </refsect1>
+@@ -161,7 +161,7 @@
+ 
+ <refsect1 id='see_also'><title>SEE ALSO</title>
+ <para>
+-<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
++<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>gps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>.
+ </para>
+diff -urNad gpsd~/libgpsmm.xml gpsd/libgpsmm.xml
+--- gpsd~/libgpsmm.xml	2006-04-16 17:53:15.000000000 +0200
++++ gpsd/libgpsmm.xml	2006-04-29 16:41:55.533383853 +0200
+@@ -64,7 +64,7 @@
+ 
+ <refsect1 id='see_also'><title>SEE ALSO</title>
+ <para>
+-<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
++<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>gps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>.
+ </para>
+diff -urNad gpsd~/rtcm-104.xml gpsd/rtcm-104.xml
+--- gpsd~/rtcm-104.xml	2006-04-16 17:53:15.000000000 +0200
++++ gpsd/rtcm-104.xml	2006-04-29 16:41:55.533383853 +0200
+@@ -435,7 +435,7 @@
+ </refsect1>
+ <refsect1 id='see_also'><title>SEE ALSO</title>
+ <para>
+-<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
++<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>gps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+diff -urNad gpsd~/rtcmdecode.xml gpsd/rtcmdecode.xml
+--- gpsd~/rtcmdecode.xml	2006-04-16 17:53:16.000000000 +0200
++++ gpsd/rtcmdecode.xml	2006-04-29 16:41:55.543382070 +0200
+@@ -84,7 +84,7 @@
+ </refsect1>
+ <refsect1 id='see_also'><title>SEE ALSO</title>
+ <para>
+-<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
++<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>gps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+diff -urNad gpsd~/sirfmon.xml gpsd/sirfmon.xml
+--- gpsd~/sirfmon.xml	2006-04-16 17:53:15.000000000 +0200
++++ gpsd/sirfmon.xml	2006-04-29 16:41:55.544381891 +0200
+@@ -188,7 +188,7 @@
+ </refsect1>
+ <refsect1 id='see_also'><title>SEE ALSO</title>
+ <para>
+-<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
++<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>gps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+diff -urNad gpsd~/srec.xml gpsd/srec.xml
+--- gpsd~/srec.xml	2006-04-16 17:53:15.000000000 +0200
++++ gpsd/srec.xml	2006-04-29 16:41:55.544381891 +0200
+@@ -282,7 +282,7 @@
+ </refsect1>
+ <refsect1 id='see_also'><title>SEE ALSO</title>
+ <para>
+-<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
++<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>gps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,

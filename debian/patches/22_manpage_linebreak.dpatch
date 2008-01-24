@@ -1,0 +1,40 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 22_manpage_linebreak.dpatch by Tilman Koschnick <til@subnetz.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Trim down manpage lines to avoid overlong lines in small terminals.
+
+@DPATCH@
+diff -urNad gpsd~/libgps.xml gpsd/libgps.xml
+--- gpsd~/libgps.xml	2006-06-26 16:22:07.813467780 +0200
++++ gpsd/libgps.xml	2006-06-26 16:22:08.106409369 +0200
+@@ -35,7 +35,7 @@
+ <funcprototype>
+ <funcdef>void <function>gps_set_raw_hook</function></funcdef>
+     <paramdef>struct gps_data_t *<parameter>gpsdata</parameter></paramdef>
+-    <paramdef>void (*<parameter>hook</parameter>)(struct gps_data_t *, char *buf)</paramdef>
++    <paramdef>void (*<parameter>hook</parameter>)(struct gps_data_t *, char *)</paramdef>
+ </funcprototype>
+ <funcprototype>
+ <funcdef>int <function>gps_poll</function></funcdef>
+@@ -48,7 +48,7 @@
+ <funcprototype>
+ <funcdef>void <function>gps_set_callback</function></funcdef>
+     <paramdef>struct gps_data_t *<parameter>gpsdata</parameter></paramdef>
+-    <paramdef>void (*<parameter>callback</parameter>)(struct gps_data_t *sentence, char *buf)</paramdef>
++    <paramdef>void (*<parameter>callback</parameter>)(struct gps_data_t *, char *)</paramdef>
+     <paramdef>pthread_t *<parameter>handler</parameter></paramdef>
+ </funcprototype>
+ <funcprototype>
+diff -urNad gpsd~/libgpsmm.xml gpsd/libgpsmm.xml
+--- gpsd~/libgpsmm.xml	2006-06-26 16:22:07.814467581 +0200
++++ gpsd/libgpsmm.xml	2006-06-26 16:22:08.106409369 +0200
+@@ -41,7 +41,7 @@
+ </funcprototype>
+ <funcprototype>
+ <funcdef>int <function>set_callback</function></funcdef>
+-    <paramdef>void (*<parameter>hook</parameter>)(struct gps_data_t *sentence, char *buf)</paramdef>
++    <paramdef>void (*<parameter>hook</parameter>)(struct gps_data_t *sentnce, char *buf)</paramdef>
+ </funcprototype>
+ <funcprototype>
+ <funcdef>int <function>del_callback</function></funcdef>

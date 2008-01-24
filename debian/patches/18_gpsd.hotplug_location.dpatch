@@ -1,0 +1,19 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 18_gpsd.hotplug_location.dpatch by Tilman Koschnick <til@subnetz.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Adjust WHEREAMI variable in gpsd.hotplug.
+
+@DPATCH@
+diff -urNad gpsd~/gpsd.hotplug gpsd/gpsd.hotplug
+--- gpsd~/gpsd.hotplug	2006-04-16 17:53:15.000000000 +0200
++++ gpsd/gpsd.hotplug	2006-04-30 14:34:19.340091662 +0200
+@@ -6,7 +6,7 @@
+ import sys, time, os, syslog, glob, socket, stat
+ 
+ CONTROL_SOCKET = "/var/run/gpsd.sock"
+-WHEREAMI = "/etc/hotplug/usb/gpsd.hotplug"
++WHEREAMI = "/lib/udev/gpsd.hotplug"
+ 
+ def gpsd_control_connect():
+     "Acquire a connection to the GPSD control socket."

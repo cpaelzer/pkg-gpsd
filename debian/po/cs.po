@@ -1,0 +1,80 @@
+#
+#    Translators, if you are not familiar with the PO format, gettext
+#    documentation is worth reading, especially sections dedicated to
+#    this format, e.g. by running:
+#         info -n '(gettext)PO Files'
+#         info -n '(gettext)Header Entry'
+#
+#    Some information specific to po-debconf are available at
+#            /usr/share/doc/po-debconf/README-trans
+#         or http://www.debian.org/intl/l10n/po-debconf/README-trans
+#
+#    Developers do not need to manually edit POT or PO files.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gpsd\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2005-05-27 00:33+0200\n"
+"PO-Revision-Date: 2005-05-27 19:22+0200\n"
+"Last-Translator: Miroslav Kure <kurem@debian.cz>\n"
+"Language-Team: Czech <debian-l10n-czech@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: string
+#. Description
+#: ../gpsd.templates:3
+msgid "Which device is your GPS receiver attached to?"
+msgstr "Ke kterému zařízení je připojen váš GPS přijímač?"
+
+#. Type: string
+#. Description
+#: ../gpsd.templates:3
+msgid ""
+"Enter the device your GPS is attached to; this will probably be something "
+"like /dev/ttyS0 or /dev/ttyUSB0."
+msgstr ""
+"Zadejte zařízení, ke kterému je připojena vaše GPS; pravděpodobně to bude "
+"něco jako /dev/ttyS0 nebo /dev/ttyUSB0."
+
+#. Type: string
+#. Description
+#: ../gpsd.templates:3
+msgid "You can enter several devices, separated by spaces."
+msgstr "Můžete zadat několik zařízení oddělených mezerami."
+
+#. Type: boolean
+#. Description
+#: ../gpsd.templates:12
+msgid "Should gpsd start on boot?"
+msgstr "Má se gpsd spouštět při zavádění systému?"
+
+#. Type: boolean
+#. Description
+#: ../gpsd.templates:12
+msgid ""
+"If your GPS receiver is permanently attached to your computer, you might "
+"want to start gpsd at boot time. Otherwise, you can run it by calling gpsd"
+"(1) at any time, or you can use the hotplug interface for USB devices."
+msgstr ""
+"Pokud je váš GPS přijímač připojen k počítači trvale, možná budete chtít "
+"spouštět gpsd hned při zavádění systému. V opačném případě můžete gpsd(1) "
+"kdykoliv spustit ručně, resp. pro USB zařízení můžete využít hotplug."
+
+#. Type: string
+#. Description
+#: ../gpsd.templates:19
+msgid "Options to gpsd:"
+msgstr "Volby pro gpsd:"
+
+#. Type: string
+#. Description
+#: ../gpsd.templates:19
+msgid ""
+"You can give additional arguments when starting gpsd; see gpsd(1) for a list "
+"of options."
+msgstr ""
+"Nyní můžete zadat parametry, které se mají používat při startu gpsd; Seznam "
+"možností naleznete v manuálové stránce gpsd(1)."

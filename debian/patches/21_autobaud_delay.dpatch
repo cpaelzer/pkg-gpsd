@@ -1,0 +1,19 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 21_autobaud_delay.dpatch by Tilman Koschnick <til@subnetz.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Introduce delay when changing serial port speed, to allow device to settle.
+
+@DPATCH@
+diff -urNad gpsd~/serial.c gpsd/serial.c
+--- gpsd~/serial.c	2006-06-11 22:08:13.000000000 +0200
++++ gpsd/serial.c	2006-06-11 22:13:34.088281960 +0200
+@@ -98,6 +98,8 @@
+ 	if (tcsetattr(session->gpsdata.gps_fd, TCSANOW, &session->ttyset) != 0)
+ 	    return;
+ 	(void)tcflush(session->gpsdata.gps_fd, TCIOFLUSH);
++	(void)usleep(200000);
++	(void)tcflush(session->gpsdata.gps_fd, TCIOFLUSH);
+     }
+     gpsd_report(1, "speed %d, %d%c%d\n", speed, 9-stopbits, parity, stopbits);
+ 

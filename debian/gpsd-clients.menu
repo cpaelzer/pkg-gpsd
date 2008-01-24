@@ -1,0 +1,4 @@
+?package(gpsd-clients):needs="x11" section="Apps/Tools"\
+  title="xgps" command="/usr/bin/xgps"
+?package(gpsd-clients):needs="x11" section="Apps/Tools"\
+  title="xgpsspeed" command="/usr/bin/xgpsspeed"

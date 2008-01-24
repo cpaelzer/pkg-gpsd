@@ -1,0 +1,6 @@
+# gpsd is (so far) the only package using libgps.so, so we leave it in one package for now
+gpsd: non-dev-pkg-with-shlib-symlink usr/lib/libgps.so.15.0.0 usr/lib/libgps.so
+gpsd: package-name-doesnt-match-sonames libgps15
+
+# rewrite of templates probably due soon, so we ignore this for now
+gpsd: malformed-prompt-in-templates gpsd/device
