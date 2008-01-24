@@ -1,0 +1,57 @@
+.\"     Title: libgpsmm
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.71.0 <http://docbook.sf.net/>
+.\"      Date: 13 May 2005
+.\"    Manual: Linux
+.\"    Source: Linux
+.\"
+.TH "LIBGPSMM" "3" "13 May 2005" "Linux" "Linux"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+libgpsmm \- C++ class wrapper for the GPS daemon
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+
+C++:
+
+#include <libgpsmm>
+
+.fi
+.ft
+.HP 24
+.BI "struct gps_data_t *open(char\ *" "host" ", char\ *" "port" ");"
+.HP 24
+.BI "struct gps_data_t *open(void);"
+.HP 25
+.BI "struct gps_data_t *query(char\ *" "request" ");"
+.HP 24
+.BI "struct gps_data_t *poll(void);"
+.HP 17
+.BI "int set_callback(void\ (*" "hook" ")(struct\ gps_data_t\ *sentnce,\ char\ *buf));"
+.HP 17
+.BI "int del_callback(void);"
+.SH "DESCRIPTION"
+.PP
+\fBlibgpsmm\fR
+is a mere wrapper over
+\fBlibgps\fR. Method names are the same as the analogue C functions. For a detailed description of the functions please read
+\fBlibgps\fR(3).
+\fBopen()\fR
+must be called after class constructor and before any other method (\fBopen()\fR
+is not inside the constructor since it may fail, however constructors have no return value). The analogue of the C function
+\fBgps_close()\fR
+is in the destructor.
+.SH "SEE ALSO"
+.PP
+
+\fBgpsd\fR(1),
+\fBgps\fR(1),
+\fBlibgps\fR(3).
+.SH "AUTHOR"
+.PP
+Alfredo Pironti <alfredio@users.sourceforge.net>.

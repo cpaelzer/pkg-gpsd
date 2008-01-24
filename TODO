@@ -1,0 +1,266 @@
+This is the gpsd to-do list.  If you're viewing it with Emacs, try
+doing Ctl-C Ctl-t and browsing through the outline headers.  Ctl-C Ctl-a 
+will unfold them again.
+
+** Bugs in gpsd and its clients:
+
+*** There's a report that RoyalTek support broke between 2.25 and 2.28 
+
+There's a report that RoyalTek support broke between 2.25 and 2.28 by
+David Mandala <davidm@them.com>.  His workaround is to condition out
+SiRF-II support; it works OK in NMEA mode.  The Royaltek died in an
+accident, so we're stuck until someone else can test this.
+
+*** Axiom Sandpiper II OEM NMEA GPS Module gets mistaken for an FV-18
+
+David Mandala <davidm@them.com> reported this bug.  He says it can 
+be worked around by setting the port to 4800 manually before starting
+GPSD.  David sent ESR one of these, it's somewhere in his piles of
+stuff, testing will get done when it surfaces.  More on the Sandpiper
+at <http://www.allsurplus.net/Axiom/>.
+
+*** Garmin binary support failed on x86_64
+
+Member sizes in the packed binary structure Packet_t were wrong.
+Gary Miller has attempted to fix this, but it has not yet been tested
+on a 64-bit machine.
+
+*** True North support confuses track with heading
+
+Robin Darroch has pointed out that the support for the True North
+compass device confuses track (course over ground) with heading.
+This should probably be fixed.  However, the TNT code was sent 
+to us by a TNT user involved in the 2004 DARPA Grand Challenge 
+and therefore presumably meets actual production needs.  For
+this reason, and because separating track froom heading would 
+ripple through several places including gps.h and the client
+implementations, we're not going to try to fix this until we
+have a TNT device (or something else that makes the same
+distinction) to test with.
+
+** Bugs exposed by gpsd in other software
+
+*** Multiple definitions of symbol _gpsd_report
+
+Some people building gpsd get 'multiple definitions of symbol _gpsd_report'
+as a warning.  This seems to be a result of two bugs in libtool, one
+of which masks the other on i386. gpsd_report() is indeed multiply
+defined, the problem is that libtool generates libgps.o where it 
+should generate -lgps and *all* instances (rather than just the first
+to be incorporated by other linkage demands) are linked in.
+
+*** The 2.3.0-beta version of OpenMotif shipped with Fedora Care 5 is buggy
+
+xgps appears to tickle a bug (described at http://bugs.motifzone.net/ as
+bugs 1330 and 1331) in OpenMotif.  This bug has been marked FIXED, so
+the next release of OpenMotif will probably fix it.  Until then, we
+suggest you drop back to an OpenMotif stable version like 2.2.2.
+
+** To do:
+
+*** Stop using a compiled-in UTC-TAI offset
+
+Instead, from the hotplug script, maintain a local offset file:
+
+1. If there is no local offset file, download the current leap-second
+offset from <http://hpiers.obspm.fr/iers/bul/bulc/> or
+<ftp://maia.usno.navy.mil/ser7/tai-utc.dat> and copy it to a
+local offset file
+
+2. If there is a local offset file, consider it stale after five
+months and reload it.
+
+3. gpsd should read the local offset file when it starts up, if
+it exists.
+
+Note: turns out this is only an issue for EverMore chips.  SiRF GPSes
+can get the offset from the PPS or subframe data; NMEA GPSes don't
+need it; and the other binary protocols supply it.
+
+*** SiRF firmware uploader
+
+Chris Kuethe has shipped a 0.0 pre-alpha version.  It is not yet 
+resolved whether SiRF Technology will allow us to ship the 
+binary loader code needed to actually use it.
+
+*** RINEX-format dumping of raw satellite data
+
+It would be useful to be able to extract RINEX-format data from any
+GPS device that can report pseudoranges etc.  This belongs in the
+daemon because the device drivers are already doing the
+packet-cracking needed to get the data off the chips.
+
+*** RTCM support.
+
+We have an RTCM packet decoder, and untested scratch code to serve
+RTCM packets to port 2101.  Here's the plan for the rest of it:
+
+1) Inversion needs to be done somewhere in the encoding logic.
+
+2) Wolfgang's decoder-hardening patches.
+
+3) Test productions.  I have one that tests dumping and one that uses   
+   passthrough mode to test that pack() and repack() are inverse.  We
+   should have an undumping torture test.
+
+4) What about rtcm_output_mag() anyway?  Should that be made
+   available as an output mode of rtcmdecode and documented?
+
+5) Python libraries must grok RTCM dump format.
+
+6) Extend the test framework so we can verify RTCM service.
+
+7) Get rid of the -d option by hacking open_device() so that when it
+   sees a command-line argument of the form server:port (with no
+   embedded backslashes) it opens a socket to read from that server.
+   Now any GPS-packet and RTCM data sources given on the command line
+   can be remote as well as local.
+
+8) Generate and broadcast RTCM corrections from an attached device?
+   Might not be possible -- appears to need nanosecond timing.
+
+*** Do the research to figure out just what is going on with status bits
+
+NMEA actually has *four* kinds of validity bits: Mode, Status, the
+Active/Void bit (some sources interpret 'V' as 'Navigation receiver
+warning'), and in later versions the FAA indicator mode.  Sentences
+that have an Active/Void send V when there is no fix, so the position
+data is no good.
+
+Let's look at which sentences send what:
+
+                GPRMC     GPGLL     GPGGA     GPGSA
+Returns fix      Yes       Yes       Yes        No
+Returns status   No        Yes       Yes        No
+Returns mode     No        No        No         Yes
+Returns A/V      Yes       Yes       No         No
+
+In addition, some sentences use empty fields to signify invalid data.
+
+My first conclusion from looking at this table is that the designers
+of NMEA 0183 should be hung for galloping incompetence.  But never mind that.
+What are we to make of this mess?
+
+The fact that the FV18 sends GPRMC/GPGLL/GPGGA but not GPGSA
+argues that GPGSA is optional.  I don't see how it can be, since it
+seems to be the only status bit that applies to altitude.  Just how are
+we supposed to know when altitude is valid if it doesn't ship GSA?  
+Can a receiver ever ship a non-empty but invalid altitude?
+
+Which of these override which other bits?  I don't think status is ever
+nonzero when mode is zero. So status overrides mode.  What other such
+relationships are there?
+
+News flash: it develops that the "Navigation receiver warning" is
+supposed to indicate a valid fix that has a DOP too high or fails
+an elevation test.
+
+** Future features (?)
+
+*** Audio cues in the client when the fix status changes
+
+Calum writes:
+>Is it possible to add functionality ( with a switch to enable it to
+>avoid annoying those that don't want it) so that beeps indicate NO
+>FIX, FIX, and OFFLINE status changes?
+>
+>For example - I run cgps and my laptop battery doesn't always supply
+>my PS2 port-powered GPS device with enough power, and it goes into
+>OFFLINE mode. As I can't drive, and check my laptop all the time, if
+>it emitted 5 1 second beeps when it went OFFLINE, it would be a handy alert.
+>
+>Similarly, a PCMCIA "eject" 2 beeps for NO FIX, and a PCMCIA "happy" 2
+>beeps when it gets a fix again?
+>
+>Or something like that.
+
+This is a good idea for supporting hands-free operation, e.g. while driving.
+
+It would be an easy first project for somebody who wants to get into
+the client code.
+
+*** Subsecond polling
+
+gpsd relies on the GPS to periodically send PVT reports to it.
+
+Most GPSes send PVT reports once a second.  No NMEA GPS I've ever seen
+allows you to set a cycle time of less than a second.  This is because
+at 4800bps, a full PVT report takes just under one second in NMEA.
+
+At 50km/h (31mi/h) that's 13.8 meters change in position between
+updates, about the same as the uncertainty of position under typical
+conditions.
+
+There is, however, a way to sample GPSes at higher frequency.  SiRF
+chips, and some others, allow you to shut down periodic notifications
+and poll them for PVT.  At 57600bps we could poll a NMEA GPS 16 times
+a second, and a SiRF one maybe 18 times a second.
+
+Is this worth doing?  Maybe.  It would reduce fix latency, possibly
+to good effect if your GPS is in motion.  Opinions?  Calculations?
+
+Gary Miller reports that the Garmin GPS 18 LVC-5m and the GPS 18-5Hz
+both report 5 times a second, but he doesn't have either to test.
+
+Alas, Chris Kuethe reports:
+>At least on the SiRF 2 and 3 receivers I have, you get one fix per
+>second. I cooked up a test harness to disable as many periodic
+>messages as possible and then poll as quickly as possible, and the
+>receiver would not kick out more than one fix per second. Foo!
+
+*** Set the system time zone from latitude/longitude
+
+If we're going to give gpsd the capability to set system time via
+ntpd, why not let it set timezone as well?  A good thing for hackers
+travelling with laptops!
+
+The major issue here is that I have not yet found code, or a
+database, that would allow mapping from lon/lat to timezone.
+And the rules change from year to year.
+
+Actually this should be built as a specialized client, as some
+people won't want it.
+
+From <http://www.linuxsa.org.au/tips/time.html>:
+
+    The timezone under Linux is set by a symbolic link from
+    /etc/localtime[1] to a file in the /usr/share/zoneinfo[2] directory
+    that corresponds with what timezone you are in. For example, since I'm
+    in South Australia, /etc/localtime is a symlink to
+    /usr/share/zoneinfo/Australia/South. To set this link, type:
+
+    ln -sf ../usr/share/zoneinfo/your/zone /etc/localtime
+
+    Replace your/zone with something like Australia/NSW or
+    Australia/Perth. Have a look in the directories under
+    /usr/share/zoneinfo to see what timezones are available.
+
+    [1] This assumes that /usr/share/zoneinfo is linked to /etc/localtime as it is under Red Hat Linux.
+
+    [2] On older systems, you'll find that /usr/lib/zoneinfo is used
+    instead of /usr/share/zoneinfo.
+
+Changing the hardlink will, of course, update the system timezone for
+all users.  If I were designing this feature, I'd ensure that the
+system timezone can be overridden by a user-set TZ, but I don't know
+if it actually works that way.
+
+If I'm reading the tea leaves correctly, this functionality is actually
+embedded in the GCC library version of tzset(), so the same method will
+work on any system that uses that.
+
+Problem: system daemons use the timezone set when they start up. You
+can't get them to grok a new one short of rebooting.
+
+Sources: 
+
+Sources for Time Zone and Daylight Saving Time Data
+http://www.twinsun.com/tz/tz-link.htm
+
+Free time-zone maps of the U.S.
+http://www.manifold.net/download/freemaps.html
+
+Local variables:
+mode: outline
+paragraph-separate: "[ 	]*$"
+end:
