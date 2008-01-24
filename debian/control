@@ -1,7 +1,7 @@
 Source: gpsd
 Section: misc
 Priority: optional
-Maintainer: Tilman Koschnick <til@subnetz.org>
+Maintainer: Bernd Zeimetz <bzed@debian.org>
 Build-Depends: debhelper (>= 5), po-debconf, dpatch, python, python-support (>= 0.4), xmlto, docbook-xsl (>= 1.70.1.dfsg.1-0.1), chrpath, libxt-dev, lesstif2-dev, libxaw7-dev, libncurses-dev, libdbus-1-dev, libglib2.0-dev, libdbus-glib-1-dev
 Standards-Version: 3.7.2
 
