@@ -1,3 +1,9 @@
+gpsd (2.36-2~bpo40+1) etch-backports; urgency=low
+
+  * Etch backport of the 2.36 release, including the leap year bugfix.
+
+ -- Bernd Zeimetz <bzed@debian.org>  Sat, 09 Feb 2008 11:38:51 +0100
+
 gpsd (2.36-2) unstable; urgency=low
 
   * debian/patches:
