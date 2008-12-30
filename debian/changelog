@@ -1,3 +1,9 @@
+gpsd (2.37-6~bpo40+1) etch-backports; urgency=low
+
+  * Rebuild for etch-backports.
+
+ -- Bernd Zeimetz <bzed@debian.org>  Tue, 30 Dec 2008 22:17:04 +0100
+
 gpsd (2.37-6) unstable; urgency=low
 
   * debian/po:
