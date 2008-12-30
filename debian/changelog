@@ -3,8 +3,10 @@ gpsd (2.37-6~bpo40+1) etch-backports; urgency=low
   * Rebuild for etch-backports.
   * Dropping symbols files and lowering the build-dependencies
     accordingly.
+  * Forcefully build for python2.5 although it is not supported
+    in Etch officially. 
 
- -- Bernd Zeimetz <bzed@debian.org>  Tue, 30 Dec 2008 22:17:04 +0100
+ -- Bernd Zeimetz <bzed@debian.org>  Tue, 30 Dec 2008 22:57:47 +0100
 
 gpsd (2.37-6) unstable; urgency=low
 

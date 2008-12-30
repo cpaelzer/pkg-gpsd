@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Bernd Zeimetz <bzed@debian.org>
 Build-Depends: debhelper (>= 5.0.41), po-debconf,
  dpatch, autotools-dev, 
- python-all-dev, python-support (>= 0.4),
+ python-all-dev, python2.5-dev, python-support (>= 0.4),
  xsltproc, docbook-xsl, docbook-xml,
  libxt-dev, lesstif2-dev, libxaw7-dev, libncurses-dev,
  libdbus-1-dev, libglib2.0-dev, libdbus-glib-1-dev, makedev

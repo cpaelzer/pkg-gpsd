@@ -12,7 +12,7 @@ LDFLAGS =
 CPPFLAGS =
 
 #python versions
-PYVERS := $(shell pyversions -r)
+PYVERS := python2.4 python2.5
 
 #let's help configure to figure out our host/build system
 DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
