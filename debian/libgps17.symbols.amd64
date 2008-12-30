@@ -1,3 +1,0 @@
-libgps.so.17 libgps17 #MINVER#
-#include "libgps17.symbols.common"
- _ZN5gpsmm12set_callbackEPFvP10gps_data_tPcmiE@Base 2.37~rc1
