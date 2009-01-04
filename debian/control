@@ -11,6 +11,8 @@ Build-Depends: debhelper (>= 5.0.61), po-debconf, dpkg-dev (>= 1.14.8),
 Standards-Version: 3.7.3
 Homepage: http://gpsd.berlios.de/
 XS-Python-Version: all
+Vcs-Browser: http://git.recluse.de/debian/pkg-gpsd.git
+Vcs-Git: git://git.recluse.de/debian/pkg-gpsd.git
 
 Package: gpsd
 Architecture: any
