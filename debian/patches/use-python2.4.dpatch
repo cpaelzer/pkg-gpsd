@@ -1,0 +1,25 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## use-python2.4.dpatch by Bernd Zeimetz <bzed@debian.org>
+##
+## DP: The pty module doesn't work reliable with python2.5,
+## DP: so use python2.4 instead.
+
+@DPATCH@
+diff -urNad pkg-gpsd~/gpsfake pkg-gpsd/gpsfake
+--- pkg-gpsd~/gpsfake	2009-01-04 23:08:56.000000000 +0100
++++ pkg-gpsd/gpsfake	2009-01-04 23:19:13.000000000 +0100
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python2.4
+ #
+ # gpsfake -- test harness for gpsd
+ #
+diff -urNad pkg-gpsd~/gpsprof pkg-gpsd/gpsprof
+--- pkg-gpsd~/gpsprof	2009-01-04 23:08:56.000000000 +0100
++++ pkg-gpsd/gpsprof	2009-01-04 23:19:19.000000000 +0100
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python2.4
+ #
+ # Collect and plot latency-profiling data from a running gpsd.
+ # Requires gnuplot.
