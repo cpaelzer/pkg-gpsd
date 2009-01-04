@@ -1,3 +1,14 @@
+gpsd (2.37-7) unstable; urgency=low
+
+  * debian/control: Adding Vcs-Git/Vcs-Browser fields.
+  * debian/patches: Adding use-python2.4.dpatch to use Python 2.4 as
+    default for gpsprof and gpsfake.
+    Due to a yet not fully debugged bug the pty module of recent
+    Python 2.5 versions does not work as expected anymore, hence
+    use Python 2.4 for now.
+
+ -- Bernd Zeimetz <bzed@debian.org>  Sun, 04 Jan 2009 23:49:56 +0100
+
 gpsd (2.37-6) unstable; urgency=low
 
   * debian/po:
