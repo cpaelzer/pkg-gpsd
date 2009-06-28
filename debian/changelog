@@ -1,3 +1,9 @@
+gpsd (2.39-2~bpo50+1) lenny-backports; urgency=low
+
+  * Rebuild for lenny-backports.
+
+ -- Bernd Zeimetz <bzed@debian.org>  Sun, 28 Jun 2009 19:26:12 +0200
+
 gpsd (2.39-2) unstable; urgency=low
 
   * [765fde7b] Calculate soname and library version properly.
