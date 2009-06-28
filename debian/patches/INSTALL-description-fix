@@ -4,12 +4,11 @@
 ## DP: fixing the INSTALL description (aka TROUBLESHOOTING in the package)
 
 @DPATCH@
-diff -urNad gpsd~/INSTALL gpsd/INSTALL
---- gpsd~/INSTALL	2006-12-15 00:43:39.000000000 +0100
-+++ gpsd/INSTALL	2007-10-18 19:02:00.000000000 +0200
-@@ -52,9 +52,9 @@
- 
- 4. Start gpsd.  It should not need any options.
+--- a/INSTALL
++++ b/INSTALL
+@@ -93,9 +93,9 @@ home directory or to the system-wide X a
+ 4. Start gpsd.  You'll need to give it as an argument a path to 
+ a serial or USB port with a GPS attached to it.
  
 -5. Once gpsd is running, telnet to port 2947.  Type 'f' to see what
 -device it will query.  If you need to change the device, use 'f='

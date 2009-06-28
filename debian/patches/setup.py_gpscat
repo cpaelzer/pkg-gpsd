@@ -1,0 +1,20 @@
+--- a/setup.py
++++ b/setup.py
+@@ -7,7 +7,7 @@ from distutils.core import setup, Extens
+ import os
+ import sys
+ 
+-needed_files = ['packet_names.h', 'gpsfake.1', 'gpsprof.1']
++needed_files = ['packet_names.h', 'gpscat.1', 'gpsfake.1', 'gpsprof.1']
+ created_files = []
+ 
+ if not 'clean' in sys.argv:
+@@ -33,6 +33,6 @@ setup( name="gpsd",
+     	Extension("gpslib", ["gpslib.c", "geoid.c"])
+         ],
+        py_modules = ['gpsfake','gps', 'leapsecond'],
+-       data_files=[('bin', ['gpsfake','gpsprof']),
+-           ('share/man/man1', ['gpsfake.1','gpsprof.1'])]
++       data_files=[('bin', ['gpscat','gpsfake','gpsprof']),
++           ('share/man/man1', ['gpscat.1', 'gpsfake.1','gpsprof.1'])]
+      )

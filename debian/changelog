@@ -1,12 +1,68 @@
-gpsd (2.37-6~bpo40+1) etch-backports; urgency=low
+gpsd (2.39-2) unstable; urgency=low
 
-  * Rebuild for etch-backports.
-  * Dropping symbols files and lowering the build-dependencies
-    accordingly.
-  * Forcefully build for python2.5 although it is not supported
-    in Etch officially. 
+  * [765fde7b] Calculate soname and library version properly.
+  * [1da6bffd] Support the "status" action in the init.d script.
+    (Closes: #528688) - thanks to Peter Eisentraut
+  * [634d40b0] Make gpsd.hotplug.wrapper work with Ubuntu. (LP: #367197)
+  * [1a66eb21] Start gpsd after bluetooth. (LP: #359352)
+  * [1e5ffb92] Adding patch to fix a crash in libgpsmm.
+  * [ba4e66a1] Updating symbols file after fixing libgpsmm.
 
- -- Bernd Zeimetz <bzed@debian.org>  Tue, 30 Dec 2008 22:57:47 +0100
+ -- Bernd Zeimetz <bzed@debian.org>  Thu, 18 Jun 2009 01:37:34 +0200
+
+gpsd (2.39-1) unstable; urgency=low
+
+  * [44f4a445] debian/rules: Install upstream changelog, thanks to Paul
+    Martin (Closes: #515067).
+  * [edd0f8f7] debian/gbp.conf: Adding file.
+  * [d0d4a002] Imported Upstream version 2.39
+  * [376c8df9] debian/rules: Fixing FTBFS with the new python-support,
+    thanks to Josselin Mouette (Closes: #516235)
+  * [3a6804d7] debian/po: Adding Romanian translation, thanks to Eddy
+    Petrișor (Closes: #514081).
+  * [3d9cbca0] debian/control: Needed changes for udev transition.
+  * [5d958d9b] debian/patches/default_units: drop exec flag.
+  * [70489cfe] debian/control: bump libgps soname to 18.
+  * [c91b4914] debian/patches: Updating patches for new version.
+  * [f1217338] debian/rules: Add Breaks support for udev.
+  * [d8a810a2] debian/gpsd.config: move gpsd/autodetection to low
+  * [57ae764d] debian/rules: Use lsb_release -si
+  * [337dddcb] debian/rules: Support Python 2.6.
+  * [703df0da] Migrating symbols files to libgps18.
+  * [07f088f7] debian/rules: Be pendantic about symbol files.
+  * [b0280081] debian/rules: Don't require python.mk to build.
+  * [581ac233] debian/rules: Work around broken --disable-python.
+  * [522a76dd] debian/gpsd.postrm: removing old diversion parts.
+  * [7f422a4f] debian/gpsd.udev: Dropping file, shipped upstream.
+  * [65061f11] debian/rules: Install gpsd.rules for udev.
+  * [cbdc4e8a] debian/patches: Install gpscat via setup.py.
+  * [852f0522] debian/control: Bumping Standards-Version.
+  * [26728c33] debian/patches: Add missing gpscat manpage.
+  * [a99dfede] debian/rules: More workarounds for --disable-python.
+  * [74a4ad5b] debian/rules: Use configure-stamp instead of
+    config.status.
+  * [3be45988] debian/rules: Build gpscat.1 for Python.
+  * [9063e762] debian/rules: Delete Python manpages form clients
+    package.
+  * [24c96c32] debian/patches: Install gpscat manpage.
+
+ -- Bernd Zeimetz <bzed@debian.org>  Wed, 08 Apr 2009 01:57:53 +0200
+
+gpsd (2.38-1) unstable; urgency=low
+
+  * New Upstream Version
+  * Replacing the dpatch patch system by quilt.
+  * Dropping debian/patchts/gpsfake-identation.dpatch,
+    patch applied by upstream.
+  * debian/libgps17.symbols.common: Updating symbols file to the
+    current version. The rtcm symbols were renamed to rtcm2. As they
+    are not used by anyting but gpsd normally, upstream decided not to
+    bump the soname.
+  * debian/rules: remove .deps and .libs in the clean target.
+  * debian/README.source: Adding file as required by policy.
+  * debian/control: Bumping Standards-Version to 3.8.0.
+
+ -- Bernd Zeimetz <bzed@debian.org>  Wed, 11 Feb 2009 01:02:22 +0100
 
 gpsd (2.37-6) unstable; urgency=low
 

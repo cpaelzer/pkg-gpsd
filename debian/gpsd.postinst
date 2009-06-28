@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/bash
 # postinst script for gpsd
 
 set -e
@@ -11,6 +11,21 @@ if [ "$1" = "configure" ] ; then
     if dpkg --compare-versions "$2" lt "2.37-1"; then
         [ ! -L /etc/udev/rules.d/025_gpsd.rules ] || rm -f /etc/udev/rules.d/025_gpsd.rules || true
     fi
+
+
+   # move rc.d
+    if dpkg --compare-versions "$2" gt "2.39-1"; then
+        if [ -L /etc/rc0.d/K20gpsd -a \
+             -L /etc/rc1.d/K20gpsd -a \
+             -L /etc/rc2.d/S20gpsd -a \
+             -L /etc/rc3.d/S20gpsd -a \
+             -L /etc/rc4.d/S20gpsd -a \
+             -L /etc/rc5.d/S20gpsd -a \
+             -L /etc/rc6.d/K20gpsd ]; then
+            update-rc.d -f gpsd remove
+        fi
+    fi
+
 
     # generate /etc/default/gpsd
     db_get gpsd/device
@@ -33,10 +48,11 @@ USBAUTO="$USBAUTO"
 EOF
 
 fi
-	
-#DEBHELPER#
 
 # tell debconf we are done. otherwise, it hangs waiting for the daemon.
 db_stop;
+
+
+#DEBHELPER#
 
 exit 0

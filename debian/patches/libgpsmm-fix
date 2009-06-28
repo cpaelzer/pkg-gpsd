@@ -1,0 +1,22 @@
+--- a/libgpsmm.cpp
++++ b/libgpsmm.cpp
+@@ -8,6 +8,8 @@
+  */
+ #include "libgpsmm.h"
+ 
++gpsmm::gpsmm() : gps_data(0) { }
++
+ struct gps_data_t* gpsmm::open(void) {
+ 	return open("127.0.0.1",DEFAULT_GPSD_PORT);
+ }
+--- a/libgpsmm.h
++++ b/libgpsmm.h
+@@ -14,7 +14,7 @@
+ 
+ class gpsmm {
+ 	public:
+-		gpsmm() { };
++		gpsmm();
+ 		virtual ~gpsmm();
+ 		struct gps_data_t* open(const char *host,const char *port); //opens the connection with gpsd, MUST call this before any other method
+ 		struct gps_data_t* open(void); //open() with default values

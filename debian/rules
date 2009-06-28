@@ -1,6 +1,15 @@
 #!/usr/bin/make -f
 
-include /usr/share/dpatch/dpatch.make
+include /usr/share/quilt/quilt.make
+-include /usr/share/python/python.mk
+ifeq (,$(py_sitename))
+py_sitename = site-packages
+py_libdir = /usr/lib/python$(subst python,,$(1))/site-packages
+py_sitename_sh = $(py_sitename)
+py_libdir_sh = $(py_libdir)
+endif
+
+
 
 #uncomment if debhelper should be verbose
 #export DH_VERBOSE=1
@@ -14,6 +23,22 @@ CPPFLAGS =
 #python versions
 PYVERS := python2.4 python2.5
 
+#debhelper version and settings needed for udev
+DH_VERSION := $(shell dpkg -s debhelper | grep '^Version' | awk '{print $2}')
+LSB_RELEASE := $(shell lsb_release -si)
+UDEV_BREAKS =
+
+ifeq (Debian,$(strip $(LSB_RELEASE))) ## debian ##
+	## FIXME ##
+else ##debian ##
+ifneq (Ubuntu,$(strip $(LSB_RELEASE))) ## ubuntu ##
+ifeq (0, $(strip $(shell dpkg --compare-versions $(DH_VERSION) ge 7.0.17ubuntu2; echo $$?)))
+UDEV_BREAKS = 136-1
+endif
+endif ## ubuntu ##
+endif ## debian ##
+
+
 #let's help configure to figure out our host/build system
 DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
@@ -22,7 +47,6 @@ ifeq ($(DEB_BUILD_GNU_TYPE), $(DEB_HOST_GNU_TYPE))
 else
   CONFFLAGS += --build $(DEB_BUILD_GNU_TYPE) --host $(DEB_HOST_GNU_TYPE)
 endif
-
 
 
 #where our files go
@@ -48,23 +72,27 @@ CONFENV += LDFLAGS="$(LDFLAGS)" CFLAGS="$(CFLAGS)"
 
 
 #we build the python extension manually
-CONFFLAGS += --disable-python
+# --disable-python is broken at the moment...
+#CONFFLAGS += --disable-python
 
 #support dbus
 CONFFLAGS += --enable-dbus
 
 
 #library versions
-LIB_version := $(shell grep '^libgps_la_LDFLAGS' Makefile.am | \
-	                   sed 's,^[^0-9]*,,g;s,\([0-9]*\):\([0-9]*\):\([0-9]*\),\1.\3.\2,g')
-LIB_major := $(shell echo $(LIB_version) | sed 's,\..*,,g')
+LIB_version_number := $(shell grep '^libgps_la_LDFLAGS' Makefile.am | sed 's,.*-version-number ,,')
+LIB_version_current := $(shell echo $(LIB_version_number) | awk -F : '{print $$1}')
+LIB_version_revision := $(shell echo $(LIB_version_number) | awk -F : '{print $$2}')
+LIB_version_age := $(shell echo $(LIB_version_number) | awk -F : '{print $$3}')
+LIB_soname := $(shell expr $(LIB_version_current) - $(LIB_version_age))
+LIB_version := $(LIB_soname).$(LIB_version_age).$(LIB_version_revision)
 
 
 
 #package names
 PACKAGE_GPSD := gpsd
 PACKAGE_CLIENTS := gpsd-clients
-PACKAGE_LIB := $(shell grep '^Package: libgps$(LIB_major)' debian/control | \
+PACKAGE_LIB := $(shell grep '^Package: libgps$(LIB_soname)' debian/control | \
 	               awk '{print $$2}')
 PACKAGE_LIB_DEV := libgps-dev
 PACKAGE_PY := python-gps
@@ -83,17 +111,21 @@ endif
 	touch $@
 
 
-configure: config.status
-config.status: patch-stamp autotools-dev-stamp
+configure: configure-stamp
+configure-stamp: patch autotools-dev-stamp
 	dh_testdir
 	$(CONFENV) ./configure $(CONFFLAGS)
+	touch $@
 
 build: build-gpsd build-python
 build-gpsd: build-gpsd-stamp
 build-python: build-python-stamp
-build-gpsd-stamp: config.status
+build-gpsd-stamp: configure-stamp
 	dh_testdir
-	$(MAKE)
+
+	#hack around broken --disable-python in configure
+	$(MAKE) PYEXTENSIONS='' noinst_SCRIPTS='' nodist_python_PYTHON='' PYTHONPAGES_DIST=''
+
 	#this is a rather ugly hack to work around broken linebreaks
 	#from docbook
 	sed -i 's,^.BI "void gps_set_callback(struct,.warn .BI "void gps_set_callback(struct,' libgps.3
@@ -106,7 +138,7 @@ build-gpsd-stamp: config.status
 
 build-python-stamp: build-gpsd-stamp
 	dh_testdir
-	$(MAKE) packet_names.h gpsfake.1 gpsprof.1
+	$(MAKE) packet_names.h gpscat.1 gpsfake.1 gpsprof.1
 	set -e; \
 	unset CFLAGS CPPFLAGS CXXFLAGS FFLAGS LDFLAGS ;\
 	for py in $(PYVERS); do  \
@@ -118,18 +150,21 @@ build-python-stamp: build-gpsd-stamp
 install: install-gpsd install-python
 
 install-gpsd: build-gpsd-stamp
-	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp PYEXTENSIONS='' noinst_SCRIPTS='' nodist_python_PYTHON='' dist_bin_SCRIPTS='' PYTHONPAGES_DIST=''
 	cp INSTALL TROUBLESHOOTING
 	#ldconfig link
 	dh_link -p$(PACKAGE_LIB) usr/lib/libgps.so.$(LIB_version) \
-	                         usr/lib/libgps.so.$(LIB_major)
-	dh_link -p$(PACKAGE_LIB_DEV) usr/lib/libgps.so.$(LIB_major) \
+	                         usr/lib/libgps.so.$(LIB_soname)
+	dh_link -p$(PACKAGE_LIB_DEV) usr/lib/libgps.so.$(LIB_soname) \
 	                             usr/lib/libgps.so
 	#the build-system creates some really weird files here
 	#(instead of not creating a file at all)
 	rm -f $(CURDIR)/debian/tmp/usr/share/man/man1/cgps.1 \
 	      $(CURDIR)/debian/tmp/usr/share/man/man1/cgpxlogger.1 \
-	      $(CURDIR)/debian/tmp/usr/share/man/man1/gpxlogger.1
+	      $(CURDIR)/debian/tmp/usr/share/man/man1/gpxlogger.1 \
+	      $(CURDIR)/debian/tmp/usr/share/man/man1/gpscat.1 \
+	      $(CURDIR)/debian/tmp/usr/share/man/man1/gpsfake.1 \
+	      $(CURDIR)/debian/tmp/usr/share/man/man1/gpsprof.1
 	dh_installman -p$(PACKAGE_CLIENTS) xgps.1
 	dh_link -p$(PACKAGE_CLIENTS) usr/share/man/man1/xgps.1.gz \
 	                             usr/share/man/man1/cgps.1.gz
@@ -151,7 +186,7 @@ install-python: build-python-stamp
 	set -e ;\
 	unset CFLAGS CPPFLAGS CXXFLAGS FFLAGS LDFLAGS ;\
 	for py in $(PYVERS); do  \
-	  $$py setup.py install --root=debian/$(PACKAGE_PY); \
+	  $$py setup.py install --root=debian/$(PACKAGE_PY) $(py_setup_install_args); \
 	done
 
 clean: clean-patched unpatch
@@ -160,16 +195,19 @@ clean-patched:
 	dh_testroot
 	dh_clean
 	#sanity check if debian/control lists the right package name
-	grep -q '^Package: libgps$(LIB_major)' debian/control
+	grep -q '^Package: libgps$(LIB_soname)' debian/control
 	#update debconf po files
 	debconf-updatepo
 	rm -f autotools-dev-stamp
+	rm -f configure-stamp
 	rm -f build-gpsd-stamp build-python-stamp
 	rm -f TROUBLESHOOTING
 	[ ! -r setup.py ] || python setup.py clean
 	rm -rf build
 	[ ! -r Makefile ] || $(MAKE) distclean
 	rm -f *.1 *.3 *.5 *.8 .1
+	rm -rf .deps .libs
+	rm -f $(CURDIR)/debian/gpsd.udev
 ifneq "$(wildcard /usr/share/misc/config.sub)" ""
 	rm -f config.sub
 endif
@@ -185,21 +223,25 @@ binary-indep:
 binary-arch: build install
 	dh_testdir
 	dh_testroot
-	dh_installchangelogs -s 
+	dh_installchangelogs -s NEWS
 	dh_installdocs -s
 	dh_installmenu -s
 	dh_installdebconf -s
-	dh_installinit -s
+	dh_installinit -s -- start 26 2 3 4 5 . stop 73 0 1 6 .
 	dh_installexamples -s
+	chmod 755 debian/$(PACKAGE_PY)/usr/lib/python*/site-packages/gps.py
 	dh_pysupport -s
-	chmod 755 debian/$(PACKAGE_PY)/usr/share/python-support/python-gps/gps.py
+	cp $(CURDIR)/gpsd.rules $(CURDIR)/debian/gpsd.udev
 	dh_installudev -s
 	dh_link -s
 	dh_strip -s
 	dh_compress -s
 	dh_fixperms -s
-	dh_makeshlibs -s
+	dh_makeshlibs -s -- -c4
 	dh_shlibdeps -s
+ifneq (,$(strip $(UDEV_BREAKS)))
+	echo "gpsd:Breaks=udev (<< $(UDEV_BREAKS))" >> $(CURDIR)/debian/gpsd.substvars
+endif
 	dh_gencontrol -s
 	dh_installdeb -s
 	dh_md5sums -s

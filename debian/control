@@ -2,21 +2,23 @@ Source: gpsd
 Section: misc
 Priority: optional
 Maintainer: Bernd Zeimetz <bzed@debian.org>
-Build-Depends: debhelper (>= 5.0.41), po-debconf,
- dpatch, autotools-dev, 
- python-all-dev, python2.5-dev, python-support (>= 0.4),
+Build-Depends: debhelper (>= 5.0.61), po-debconf, dpkg-dev (>= 1.14.8),
+ quilt, autotools-dev, 
+ python-all-dev, python-support (>= 0.4),
  xsltproc, docbook-xsl, docbook-xml,
  libxt-dev, lesstif2-dev, libxaw7-dev, libncurses-dev,
- libdbus-1-dev, libglib2.0-dev, libdbus-glib-1-dev, makedev
-Standards-Version: 3.7.3
+ libdbus-1-dev, libglib2.0-dev, libdbus-glib-1-dev, makedev,
+ lsb-release
+Standards-Version: 3.8.1
 Homepage: http://gpsd.berlios.de/
 XS-Python-Version: all
 
 Package: gpsd
 Architecture: any
-Depends: python, netbase, lsb-base (>= 3.0-6), ${shlibs:Depends}, ${misc:Depends}
-Recommends: gpsd-clients
-Suggests: udev
+Depends: python, netbase, lsb-base (>= 3.2-13), ${shlibs:Depends}, ${misc:Depends}
+Recommends: udev
+Breaks: ${gpsd:Breaks}
+Suggests: gpsd-clients
 Description: GPS (Global Positioning System) daemon
  gpsd is a service daemon that monitors one or more GPSes attached to a host
  computer through serial or USB ports, making all data on the location/course/
@@ -58,7 +60,7 @@ Description: Python interface to gpsd and testing environment
  which utilize the interface: gpsprof for latency-profiling and gpsfake to
  simulate a GPS by playing back a logfile.
 
-Package: libgps17
+Package: libgps18
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -74,7 +76,7 @@ Description: C library for communicating with GPS devices
 Package: libgps-dev
 Architecture: any
 Section: libdevel
-Depends: libgps17 (= ${binary:Version}), ${misc:Depends}
+Depends: libgps18 (= ${binary:Version}), ${misc:Depends}
 Conflicts: gpsd (<< 2.34.dfsg-1)
 Description: C library for communicating with GPS devices (development files)
  libgps is a service library for querying GPS devices. There are two

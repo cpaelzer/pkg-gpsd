@@ -4,9 +4,8 @@
 ## DP: fixing pointers to gps(1), which is unfortunately provided by the 'gps' package
 
 @DPATCH@
-diff -urNad gpsd~/gps.xml gpsd/gps.xml
---- gpsd~/gps.xml	2006-12-15 00:43:39.000000000 +0100
-+++ gpsd/gps.xml	2007-10-18 21:12:08.000000000 +0200
+--- a/gps.xml
++++ b/gps.xml
 @@ -2,14 +2,13 @@
  <!DOCTYPE refentry PUBLIC 
     "-//OASIS//DTD DocBook XML V4.1.2//EN"
@@ -24,10 +23,9 @@ diff -urNad gpsd~/gps.xml gpsd/gps.xml
  <refname>xgps</refname>
  <refname>xgpsspeed</refname>
  <refname>cgps</refname>
-diff -urNad gpsd~/gpsctl.xml gpsd/gpsctl.xml
---- gpsd~/gpsctl.xml	2006-12-15 00:43:39.000000000 +0100
-+++ gpsd/gpsctl.xml	2007-10-18 21:11:20.000000000 +0200
-@@ -140,7 +140,7 @@
+--- a/gpsctl.xml
++++ b/gpsctl.xml
+@@ -238,7 +238,7 @@ these running in NMEA will change its be
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
  <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
@@ -36,10 +34,9 @@ diff -urNad gpsd~/gpsctl.xml gpsd/gpsctl.xml
  <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
  <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
  <citerefentry><refentrytitle>gpsprof</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
-diff -urNad gpsd~/gpsd.xml gpsd/gpsd.xml
---- gpsd~/gpsd.xml	2006-12-15 00:43:39.000000000 +0100
-+++ gpsd/gpsd.xml	2007-10-18 21:11:20.000000000 +0200
-@@ -982,7 +982,7 @@
+--- a/gpsd.xml
++++ b/gpsd.xml
+@@ -1100,7 +1100,7 @@ Version 3</citetitle> RTCM Paper 177-200
  </refsect1>
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
@@ -48,10 +45,9 @@ diff -urNad gpsd~/gpsd.xml gpsd/gpsd.xml
  <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
  <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
  <citerefentry><refentrytitle>gpsprof</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
-diff -urNad gpsd~/gpsfake.xml gpsd/gpsfake.xml
---- gpsd~/gpsfake.xml	2006-12-15 00:43:39.000000000 +0100
-+++ gpsd/gpsfake.xml	2007-10-18 21:11:20.000000000 +0200
-@@ -132,7 +132,7 @@
+--- a/gpsfake.xml
++++ b/gpsfake.xml
+@@ -142,7 +142,7 @@ other application which is able to creat
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
  <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
@@ -60,10 +56,9 @@ diff -urNad gpsd~/gpsfake.xml gpsd/gpsfake.xml
  <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
  <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
  <citerefentry><refentrytitle>gpsctl</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
-diff -urNad gpsd~/gpsflash.xml gpsd/gpsflash.xml
---- gpsd~/gpsflash.xml	2006-12-15 00:43:39.000000000 +0100
-+++ gpsd/gpsflash.xml	2007-10-18 21:11:20.000000000 +0200
-@@ -90,7 +90,7 @@
+--- a/gpsflash.xml
++++ b/gpsflash.xml
+@@ -90,7 +90,7 @@ WARNED.</para></warning>
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
  <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
@@ -72,10 +67,9 @@ diff -urNad gpsd~/gpsflash.xml gpsd/gpsflash.xml
  <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
  <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
  <citerefentry><refentrytitle>srec</refentrytitle><manvolnum>5</manvolnum></citerefentry>.
-diff -urNad gpsd~/gpsprof.xml gpsd/gpsprof.xml
---- gpsd~/gpsprof.xml	2006-12-15 00:43:39.000000000 +0100
-+++ gpsd/gpsprof.xml	2007-10-18 21:11:20.000000000 +0200
-@@ -165,7 +165,7 @@
+--- a/gpsprof.xml
++++ b/gpsprof.xml
+@@ -165,7 +165,7 @@ Python interpreter's decode time. A C cl
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
  <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
@@ -84,19 +78,9 @@ diff -urNad gpsd~/gpsprof.xml gpsd/gpsprof.xml
  <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
  <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
  <citerefentry><refentrytitle>gpsfake</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
-diff -urNad gpsd~/libgps.xml gpsd/libgps.xml
---- gpsd~/libgps.xml	2006-12-15 00:43:39.000000000 +0100
-+++ gpsd/libgps.xml	2007-10-18 21:11:20.000000000 +0200
-@@ -181,7 +181,7 @@
- 
- <para>The following is an excerpted and simplified version of the
- libgps interface code from
--<citerefentry><refentrytitle>gps</refentrytitle><manvolnum>1</manvolnum></citerefentry>.
-+<citerefentry><refentrytitle>cgps</refentrytitle><manvolnum>1</manvolnum></citerefentry>.
- The function <function>handle_input()</function> is a trivial pies of
- code that calls gps_poll(gpsdata).
- </para>
-@@ -207,7 +207,7 @@
+--- a/libgps.xml
++++ b/libgps.xml
+@@ -226,7 +226,7 @@ code that calls gps_poll(gpsdata).
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
  <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
@@ -105,10 +89,9 @@ diff -urNad gpsd~/libgps.xml gpsd/libgps.xml
  <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>.
  <citerefentry><refentrytitle>libgpsmm</refentrytitle><manvolnum>3</manvolnum></citerefentry>.
  </para>
-diff -urNad gpsd~/libgpsd.xml gpsd/libgpsd.xml
---- gpsd~/libgpsd.xml	2006-12-15 00:43:39.000000000 +0100
-+++ gpsd/libgpsd.xml	2007-10-18 21:11:20.000000000 +0200
-@@ -162,7 +162,7 @@
+--- a/libgpsd.xml
++++ b/libgpsd.xml
+@@ -157,7 +157,7 @@ a mutex.</para>
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
  <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
@@ -117,10 +100,9 @@ diff -urNad gpsd~/libgpsd.xml gpsd/libgpsd.xml
  <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>.
  </para>
  </refsect1>
-diff -urNad gpsd~/libgpsmm.xml gpsd/libgpsmm.xml
---- gpsd~/libgpsmm.xml	2006-12-15 00:43:39.000000000 +0100
-+++ gpsd/libgpsmm.xml	2007-10-18 21:11:20.000000000 +0200
-@@ -65,7 +65,7 @@
+--- a/libgpsmm.xml
++++ b/libgpsmm.xml
+@@ -65,7 +65,7 @@ The analogue of the C function <function
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
  <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
@@ -129,10 +111,9 @@ diff -urNad gpsd~/libgpsmm.xml gpsd/libgpsmm.xml
  <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>.
  </para>
  </refsect1>
-diff -urNad gpsd~/rtcm-104.xml gpsd/rtcm-104.xml
---- gpsd~/rtcm-104.xml	2006-12-15 00:43:39.000000000 +0100
-+++ gpsd/rtcm-104.xml	2007-10-18 21:11:20.000000000 +0200
-@@ -436,7 +436,7 @@
+--- a/rtcm-104.xml
++++ b/rtcm-104.xml
+@@ -465,7 +465,7 @@ not described here.</para>
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
  <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
@@ -141,34 +122,9 @@ diff -urNad gpsd~/rtcm-104.xml gpsd/rtcm-104.xml
  <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
  <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
  <citerefentry><refentrytitle>gpsprof</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
-diff -urNad gpsd~/rtcmdecode.xml gpsd/rtcmdecode.xml
---- gpsd~/rtcmdecode.xml	2006-12-15 00:43:39.000000000 +0100
-+++ gpsd/rtcmdecode.xml	2007-10-18 21:11:20.000000000 +0200
-@@ -89,7 +89,7 @@
- <refsect1 id='see_also'><title>SEE ALSO</title>
- <para>
- <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
--<citerefentry><refentrytitle>gps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
-+<citerefentry><refentrytitle>cgps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
- <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
- <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
- <citerefentry><refentrytitle>gpsprof</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
-diff -urNad gpsd~/sirfmon.xml gpsd/sirfmon.xml
---- gpsd~/sirfmon.xml	2006-12-15 00:43:39.000000000 +0100
-+++ gpsd/sirfmon.xml	2007-10-18 21:11:20.000000000 +0200
-@@ -189,7 +189,7 @@
- <refsect1 id='see_also'><title>SEE ALSO</title>
- <para>
- <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
--<citerefentry><refentrytitle>gps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
-+<citerefentry><refentrytitle>cgps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
- <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
- <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
- <citerefentry><refentrytitle>gpsprof</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
-diff -urNad gpsd~/srec.xml gpsd/srec.xml
---- gpsd~/srec.xml	2006-12-15 00:43:39.000000000 +0100
-+++ gpsd/srec.xml	2007-10-18 21:11:20.000000000 +0200
-@@ -283,7 +283,7 @@
+--- a/srec.xml
++++ b/srec.xml
+@@ -283,7 +283,7 @@ indicating the starting execution addres
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
  <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
@@ -177,3 +133,36 @@ diff -urNad gpsd~/srec.xml gpsd/srec.xml
  <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
  <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
  <citerefentry><refentrytitle>gpsfake</refentrytitle><manvolnum>1</manvolnum></citerefentry>.
+--- a/gpsdecode.xml
++++ b/gpsdecode.xml
+@@ -154,7 +154,7 @@ code.</para>
+ <refsect1 id='see_also'><title>SEE ALSO</title>
+ <para>
+ <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
+-<citerefentry><refentrytitle>gps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
++<citerefentry><refentrytitle>cgps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>gpsprof</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+--- a/gpsmon.xml
++++ b/gpsmon.xml
+@@ -329,7 +329,7 @@ connected to a GPS type it knows nothing
+ <refsect1 id='see_also'><title>SEE ALSO</title>
+ <para>
+ <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
+-<citerefentry><refentrytitle>gps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
++<citerefentry><refentrytitle>cgps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>gpsprof</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+--- a/gpspipe.xml
++++ b/gpspipe.xml
+@@ -119,7 +119,7 @@ standard output, then exit.</para>
+ <refsect1 id='see_also'><title>SEE ALSO</title>
+ <para>
+ <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
+-<citerefentry><refentrytitle>gps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
++<citerefentry><refentrytitle>cgps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+ <citerefentry><refentrytitle>gpsprof</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
