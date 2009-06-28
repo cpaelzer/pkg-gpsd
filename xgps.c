@@ -1,4 +1,4 @@
-/* $Id: xgps.c 4548 2007-12-13 01:40:06Z esr $ */
+/* $Id: xgps.c 5326 2009-03-02 23:24:03Z esr $ */
 /* $gpsd: xgps.c 3871 2006-11-13 00:40:00Z esr $ */
 
 /*
@@ -24,7 +24,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#ifndef S_SPLINT_S
 #include <unistd.h>
+#endif /* S_SPLINT_S */
 #include <math.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -47,10 +49,237 @@
 #include <Xm/Text.h>
 #include <X11/Shell.h>
 
-#include <gpsd_config.h>
-#include <gps.h>
+#include "gpsd_config.h"
+#include "gps.h"
+#include "gpsdclient.h"
 
-#include "display.h"
+/* This code used to live in display.c */
+
+#define RM		20
+#define IDIAM		5	/* satellite icon diameter */
+
+#undef min
+#define min(a, b) ((a) < (b) ? (a) : (b))
+
+static Widget draww, appshell;
+static GC drawGC;
+static Dimension width, height, diameter;
+static Pixmap pixmap;
+
+/*@ -usedef -compdef -mustfreefresh @*/
+static void
+set_color(String color)
+{
+	Display *dpy = XtDisplay(draww);
+	Colormap cmap = DefaultColormapOfScreen(XtScreen(draww));
+	XColor col, unused;
+
+	if (XAllocNamedColor(dpy, cmap, color, &col, &unused)==0) {
+		char buf[32];
+
+		(void)snprintf(buf, sizeof(buf), "Can't alloc %s", color);
+		XtWarning(buf);
+		return;
+	}
+	(void)XSetForeground(dpy, drawGC, col.pixel);
+}
+/*@ +usedef @*/
+
+static void 
+register_shell(Widget w)
+{
+	appshell = w;
+}
+
+static void
+register_canvas(Widget w, GC gc)
+{
+	Display *dpy = XtDisplay(w);
+	draww = w;
+	drawGC = gc;
+
+	XtVaGetValues(w, XmNwidth, &width, XmNheight, &height, NULL);
+
+	if (pixmap)
+	    (void)XFreePixmap(dpy, pixmap);
+	pixmap = XCreatePixmap(dpy, RootWindowOfScreen(XtScreen(w)),
+	    width, height, (unsigned int)DefaultDepthOfScreen(XtScreen(w)));
+	set_color("White");
+	(void)XFillRectangle(XtDisplay(draww), pixmap, drawGC, 0,0, width, height);
+	diameter = min(width, height) - RM;
+}
+
+static void
+set_title(char *title)
+{
+	/*@ -usedef @*/
+	XTextProperty windowProp;
+	if (XStringListToTextProperty(&title, 1, &windowProp )!=0)
+	{
+		/* Not working. */
+	    	/* Do we need to traverse up to the root window somehow? */
+		XSetWMName(XtDisplay(appshell), XtWindow(appshell), &windowProp);
+		(void)XFree(windowProp.value);
+	}
+	/*@ +usedef @*/
+}
+
+static void
+pol2cart(double azimuth, double elevation,  
+	 /*@out@*/int *xout, /*@out@*/int *yout)
+{
+	azimuth *= DEG_2_RAD;
+#ifdef PCORRECT
+	elevation = sin((90.0 - elevation) * DEG_2_RAD);
+#else
+	elevation = ((90.0 - elevation) / 90.0);
+#endif
+	*xout = (int)((width / 2) + sin(azimuth) * elevation * (diameter / 2));
+	*yout = (int)((height / 2) - cos(azimuth) * elevation * (diameter / 2));
+}
+
+static void
+draw_arc(int x, int y, unsigned int diam)
+{
+    (void)XDrawArc(XtDisplay(draww), pixmap, drawGC, 
+		   x - diam / 2, y - diam / 2,        /* x,y */
+		   diam, diam,        /* width, height */
+		   0, 360 * 64);      /* angle1, angle2 */
+}
+/*@ +compdef @*/
+
+static void
+draw_graphics(struct gps_data_t *gpsdata)
+{
+	Display *dpy = XtDisplay(draww);
+	int i, x, y;
+	char buf[20];
+
+	if (gpsdata->satellites != 0) {
+		i = (int)min(width, height);
+
+		set_color("White");
+		(void)XFillRectangle(dpy, pixmap, drawGC, 0, 0, width, height);
+
+		/* draw something in the center */
+		set_color("Grey");
+		draw_arc((int)(width / 2), (int)(height / 2), 6);
+
+		/* draw the 45 degree circle */
+#ifdef PCORRECT
+#define FF	0.7 /* sin(45) ~ 0.7 */
+#else
+#define FF	0.5
+#endif
+		draw_arc((int)(width / 2), (int)(height / 2), (unsigned)((i - RM) * FF));
+#undef FF
+
+		set_color("Black");
+		draw_arc((int)(width / 2), (int)(height / 2), (unsigned)(i - RM));
+
+		pol2cart(0, 0, &x, &y);
+		set_color("Black");
+		(void)XDrawString(dpy, pixmap, drawGC, x, y, "N", 1);
+		pol2cart(90, 0, &x, &y);
+		set_color("Black");
+		(void)XDrawString(dpy, pixmap, drawGC, x + 2, y, "E", 1);
+		pol2cart(180, 0, &x, &y);
+		set_color("Black");
+		(void)XDrawString(dpy, pixmap, drawGC, x, y + 10, "S", 1);
+		pol2cart(270, 0, &x, &y);
+		set_color("Black");
+		(void)XDrawString(dpy, pixmap, drawGC, x - 5, y, "W", 1);
+
+		/* Now draw the satellites... */
+		for (i = 0; i < gpsdata->satellites; i++) {
+			pol2cart((double)gpsdata->azimuth[i], 
+			    (double)gpsdata->elevation[i], &x, &y);
+			if (gpsdata->ss[i] < 10) 
+				set_color("Black");
+			else if (gpsdata->ss[i] < 30)
+				set_color("Red");
+			else if (gpsdata->ss[i] < 35)
+				set_color("Yellow");
+			else if (gpsdata->ss[i] < 40)
+				set_color("Green3");
+			else
+				set_color("Green1");
+			if (gpsdata->PRN[i] > GPS_PRNMAX) {
+				/* SBAS satellites */
+				XPoint vertices[5];
+				/*@ -type @*/
+
+				vertices[0].x = x;
+				vertices[0].y = y-IDIAM;
+				vertices[1].x = x+IDIAM;
+				vertices[1].y = y;
+				vertices[2].x = x;
+				vertices[2].y = y+IDIAM;
+				vertices[3].x = x-IDIAM;
+				vertices[3].y = y;
+				vertices[4].x = x;
+				vertices[4].y = y-IDIAM;
+				/*@ +type -compdef @*/
+
+				if (gpsdata->used[i])
+				    (void)XFillPolygon(dpy, pixmap, drawGC,
+					    vertices, 5, Convex,
+					    CoordModeOrigin);
+				else
+				    (void)XDrawLines(dpy, pixmap, drawGC,
+					    vertices, 5, CoordModeOrigin);
+			} else {
+				/* ordinary GPS satellites */
+				if (gpsdata->used[i])
+				    (void)XFillArc(dpy, pixmap, drawGC,
+					    x - IDIAM,
+					    y - IDIAM, 2 * IDIAM + 1,
+					    2 * IDIAM + 1, 0, 360 * 64);
+				else
+				    (void)XDrawArc(dpy, pixmap, drawGC, 
+					    x - IDIAM,
+					    y - IDIAM, 2 * IDIAM + 1,
+					    2 * IDIAM + 1, 0, 360 * 64);
+			}
+			(void)snprintf(buf, sizeof(buf), 
+				       "%-3d", gpsdata->PRN[i]);
+			set_color("Black");
+			(void)XDrawString(dpy, pixmap, drawGC, x, y+17, buf, 3);
+
+		}
+		(void)XCopyArea(dpy, pixmap, XtWindow(draww), drawGC,
+		    0, 0, width, height, 0, 0);
+	}
+}
+
+static void
+redraw(Widget widget UNUSED, XtPointer client_data UNUSED, XtPointer call_data)
+{
+	XmDrawingAreaCallbackStruct *cbs =
+	    (XmDrawingAreaCallbackStruct *)call_data;
+	XEvent *event = cbs->event;
+	Display *dpy = event->xany.display;
+
+	(void)XCopyArea(dpy, pixmap, XtWindow(draww), drawGC,
+			cbs->event->xexpose.x, cbs->event->xexpose.y,
+			(unsigned int)cbs->event->xexpose.width, 
+			(unsigned int)cbs->event->xexpose.height,
+			cbs->event->xexpose.x, cbs->event->xexpose.y);
+}
+
+/*@ -usedef @*/
+static void
+resize(Widget widget, XtPointer client_data UNUSED, XtPointer call_data UNUSED)
+{
+	GC gc;
+	XtVaGetValues(widget,
+	    XmNuserData, 	&gc,
+	    NULL);
+	register_canvas(widget, gc);
+}
+/*@ +usedef +mustfreefresh @*/
+
+/* From here down is the original xgps code */
 
 /* Widget and window sizes. */
 #define MAX_FONTSIZE	18		/* maximum fontsize we handle*/
@@ -74,9 +303,8 @@ static XtAppContext app;
 static XtIntervalId timeout, gps_timeout;
 static XtInputId gps_input;
 static enum deg_str_type deg_type = deg_dd;
+static struct fixsource_t source;
 
-char *server, *device;
-char *port = DEFAULT_GPSD_PORT;
 bool jitteropt = false;
 
 bool gps_lost;
@@ -617,13 +845,13 @@ build_gui(Widget toplevel)
 
 /* runs when there is no data for a while */
 static void
-handle_time_out(XtPointer client_data, XtIntervalId *ignored)
+handle_time_out(XtPointer client_data UNUSED, XtIntervalId *ignored UNUSED)
 {
 	XmTextFieldSetString(text_10, "UNKNOWN");
 }
 
 static void
-handle_input(XtPointer client_data, int *source, XtInputId *id)
+handle_input(XtPointer client_data UNUSED, int *source UNUSED, XtInputId *id UNUSED)
 {
 	if (gps_poll(gpsdata) < 0) {
 		XtRemoveInput(gps_input);
@@ -802,13 +1030,13 @@ get_resource(Widget w, char *name, char *default_value)
 /* runs when gps needs attention */
 /*@ -globstate -branchstate @*/
 void
-handle_gps(XtPointer client_data, XtIntervalId *ignored)
+handle_gps(XtPointer client_data UNUSED, XtIntervalId *ignored UNUSED)
 {
 	char *err_str = NULL;
 	char error[128];
 	static bool dialog_posted = false;
 
-	/*@i@*/gpsdata = gps_open(server, port);
+	/*@i@*/gpsdata = gps_open(source.server, source.port);
 	if (!gpsdata) {
 		switch (errno ){
 		case NL_NOSERVICE:
@@ -851,8 +1079,8 @@ handle_gps(XtPointer client_data, XtIntervalId *ignored)
 		if (jitteropt)
 		    (void)gps_query(gpsdata, "J=1");
 
-		if (device)
-		    (void)gps_query(gpsdata, "F=%s", device);
+		if (source.device != NULL)
+		    (void)gps_query(gpsdata, "F=%s", source.device);
 
 		(void)gps_query(gpsdata, "w+x");
 
@@ -899,13 +1127,13 @@ err_dialog(Widget widget, char *s)
 }
 
 void
-dlg_callback(Widget dialog, XtPointer client_data, XtPointer call_data)
+dlg_callback(Widget dialog, XtPointer client_data UNUSED, XtPointer call_data UNUSED)
 {
     /*@i1@*/XtPopdown(XtParent(dialog));
 }
 
 void
-file_cb(Widget widget, XtPointer client_data, XtPointer call_data)
+file_cb(Widget widget UNUSED, XtPointer client_data, XtPointer call_data UNUSED)
 {
 	uintptr_t item_no = (uintptr_t)client_data;
 
@@ -914,7 +1142,7 @@ file_cb(Widget widget, XtPointer client_data, XtPointer call_data)
 }
 
 void
-help_cb(Widget widget, XtPointer client_data, XtPointer call_data)
+help_cb(Widget widget UNUSED, XtPointer client_data, XtPointer call_data UNUSED)
 {
 	static Widget help, about;
 	Widget *dialog;
@@ -958,7 +1186,7 @@ help_cb(Widget widget, XtPointer client_data, XtPointer call_data)
 		XtUnmanageChild(XmMessageBoxGetChild(about,
 		    XmDIALOG_HELP_BUTTON));
 	}
-	/*@ +usedef +immediatetrans +onlytrans +mustfreefresh +type -charint +ptrcompare @*/
+	/*@ +usedef +immediatetrans +onlytrans +type -charint +ptrcompare @*/
 
 	if (item_no == 0)
 		dialog = &help;
@@ -966,7 +1194,8 @@ help_cb(Widget widget, XtPointer client_data, XtPointer call_data)
 		dialog = &about;
 
 	XtManageChild(*dialog);
-	/*@i1@*/XtPopup(XtParent(*dialog), XtGrabNone);
+	XtPopup(XtParent(*dialog), XtGrabNone);
+	/*@ +mustfreefresh @*/
 }
 
 /*@ -mustfreefresh @*/
@@ -974,7 +1203,6 @@ int
 main(int argc, char *argv[])
 {
 	int option;
-	char *arg = NULL, *colon1, *colon2;
 	char *su, *au;
 
 	/*@ -globstate -onlytrans @*/
@@ -1005,59 +1233,43 @@ speedunits_ok:
 
 altunits_ok:
 
-	while ((option = getopt(argc, argv, "hjl:")) != -1) {
+	while ((option = getopt(argc, argv, "Vhjl:")) != -1) {
 		switch (option) {
+		case 'V':
+		    (void)fprintf(stderr, "SVN ID: $Id: xgps.c 5326 2009-03-02 23:24:03Z esr $ \n");
+		    exit(0);
 		case 'j':
-			jitteropt = true;
-			continue;
+		    jitteropt = true;
+		    continue;
 		case 'l':
-			switch (optarg[0]) {
-			case 'd':
-				deg_type = deg_dd;
-				continue;
-			case 'm':
-				deg_type = deg_ddmm;
-				continue;
-			case 's':
-				deg_type = deg_ddmmss;
-				continue;
-			default:
-				fprintf(stderr, "Unknown -l argument: %s\n",
-				    optarg);
-				/*@ -casebreak @*/
-			}
+		    switch (optarg[0]) {
+		    case 'd':
+			deg_type = deg_dd;
+			continue;
+		    case 'm':
+			deg_type = deg_ddmm;
+			continue;
+		    case 's':
+			deg_type = deg_ddmmss;
+			continue;
+		    default:
+			fprintf(stderr, "Unknown -l argument: %s\n",
+				optarg);
+			/*@ -casebreak @*/
+		    }
 		case 'h':
 		default:
-		    (void)fputs("usage:  xgps [-hj] [-speedunits "
-			    "{mph,kmh,knots}] [-altunits {ft,meters}] "
-			    "[-l {d|m|s}] [server[:port:[device]]]\n", stderr);
-			exit(1);
+		    (void)fputs("usage:  xgps [-Vhj] [-speedunits "
+				"{mph,kmh,knots}] [-altunits {ft,meters}] "
+				"[-l {d|m|s}] [server[:port:[device]]]\n", stderr);
+		    exit(1);
 		}
 	}
 
-	/*@ -branchstate @*/
 	if (optind < argc) {
-		arg = strdup(argv[optind]);
-		colon1 = strchr(arg, ':');
-		server = arg;
-		if (colon1 != NULL) {
-			if (colon1 == arg)
-				server = NULL;
-			else
-				*colon1 = '\0';
-			port = colon1 + 1;
-			colon2 = strchr(port, ':');
-			if (colon2 != NULL) {
-				if (colon2 == port)
-					port = NULL;
-				else
-					*colon2 = '\0';
-				device = colon2 + 1;
-			}
-		}
-		colon1 = colon2 = NULL;
-	}
-	/*@ +branchstate @*/
+	    gpsd_source_spec(argv[optind], &source);
+	} else
+	    gpsd_source_spec(NULL, &source);
 
 	register_shell(toplevel);
 	build_gui(toplevel);

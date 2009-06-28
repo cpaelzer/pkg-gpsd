@@ -1,4 +1,4 @@
-/* $Id: ntpshm.c 4664 2008-01-21 00:37:35Z garyemiller $ */
+/* $Id: ntpshm.c 4909 2009-01-06 15:45:47Z ckuethe $ */
 /* 
  * ntpshm.c - put time information in SHM segment for xntpd
  * struct shmTime and getShmTime from file in the xntp distribution:
@@ -51,7 +51,7 @@ struct shmTime {
 
 static /*@null@*/ struct shmTime *getShmTime(int unit)
 {
-    int shmid=shmget ((key_t)(NTPD_BASE+unit), 
+    int shmid=shmget ((key_t)(NTPD_BASE+unit),
 		      sizeof (struct shmTime), IPC_CREAT|0644);
     if (shmid == -1) {
 	gpsd_report(LOG_ERROR, "shmget failed\n");
@@ -63,7 +63,7 @@ static /*@null@*/ struct shmTime *getShmTime(int unit)
 	    gpsd_report(LOG_ERROR, "shmat failed\n");
 	    return NULL;
 	}
-        gpsd_report(LOG_PROG, "shmat(%d,0,0) succeeded\n");
+	gpsd_report(LOG_PROG, "shmat(%d,0,0) succeeded\n", shmid);
 	return p;
 	/*@ +mustfreefresh */
     }

@@ -1,8 +1,8 @@
-/* $Id: TachometerP.h 3486 2006-09-21 00:58:22Z ckuethe $ */
-/* TachometerP.h -- Tachometer widget private data */
-#ifndef _TachometerP_h
-#define _TachometerP_h
+/* $Id: TachometerP.h 4794 2008-08-03 16:42:57Z ckuethe $ */
+#ifndef _GPSD_TACHOMETERP_H_
+#define _GPSD_TACHOMETERP_H_
 
+/* TachometerP.h -- Tachometer widget private data */
 #include <Tachometer.h>
 #include <X11/Xaw/SimpleP.h>
 
@@ -38,4 +38,4 @@ typedef struct _TachometerRec {
     TachometerPart	tachometer;
 } TachometerRec;
 
-#endif /* _TachometerP_h */
+#endif /* _GPSD_TACHOMETERP_H_ */

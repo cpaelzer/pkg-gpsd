@@ -1,0 +1,36 @@
+***************
+*** 119,125 ****
+  %{_mandir}/man1/gpsctl.1*
+  %{_sysconfdir}/hotplug/usb/gpsd.hotplug
+  %{_sysconfdir}/hotplug/usb/gpsd.usermap
+- %attr(755, root, root) /usr/lib/python*/site-packages/gps.py*
+  #%{_datadir}/gpsd/dgpsip-servers
+  
+  %files -n gpsd-devel
+--- 115,121 ----
+  %{_mandir}/man1/gpsctl.1*
+  %{_sysconfdir}/hotplug/usb/gpsd.hotplug
+  %{_sysconfdir}/hotplug/usb/gpsd.usermap
++ %attr(755, root, root) %{_libdir}/python*/site-packages/gps.py*
+  #%{_datadir}/gpsd/dgpsip-servers
+  
+  %files -n gpsd-devel
+***************
+*** 129,136 ****
+  %attr(755, root, root) %{_bindir}/gpsfake
+  %attr(755, root, root) %{_bindir}/rtcmdecode
+  %attr(755, root, root) %{_bindir}/gpsflash
+- /usr/lib/python*/site-packages/gpsfake.py*
+- /usr/lib/python*/site-packages/gpspacket.so*
+  %{_includedir}/gps.h
+  %{_includedir}/libgpsmm.h
+  %{_includedir}/gpsd.h
+--- 125,132 ----
+  %attr(755, root, root) %{_bindir}/gpsfake
+  %attr(755, root, root) %{_bindir}/rtcmdecode
+  %attr(755, root, root) %{_bindir}/gpsflash
++ %{_libdir}/python*/site-packages/gpsfake.py*
++ %{_libdir}/python*/site-packages/gpspacket.so*
+  %{_includedir}/gps.h
+  %{_includedir}/libgpsmm.h
+  %{_includedir}/gpsd.h

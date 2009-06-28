@@ -1,4 +1,4 @@
-/* $Id: bsd-base64.h 3666 2006-10-26 23:11:51Z ckuethe $ */
+/* $Id: bsd-base64.h 4794 2008-08-03 16:42:57Z ckuethe $ */
 #ifndef _BSD_BASE64_H
 #define _BSD_BASE64_H
 
@@ -12,4 +12,4 @@ int b64_pton(char const *src, u_char *target, size_t targsize);
 # define __b64_pton b64_pton
 #endif /* HAVE___B64_NTOP */
 
-#endif /* _BSD_BINRESVPORT_H */
+#endif /* _BSD_BASE64_H */

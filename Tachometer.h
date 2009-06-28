@@ -1,8 +1,8 @@
-/* $Id: Tachometer.h 3486 2006-09-21 00:58:22Z ckuethe $ */
-/* Tachometer.h -- tachometer widget interface */
-#ifndef _Tachometer_h
-#define _Tachometer_h
+/* $Id: Tachometer.h 4794 2008-08-03 16:42:57Z ckuethe $ */
+#ifndef _GPSD_TACHOMETER_H_
+#define _GPSD_TACHOMETER_H_
 
+/* Tachometer.h -- tachometer widget interface */
 #include <X11/Xaw/Simple.h>
 
 /* Resources:
@@ -46,4 +46,4 @@ extern WidgetClass tachometerWidgetClass;
 typedef struct _TachometerClassRec *TachometerWidgetClass;
 typedef struct _TachometerRec      *TachometerWidget;
 
-#endif /* _Tachometer_h */
+#endif /* _GPSD_TACHOMETER_H_ */

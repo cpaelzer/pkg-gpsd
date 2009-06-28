@@ -1,4 +1,4 @@
-/* $Id: bsd-base64.c 3666 2006-10-26 23:11:51Z ckuethe $ */
+/* $Id: bsd-base64.c 5052 2009-01-21 10:42:24Z esr $ */
 /*	$OpenBSD: base64.c,v 1.3 1997/11/08 20:46:55 deraadt Exp $	*/
 
 /*
@@ -46,11 +46,6 @@
 #if !defined(HAVE_B64_NTOP) && !defined(HAVE___B64_NTOP)
 
 #include <sys/types.h>
-#include <sys/param.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>

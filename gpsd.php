@@ -1,5 +1,6 @@
 <?php
 
+# $Id: gpsd.php 4690 2008-03-01 07:30:51Z ckuethe $
 #$CSK: gpsd.php,v 1.39 2006/11/21 22:31:10 ckuethe Exp $
 
 # Copyright (c) 2006 Chris Kuethe <chris.kuethe@gmail.com>
@@ -171,13 +172,15 @@ function splot($im, $sz, $C, $e){
 
 	imageString($im, 3, $x+4, $y+4, $sv, $C['black']);
 	if ($u)
-		imageFilledArc($im, $x, $y, $r, $r, 0, 360, $color, 0);
+		if ($sv > 32)
+			imageFilledDiamond($im, $x, $y, $r, $color);
+		else
+			imageFilledArc($im, $x, $y, $r, $r, 0, 360, $color, 0);
 	else
-		if ($sv > 32) {
+		if ($sv > 32)
 			imageDiamond($im, $x, $y, $r, $color);
-		} else {
+		else
 			imageArc($im, $x, $y, $r, $r, 0, 360, $color);
-		}
 }
 
 function imageDiamond($im, $x, $y, $r, $color){
@@ -192,6 +195,16 @@ function imageDiamond($im, $x, $y, $r, $color){
 	$vx = array ( $x+$t, $y, $x, $y+$t, $x-$t, $y, $x, $y-$t );
 	imagepolygon($im, $vx, 4, $color);
 }
+
+function imageFilledDiamond($im, $x, $y, $r, $color){
+	$t = $r/2;
+	while($t){
+		$vx = array ( $x+$t, $y, $x, $y+$t, $x-$t, $y, $x, $y-$t );
+		imagepolygon($im, $vx, 4, $color);
+		$t -= 0.5;
+	}
+}       
+
 
 function elevation($im, $sz, $C, $a){
 	$b = 90 - $a;
@@ -382,7 +395,7 @@ function write_html($resp){
 		$gmap_body = 'onload="Load()" onunload="GUnload()"';
 		$gmap_code = gen_gmap_code();
 	}
-	$svn ='$Rev: 4680 $';
+	$svn ='$Rev: 4690 $';
 	$part1 = <<<EOF
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"

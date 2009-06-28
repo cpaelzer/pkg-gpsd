@@ -1,5 +1,11 @@
 /* gpsd_config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* AIVDM protocol support) */
+#undef AIVDM_ENABLE
+
+/* Allow gpsd to controlsend device */
+#undef ALLOW_CONTROLSEND
+
 /* Allow gpsd to reconfigure device */
 #undef ALLOW_RECONFIGURE
 
@@ -94,6 +100,9 @@
 /* Define to 1 if you have the <netinet/tcp.h> header file. */
 #undef HAVE_NETINET_TCP_H
 
+/* Define to 1 if you have the <Python.h> header file. */
+#undef HAVE_PYTHON_H
+
 /* Define to 1 if you have the `round' function. */
 #undef HAVE_ROUND
 
@@ -171,6 +180,9 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
+/* Define to 1 if you have the `vsnprintf' function. */
+#undef HAVE_VSNPRINTF
+
 /* Define to 1 if you have the <X11/xpm.h> header file. */
 #undef HAVE_X11_XPM_H
 
@@ -192,10 +204,17 @@
 /* Maximum gps devices */
 #undef LIMITED_MAX_DEVICES
 
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
+
+/* MKT-3301 support */
+#undef MKT3301_ENABLE
+
 /* Navcom support */
 #undef NAVCOM_ENABLE
 
-/* True North requires NMEA support */
+/* MKT-3301 requires NMEA support */
 #undef NMEA_ENABLE
 
 /* NTP time hinting support */
@@ -203,6 +222,9 @@
 
 /* NTRIP support */
 #undef NTRIP_ENABLE
+
+/* OceanServer support */
+#undef OCEANSERVER_ENABLE
 
 /* Name of package */
 #undef PACKAGE
@@ -231,8 +253,11 @@
 /* profiling support */
 #undef PROFILING
 
-/* rtcm104 binary support */
-#undef RTCM104_ENABLE
+/* rtcm104v2 binary support */
+#undef RTCM104V2_ENABLE
+
+/* rtcm104v3 binary support */
+#undef RTCM104V3_ENABLE
 
 /* SiRF chipset support */
 #undef SIRF_ENABLE
@@ -252,6 +277,9 @@
 /* The size of `long', as computed by sizeof. */
 #undef SIZEOF_LONG
 
+/* The size of `long long', as computed by sizeof. */
+#undef SIZEOF_LONG_LONG
+
 /* The size of `short', as computed by sizeof. */
 #undef SIZEOF_SHORT
 
@@ -268,6 +296,9 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
+
+/* SuperStarII chipset support */
+#undef SUPERSTAR2_ENABLE
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME

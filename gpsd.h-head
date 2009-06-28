@@ -1,9 +1,9 @@
+/* gpsd.h -- fundamental types and structures for the gpsd library */
 /* This file is generated.  Do not hand-hack it! */
 
-#ifndef _gpsd_h_
-#define _gpsd_h_
-
-/* gpsd.h -- fundamental types and structures for the gpsd library */
+/* $Id: gpsd.h-head 4794 2008-08-03 16:42:57Z ckuethe $ */
+#ifndef _GPSD_H_
+#define _GPSD_H_
 
 #include <stdbool.h>
 #include <stdio.h>

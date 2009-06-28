@@ -1,4 +1,4 @@
-/* $Id: gpsutils.c 4652 2008-01-01 16:47:10Z ckuethe $ */
+/* $Id: gpsutils.c 4900 2009-01-05 21:47:53Z esr $ */
 /* gpsutils.c -- code shared between low-level and high-level interfaces */
 #include <sys/types.h>
 #include <stdio.h>
@@ -178,7 +178,7 @@ double iso8601_to_unix(/*@in@*/char *isotime)
     struct tm tm;
 
     /*@i1@*/dp = strptime(isotime, "%Y-%m-%dT%H:%M:%S", &tm);
-    if (*dp == '.')
+    if (dp != NULL && *dp == '.')
 	usec = strtod(dp, NULL);
     else
 	usec = 0;

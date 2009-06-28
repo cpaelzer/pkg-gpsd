@@ -1,0 +1,120 @@
+.\"     Title: gpsdecode
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 03/18/2009
+.\"    Manual: 13 Jul 2005
+.\"    Source: 13 Jul 2005
+.\"
+.TH "GPSDECODE" "1" "03/18/2009" "13 Jul 2005" "13 Jul 2005"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+gpsdecode \- decode RTCM or AIVDM streams into a readable format
+.SH "SYNOPSIS"
+.HP 10
+\fBgpsdecode\fR [\-d] [\-e] [\-l] [\-u] [\-D\ \fIdebuglevel\fR] [\-V]
+.SH "DESCRIPTION"
+.PP
+This tool is a decoder/encoder for various binary packet formats associated with GPS and differential\-correction services\&. It produces a text dump on standard output from binary on standard input, or binary packets on standard output from text on standard input, and aims to be 100% information\-preserving in both directions\&. As well as data, the decoder also prints decoder status messages to standard error as necessary\&.
+.PP
+Two of the supported formats are RTCM 2 and 3, a pair of obscure and complicated serial protocol used for broadcasting pseudorange corrections from differential\-GPS reference stations\&. You can use this mode of the tool with
+\fBnc\fR(1)
+to examine RTCM feeds from DGPSIP servers or Ntrip broadcasters\&. The decoder dump format for RTCM2 is described in
+\fBrtcm\fR(5); these lines go to standard output\&.
+.PP
+Another supported format is AIVDM\&. This is the sentence format used by the marine Automatic Identification System\&. This can be decoded, but not yet encoded\&.
+.PP
+The dump lines are values of AIS payload fields, comma\-separated, in the order that they occur in the payload, spare and assigned\-mode bits omitted\&. Spans of fields expressing a date are emitted as an ISO8601 timestamp (look for colons and the trailing Z indicating Zulu/UTC time), and the 19\-bit group of TDMA status fields found at the end of message types 1\-4 are are dumped as a single unsigned integer in hex\&. (Unused regional\-authority fields are also dumped in hex\&.)
+.PP
+By default, certain scaling and conversion operations are performed for the output\&. Latitudes and longitudes are scaled to decimal degrees rather than the native AIS unit of 1/10000th of a minute of arc\&. Ship (but not air) speeds are scaled to knots rather than tenth\-of\-knot unit\&. Navigation status and positioning\-system type are dumped as text strings rather than IAS numeric codes\&. Rate of turn may appear as "nan" if is unavailable, of as one of the strings "fastright" or "fastleft" if it is out of the IAS encoding range; otherwise it is quadratically mapped back to the turn sensor number in degrees per minute\&. Vessel draughts are converted to decimal meters rather than native AIS decimeters\&.
+.SH "OPTIONS"
+.PP
+The
+\fB\-d\fR
+option tells the program to decode packets presented on standard input to a text dump on standard output\&. This is the default behavior\&.
+.PP
+RTCM2 will be dumped in the format of
+\fBrtcm-104\fR(5)
+on standard output\&.
+.PP
+The
+\fB\-e\fR
+option option tells the program to encode a text dump in the format of
+\fBrtcm-104\fR(5)
+to standard output\&. Encoding is supported only RTCM2, not for RTCM3\&.
+.PP
+The
+\fB\-u\fR
+suppresses scaling to float quantities and text expansion of numeric codes\&. A dump with this option is lossless\&.
+.PP
+The
+\fB\-l\fR
+inserts a mnemonic label, followed by an equal sign, before each field in each dump line\&.
+.PP
+The
+\fB\-V\fR
+option directs the program to emit its version number, then exit\&.
+.PP
+The
+\fB\-D\fR
+option sets a debug verbosity level\&. It is mainly of interest to developers\&.
+.SH "APPLICABLE STANDARDS"
+.PP
+The applicable standard for V2 is
+RTCM Recommended Standards for Differential NAVSTAR GPS Service
+RTCM Paper 194\-93/SC 104\-STD\&.
+.PP
+Note that
+gpsdecode
+presently recognizes only the 2\&.1 level of RTCM; the protocol was revised up to a version 2\&.3 including additional messages relating to GLONASS and real\-time kinematics before being deprecated in favor of V3\&. It is now obsolete\&.
+.PP
+The applicable standard for V3 is
+RTCM Standard 10403\&.1 for Differential GNSS Services \- Version 3
+RTCM Paper 177\-2006\-SC104\-STD\&.
+.PP
+Ordering instructions for the RTCM standards are accessible from the website of the
+\fIRadio Technical Commission for Maritime Services\fR\&[1]
+under "Publications"\&.
+.PP
+The applicable standard for AIVDM is
+ITU\-R M\&.1371: ITU Recommendation on the Technical Characteristics for a Universal Shipborne Automatic Identification System (AIS) using Time Division Multiple Access in the Maritime Mobile Band,\&. A more accessible description can be found onn the references page of the GPSD project website\&.
+.SH "BUGS AND LIMITATIONS"
+.PP
+AIDVM decoding presently only parses fields for the common sentence types 1\-5, the rarely encountered type 9, and the uncommon type 18\&. AIVDM encoding is not yet supported\&.
+.PP
+RTCM3 decoding is buggy and incomplete\&.
+.PP
+RTCM2 represents floating\-point quantities as an integer multiple of a fixed scale factor\&. Editing an RTCM2 dump can produce numbers that are not an integer multiple of the scale factor for their field\&. If you do this, the value actually packed into binary RTCM2 will be rounded down to the nearest scale unit, and dumping will show slightly different numbers than those you entered\&. This bug could be fixed by supporting the
+\fB\-u\fR
+option to suppress scaling, but the protocol is noew obsolete\&.
+.PP
+The RTCM2 decoder logic is sufficiently convoluted to confuse some compiler optimizers, notably in GCC 3\&.x at \-O2, into generating bad code\&.
+.SH "SEE ALSO"
+.PP
+
+\fBgpsd\fR(8),
+\fBgps\fR(1),
+\fBlibgps\fR(3),
+\fBlibgpsd\fR(3),
+\fBgpsprof\fR(1),
+\fBgpsfake\fR(1),
+\fBrtcm-104\fR(5)\&.
+.SH "AUTHOR"
+.PP
+Eric S\&. Raymond
+<esr@thyrsus\&.com>\&. This is a somewhat hacked version of an RTCM decoder originally written by Wolfgang Rupprecht\&. There is a project page for
+gpsd
+\fIhere\fR\&[2]\&.
+.SH "NOTES"
+.IP " 1." 4
+Radio Technical Commission for Maritime Services
+.RS 4
+\%http://www.rtcm.org/
+.RE
+.IP " 2." 4
+here
+.RS 4
+\%http://gpsd.berlios.de/
+.RE

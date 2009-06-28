@@ -1,6 +1,8 @@
-/* $Id: timebase.h 4603 2007-12-21 09:59:39Z esr $ */
-/* timebase.h -- constants that will require patching over time */
+/* $Id: timebase.h 5502 2009-03-18 21:09:31Z esr $ */
+#ifndef _GPSD_TIMEBASE_H_
+#define _GPSD_TIMEBASE_H_
 
+/* timebase.h -- constants that will require patching over time */
 /*
  * The current (fixed) leap-second correction, and the future Unix
  * time after which to start hunting leap-second corrections from GPS
@@ -16,12 +18,26 @@
  *	time.mktime(time.strptime(... , "%d %b %Y %H:%M:%S"))
  * to generate an integer value for START_SUBFRAME. 
  */
+
+/*
+ * This constant is used to get UTC from chipsets that report GPS time only.
+ *
+ * It's not a disaster if it's wrong; most such chips get the offset
+ * from some report abstracted from the subframe data, so their worst
+ * case is their time info will be incorrect for the remainder of an
+ * entire GPS message cycle (about 22 minutes) if you start gpsd up
+ * right after a leap-second.
+ *
+ * This value is only critical if the chipset gets GPS time only and
+ * not the offset; in this case gpsd will always report UTC that is exactly
+ * as incorrect as the constant.  Currently this is true only for the
+ * Evermore chipset.
+ */
 #define LEAP_SECONDS	14
 
-/* IERS says "NO positive leap second will be introduced at the end of 
- * December 2007, so start subframe checking at the *next* 6-month boundary.
+/* IERS says no leap second will be inserted in June 2009.
  */
-#define START_SUBFRAME	1212292800	/* 1 Jun 2008 00:00:00 */
+#define START_SUBFRAME	1262321999	/* 31 Dec 2009 23:59:59 */
 
 /*
  * This is used only when an NMEA device issues a two-digit year in a GPRMC
@@ -32,3 +48,4 @@
 #define CENTURY_BASE	2000
 
 /* timebase.h ends here */
+#endif /* _GPSD_TIMEBASE_H_ */

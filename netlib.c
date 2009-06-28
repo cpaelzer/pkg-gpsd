@@ -1,8 +1,10 @@
-/* $Id: netlib.c 4434 2007-10-18 04:11:10Z ckuethe $ */
+/* $Id: netlib.c 5052 2009-01-21 10:42:24Z esr $ */
 #include <sys/types.h>
 #include "gpsd_config.h"
 #ifdef HAVE_SYS_SOCKET_H
+#ifndef S_SPLINT_S
 #include <sys/socket.h>
+#endif /* S_SPLINT_S */
 #endif
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
@@ -70,10 +72,12 @@ int netlib_connectsock(const char *host, const char *service, const char *protoc
     }
 
 #ifdef IPTOS_LOWDELAY
+    {
     int opt = IPTOS_LOWDELAY;
     /*@ -unrecog @*/
     (void)setsockopt(s, IPPROTO_IP, IP_TOS, &opt, sizeof opt);
     /*@ +unrecog @*/
+    }
 #endif
 #ifdef TCP_NODELAY
     if (type == SOCK_STREAM)
