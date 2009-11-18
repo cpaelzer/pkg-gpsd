@@ -125,6 +125,7 @@ build-gpsd-stamp: configure-stamp
 	dh_testdir
 
 	#hack around broken --disable-python in configure
+	exit 1
 	$(MAKE) PYEXTENSIONS='' noinst_SCRIPTS='' nodist_python_PYTHON='' PYTHONPAGES_DIST=''
 
 	#this is a rather ugly hack to work around broken linebreaks
