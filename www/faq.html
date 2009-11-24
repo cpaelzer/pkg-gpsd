@@ -33,6 +33,7 @@ GPSD Frequently Asked Questions
     <a href="compatibility">Application Compatibility</a>
     <a href="references.html">References</a><br/>
     <a href="history.html">History</a><br/>
+    <a href="future.html">Future</a><br/>
 
     <div>&nbsp;</div>
 
@@ -63,8 +64,9 @@ GPSD Frequently Asked Questions
 
 <ul>
 <li><a href='#bug-reporting'>How do I report bugs in GPSD?</a><br/>
+<li><a href='#nodata'>I get no data from my GPS</a></h1>
 <li><a href='#oldcommands'>Why does the first A,E,O,P,T,U, or V command to a device always return "?"</a><br/>
-<li><a href="singleshot">Why does my single-shot query fail to return fix data?</a><br/>
+<li><a href="#singleshot">Why does my single-shot query fail to return fix data?</a><br/>
 <li><a href='#speed'>Why does my receiver report wildly fluctuating speed?</a><br/>
 <li><a href='#gpsdrive'>Why do I get implausibly low speeds when using gpsdrive?</a><br/>
 <li><a href='#flicker'>Why does the date field in <code>xgps</code> flicker to "n/a" part of the time even when there's a fix?</a><br/>
@@ -121,7 +123,7 @@ rapidly.  If we can't reproduce it, you might get lucky or you might
 not &mdash; and we try hard, but all too often the result is 'not'.</p>
 
 <p>Therefore the most important step you can take is to capture a log
-of some GPS output that reproduces the bug; <code>gpscat</code> will
+of some receiver output that reproduces the bug; <code>gpscat</code> will
 help you.</p>
 
 <h3>6. Trim the capture log that reproduces the problem</h3>
@@ -143,7 +145,7 @@ or packet that produces the bug, and tell us that.</p>
 <h3>7. Look at <code>gpsd</code> log output to see if it gives you a clue</h3>
 
 <p>You may get a better handle on your problem by running gpsd in
-foreground (-N option) with the -D option set to a high level (-D 4 is
+foreground (-N option) with the -D option set to a high level (-D 5 is
 often good).  If the transcript has anything that looks like a clue
 in it, send it along with your bug report.  When in doubt about
 whether it holds a clue, send it.</p>
@@ -160,15 +162,13 @@ href="https://www.mainframe.cx/cgi-bin/gps_report.cgi">our web
 form</a>
 
 <p>A logfile should consist of an identifying header followed by a
-straight unencoded dump of GPS data, whether NMEA or binary. The
+straight unencoded dump of receiver data, whether NMEA or binary. The
 header should consist of text lines beginning with # and ending with LF.
 Here is the beginning of one log file I already have:</p>
 
 <pre>
 # Name: Magellan eXplorist 210
 # Chipset: unknown
-# Cycle-time: 1-second
-# Start-of-cycle: $GPGLL
 # Submitted-by: "Paul B van den Berg" <paulberg@wanadoo.nl>
 # Date: 20 May 2006
 # Location: Groningen, NL, 53.2N 6.6E
@@ -207,15 +207,11 @@ $GPGSV,3,2,10,29,26,162,,18,24,255,42,22,24,298,44,28,10,056,*75
 $GPGSV,3,3,10,14,09,319,,11,03,016,,136,27,157,,124,28,162,*71
 </pre>
 
-<p>The way to fill in the Name, Cycle-Time, Submitted-by, and Date
+<p>The way to fill in the Name, Submitted-by, and Date
 headers should be pretty obvious.</p>
 
 <p>Chipset should include the name and (if possible) model and/or
 firmware revision  of the chipset in the GPS.</p>
-
-<p>Start-of-cycle should be the name of the NMEA sentence (or, in a
-packet protocol, the numeric type ID of the packet) that is emitted
-first in each cycle.</p>
 
 <p>Please also include a Location header giving your city,
 state/province, country code, and a rough latitude/longitude.</p>
@@ -240,11 +236,11 @@ still reproduceable.</p>
 
 <h3>10. If your bug core-dumps gpsd, send us a stack trace.</h3>
 
-<p>Though it happens seldom (and we haven't had such a report since
-about mid-2005), badly-formed NMEA from a device with poor standards
-compliance has been known to core-dump gpsd.  If your gpsd has
-core-dumped, try to use gdb or whatever your local symbolic debugger
-is to generate a stack trace of the crash, and send us that.</p>
+<p>Though it happens seldom (and we had 2 report since about mid-2005),
+badly-formed input from a device with poor standards compliance has been
+known to core-dump gpsd.  If your gpsd has core-dumped, try to use gdb
+or whatever your local symbolic debugger is to generate a stack trace
+("bt full") of the crash, and send us that.</p>
 
 <h3>11. Try to determine what release introduced the bug</h3>
 
@@ -299,9 +295,9 @@ exact change in question.</p></li>
 
 <h3>12. Include the vendor, mode, and firmware version in your report.</h3>
 
-<p>Always include with your bug report the GPS vendor and model.  Try
+<p>Always include with your bug report the receiver vendor and model.  Try
 to include the firmware version as well.  This should be in your xgps
-display if your GPS device makes it available; in a form field before
+display if your device makes it available; in a form field before
 2.35, or as the window title in 2.35 and later.  If the ID string is
 too long to fit, let the daemon run for a few minutes and issue an "I"
 command to it.  Alternatively, running the daemon at -D 4 may reveal
@@ -309,6 +305,12 @@ the version.</p>
 </blockquote>
 
 <h1 id="oldcommands">Why does the first A,E,O,P,T,U, or V command to a device always return "?"</h1>
+
+<p>Note: These commands are now deprecated. The old command protocol
+they are part of will be <a href="orotocol-transition.html">removed at
+some time in the future</a>.  If you rely on them, you will create
+problems for yourself. Use one of the client libraries included with
+<code>gpsd</code> to avoid problems.</p>
 
 <p>To understand what's going on, you need to know that
 <code>gpsd</code> does not immediately assign a client a GPS from its
@@ -342,7 +344,41 @@ obsolete, really; they were poorly thought out and are only retained
 for backward compatibility.  You should fix your application to use
 watcher mode &mdash; or better yet, the libgps client library.</p>
 
+<h1 id="nodata">I get no data from my GPS</h1>
+
+<p>This answer may apply if you have followed the Quick Start
+procedure on the manual page but <code>gpsd</code> reports no data.</p>
+
+<p>Check for the obvious thing &mdash; a disconnected or loose cable<
+&mdash; first. Make sure you specified the device your GPS is
+actually plugged into.</p>
+
+<p>A good test to try is to run <b>gpscat(1)</b> on the device with
+speed set to 4800, then 9600. Most devices will report NMEA text 
+at one of these speeds; a few will report binary spewage. Either
+is a good sign.  If yours reports no data at all, you probably
+have some low-level system problem with serial or USB that you'll
+need to fix before <code>gpsd</code> will operate.</p>
+
+<para>USB GPSes actually emulate RS232 serial using converter chips.
+Under Linux, the usbserial kernel module must be loaded for correct
+operation of this class of device. Normally this module load should
+happen automatically when the device activates, but if you don't
+receive data check for it with <b>lsmod(1)</b>.</p>
+
+<p>On Linux systems with module autoloading disabled or misconfigured,
+it is possible you may need to load the module manually with a command
+such as <code>sudo modprobe usbserial vendor=0×1a86
+product=0×7523</code>.  Do not copy those hex numbers slavishly, they
+are examples.  To get the right numbers, you will need to dig up the
+vendor and product ID of your USB-serial converter device.</p>
+
 <h1 id="singleshot">Why does my single-shot query fail to return fix data?</h1>
+
+<p>Note: The new protocol does not support single-shot queries at all &mdash;
+the race conditions aassociated wit them are intractable.  You should
+not rely on such commands.  Use the new protcol, preferably through
+a client libary, instead.</p>
 
 <p>This is closely related to the previous item.</p>
 
@@ -462,7 +498,7 @@ sure it has synced up to a GPS before running Kismet. You can <a
 href='start-kismet'>download a shellscript</a> that does this.</p>
 
 <p>Note that your Kismet configuration has to include the setting
-"gps=true"  Thius is s a surprisingly easy detail to forget.</p>
+"gps=true"  This is s a surprisingly easy detail to forget.</p>
 
 <h1 id='bluetooth'>Why do I have to restart <code>gpsd</code> whenever I power-cycle my Bluetooth device?</h1>
 
@@ -516,6 +552,8 @@ of the old 1.x versions, or a fork such as <code>ngpsd</code> or
 to 2.0:</p>
 
 <ol>
+<li>The new version supports AIS as well as GPS receivers.</li>
+
 <li>Hotplug- and reconnect support.  Your application does not have to be
 aware of GPS device connects and disconnects, but can choose to be by
 watching for X commands.</li>
@@ -527,7 +565,7 @@ and get an authoritative answer.</li>
 whatever resolution the GPS ships.  Often (notably on SiRF-II GPSes)
 this is milliseconds.</li>
 
-<li>There is a new "watcher" mode.  It is like raw mode in that the
+<li>There is a "watcher" mode.  It is like raw mode in that the
 GPS streams updates at you, but unlike it in that the updates are in 
 the simpler GPSD format rather than the more complex NMEA one.</li>
 
@@ -575,12 +613,12 @@ same sorts of computation that more capable GPSes use.</p>
 <h1 id='interfacing'>How should  I interface my application with <code>gpsd</code>?</h1>
 
 <p>The <code>gpsd</code> package provides two ways for C code to get
-data from a GPS.  Both go through the libgps.a library, which supports
-two sets of entry points. The <a href="libgpsd.html">low-level
-interface</a> talks directly to the GPS.  The <a
-href="libgps.html">high-level interface</a> communicates with an
-instance of <code>gpsd</code>, which uses its own copy of libgps.a to
-talk to the device.</p>
+data from a GPS or AIS rceiver.  Both go through the libgps.a library,
+which supports two sets of entry points. The <a
+href="libgpsd.html">low-level interface</a> talks directly to the GPS.
+The <a href="libgps.html">high-level interface</a> communicates with
+an instance of <code>gpsd</code>, which uses its own copy of libgps.a
+to talk to the device.</p>
 
 <p>A third way would be to open a socket to <code>gpsd</code> and
 interpret <code>gpsd</code> protocol or raw NMEA in your application.
@@ -601,6 +639,12 @@ build from source that conditions out all but one of the drivers.</p>
 interface.  It exports a class that encapsulates a GPS session.</p>
 
 <h1 id='changes'>How has the <code>gpsd</code> interface changed since 1.x?</h1>
+
+<p>Note: This section describes evolutionary changes in the old
+1.x-2.x protocol.  This protocol is now deprecated; while still
+supported for backward compatibility, it will be removed in the
+future. You should be using the new JSON-based protocol. preferably
+through one of our client libraries.</p>
 
 <p>There are three minor incompatibilities with <code>gpsd</code> 1.x:</p>
 

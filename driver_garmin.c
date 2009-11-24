@@ -5,20 +5,22 @@
  *
  * One driver "garmin_usb_binary" handles the Garmin binary packet
  * format supported by the USB Garmins tested with the Garmin 18 and
- * other models.  (There is also "garmin_usb_binary_old".)
+ * other models.  (There is also "garmin_usb_binary_old".)  These are ONLY
+ * for USB devices reporting as: 091e:0003.
  *
  * The other driver "garmin_ser_binary" is for Garmin receivers via a
  * serial port, whether or not one uses a USB/serial adaptor or a real
  * serial port.  These receivers provide adequate NMEA support, so it
  * often makes sense to just put them into NMEA mode.
  *
- * On Linux, USB Garmins need the Linux garmin_gps driver and will not
- * function without it.  This code has been tested and at least at one
- * time is known to work on big- and little-endian CPUs and 32 and 64
- * bit cpu modes.
+ * On Linux, USB Garmins (091e:0003) need the Linux garmin_gps driver and 
+ * will not function without it.  On other operating systems, it is clear 
+ * garmin_usb_binary_old does not work since it requires the Linux 
+ * garmin_gps module.
  *
- * On other operating systems, it is not clear if garmin_usb_binary
- * works.
+ * This code has been tested and at least at one time is known to work on 
+ * big- and little-endian CPUs and 32 and 64 bit cpu modes.
+ *
  *
  * Documentation for the Garmin protocols can be found via
  *   http://www.garmin.com/support/commProtocol.html
@@ -32,11 +34,11 @@
  * Information about the GPS 18 
  *   http://www.garmin.com/manuals/425_TechnicalSpecification.pdf
  *
- * There is one Physical protocols for serial which uses DLE/ETX
+ * There is one physical link protocol for serial which uses DLE/ETX
  * framing.  There is another physical protocol for USB which relies
  * on the packetization intrinstic to USB bulk pipes.
  *
- * There are several Link protocols; all devices implement L000.
+ * There are several link protocols; all devices implement L000.
  * There are then product-specific protocols; most devices implement
  * L001.  Link protocols are the same and carried over either Physical
  * protocol.
@@ -68,7 +70,6 @@
  *
  * known bugs:
  *      hangs in the fread loop instead of keeping state and returning.
- *      may or may not work on a little-endian machine
  *
  * TODO:
  *
@@ -84,7 +85,9 @@
 #include <math.h>
 
 #include <string.h>
+#ifndef S_SPLINT_S
 #include <unistd.h>
+#endif /* S_SPLINT_S */
 #include <errno.h>
 #include <inttypes.h>
 
@@ -294,6 +297,8 @@ gps_mask_t PrintSERPacket(struct gps_device_t *session, unsigned char pkt_id
 
     gpsd_report(LOG_IO, "PrintSERPacket(, %#02x, %#02x, )\n", pkt_id, pkt_len);
 
+    session->cycle_end_reliable = true;
+
     switch( pkt_id ) {
     case ACK:
 	gpsd_report(LOG_PROG, "ACK\n");
@@ -343,6 +348,8 @@ gps_mask_t PrintSERPacket(struct gps_device_t *session, unsigned char pkt_id
 	gpsd_report(LOG_INF, "Garmin Product Desc: %s\n"
 		, &buf[4]);
 	mask |= DEVICEID_SET;
+	gpsd_report(LOG_DATA, "PRODUCT_DATA: subtype=%s mask=%s\n",
+		    session->subtype, gpsd_maskdump(mask));
 	break;
     case GARMIN_PKTID_PVT_DATA:
 	gpsd_report(LOG_PROG, "Appl, PVT Data Sz: %d\n", pkt_len);
@@ -357,7 +364,6 @@ gps_mask_t PrintSERPacket(struct gps_device_t *session, unsigned char pkt_id
 	// gps_tow is always like x.999 or x.998 so just round it
 	time_l += (time_t) round(pvt->gps_tow);
 	session->gpsdata.fix.time
-	  = session->gpsdata.sentence_time
 	  = (double)time_l;
 	gpsd_report(LOG_PROG, "time_l: %ld\n", (long int)time_l);
 
@@ -392,7 +398,8 @@ gps_mask_t PrintSERPacket(struct gps_device_t *session, unsigned char pkt_id
 	// If this assumption changes here, it should also change in
 	// nmea_parse.c where we analyze PGRME.
 	session->gpsdata.epe = pvt->epe * (GPSD_CONFIDENCE/CEP50_SIGMA);
-	session->gpsdata.fix.eph = pvt->eph * (GPSD_CONFIDENCE/CEP50_SIGMA);
+	/* eph is a circular error, sqrt(epx**2 + epy**2) */
+	session->gpsdata.fix.epx = session->gpsdata.fix.epy = pvt->eph * (1/sqrt(2)) * (GPSD_CONFIDENCE/CEP50_SIGMA);
 	session->gpsdata.fix.epv = pvt->epv * (GPSD_CONFIDENCE/CEP50_SIGMA);
 
 	// convert lat/lon to directionless speed
@@ -437,8 +444,11 @@ gps_mask_t PrintSERPacket(struct gps_device_t *session, unsigned char pkt_id
 	    break;
 	}
 #ifdef NTPSHM_ENABLE
-	if (session->context->enable_ntpshm && session->gpsdata.fix.mode > MODE_NO_FIX)
-	    (void) ntpshm_put(session, session->gpsdata.fix.time);
+	if (session->context->enable_ntpshm 
+	  && session->gpsdata.fix.mode > MODE_NO_FIX) {
+	    // Garmin SerBin fudge 0.430 valid at 4800bps
+	    (void) ntpshm_put(session, session->gpsdata.fix.time, 0.430);
+	}
 #endif /* NTPSHM_ENABLE */
 
 	gpsd_report(LOG_PROG, "Appl, mode %d, status %d\n"
@@ -468,7 +478,24 @@ gps_mask_t PrintSERPacket(struct gps_device_t *session, unsigned char pkt_id
 	    , pvt->leap_sec
 	    , pvt->grmn_days);
 
-	mask |= TIME_SET | LATLON_SET | ALTITUDE_SET | STATUS_SET | MODE_SET | SPEED_SET | TRACK_SET | CLIMB_SET | HERR_SET | VERR_SET | PERR_SET | CYCLE_START_SET;
+	mask |= TIME_SET | LATLON_SET | ALTITUDE_SET | STATUS_SET | MODE_SET | SPEED_SET | TRACK_SET | CLIMB_SET | HERR_SET | VERR_SET | PERR_SET | CLEAR_SET | REPORT_SET;
+	gpsd_report(LOG_DATA,
+		    "PVT_DATA: time=%.2f, lat=%.2f lon=%.2f "
+		    "speed=%.2f track=%.2f climb=%.2f "
+		    "epx=%.2f epy=%.2f epv=%.2f "
+		    "mode=%d status=%d mask=%s\n",
+		    session->gpsdata.fix.time,
+		    session->gpsdata.fix.latitude,
+		    session->gpsdata.fix.longitude,
+		    session->gpsdata.fix.speed,
+		    session->gpsdata.fix.track,
+		    session->gpsdata.fix.climb,
+		    session->gpsdata.fix.epx,
+		    session->gpsdata.fix.epy,
+		    session->gpsdata.fix.epv,
+		    session->gpsdata.fix.mode,
+		    session->gpsdata.status,
+		    gpsd_maskdump(mask));
 	break;
     case GARMIN_PKTID_RMD_DATA:
     case GARMIN_PKTID_RMD41_DATA:
@@ -514,9 +541,9 @@ gps_mask_t PrintSERPacket(struct gps_device_t *session, unsigned char pkt_id
 	    session->gpsdata.elevation[j] = (int)sats->elev;
 	    // Garmin does not document this.  snr is in dB*100
 	    // Known, but not seen satellites have a dB value of -1*100
-	    session->gpsdata.ss[j] = (int)round((float)sats->snr / 100);
-	    if (session->gpsdata.ss[j] < 0) {
-		session->gpsdata.ss[j] = 0;
+	    session->gpsdata.ss[j] = (float)(sats->snr / 100.0);
+	    if (session->gpsdata.ss[j] < 0.0) {
+		session->gpsdata.ss[j] = 0.0;
 	    }
 	    // FIXME: Garmin documents this, but Daniel Dorau
 	    // <daniel.dorau@gmx.de> says the behavior on his GPSMap60CSX
@@ -526,11 +553,17 @@ gps_mask_t PrintSERPacket(struct gps_device_t *session, unsigned char pkt_id
 		session->gpsdata.used[session->gpsdata.satellites_used++]
 		    = (int)sats->svid;
 	    }
-	    session->gpsdata.satellites++;
+	    session->gpsdata.satellites_visible++;
 	    j++;
 
 	}
+	session->gpsdata.skyview_time = NAN;
 	mask |= SATELLITE_SET | USED_SET;
+	gpsd_report(LOG_DATA,
+		    "SAT_DATA: visible=%d used=%d mask=%s\n",
+		    session->gpsdata.satellites_visible,
+		    session->gpsdata.satellites_used,
+		    gpsd_maskdump(mask));
 	break;
     case GARMIN_PKTID_PROTOCOL_ARRAY:
 	// this packet is never requested, it just comes, in some case
@@ -768,8 +801,10 @@ static void Build_Send_SER_Packet( struct gps_device_t *session,
 
 
 /*
- * garmin_detect()
+ * garmin_usb_detect()
  *
+ * This is ONLY for USB devices reporting as: 091e:0003.
+  *
  * check that the garmin_gps driver is installed in the kernel
  * and that an active USB device is using it.
  *
@@ -783,7 +818,7 @@ static void Build_Send_SER_Packet( struct gps_device_t *session,
  * return 0 if not
  *
  */
-static bool garmin_detect(struct gps_device_t *session)
+static bool garmin_usb_detect(struct gps_device_t *session)
 {
 
     FILE *fp = NULL;
@@ -795,28 +830,31 @@ static bool garmin_detect(struct gps_device_t *session)
 	gpsd_report(LOG_WARN, "garmin_gps Linux USB module not active.\n");
 	return false;
     }
-    // check for a garmin_gps device in /proc
-    if ( !(fp = fopen( "/proc/bus/usb/devices", "r") ) ) {
-	gpsd_report(LOG_ERROR, "Can't open /proc/bus/usb/devices\n");
-	return false;
-    }
-
-    ok = false;
-    while ( 0 != fgets( buf, (int)sizeof(buf), fp ) ) {
-	if ( strstr( buf, "garmin_gps") ) {
+    /* check for a garmin_gps device in /proc
+     * if we can */
+    if ( 0 != (fp = fopen( "/proc/bus/usb/devices", "r")) ) {
+	ok = false;
+	while ( 0 != fgets( buf, (int)sizeof(buf), fp ) ) {
+	    if ( strstr( buf, "garmin_gps") ) {
 		ok = true;
 		break;
+	    }
 	}
-    }
-    (void)fclose(fp);
-    if ( !ok ) {
-	// no device using garmin now
-	gpsd_report(LOG_WARN, "garmin_gps not in /proc/bus/usb/devices.\n");
-	return false;
+	(void)fclose(fp);
+	if ( !ok ) {
+	    // no device using garmin_gps now
+	    gpsd_report(LOG_WARN, "garmin_gps not in /proc/bus/usb/devices.\n");
+	    gpsd_report(LOG_WARN, "garmin_gps driver present, but not in use\n");
+	    return false;
+	}
+    } else {
+	gpsd_report(LOG_WARN, 
+	    "Can't open /proc/bus/usb/devices, will try anyway\n");
     }
 
+
     if (!gpsd_set_raw(session)) {
-	gpsd_report(LOG_ERROR, "garmin_detect: error changing port attributes: %s\n",
+	gpsd_report(LOG_ERROR, "garmin_usb_detect: error changing port attributes: %s\n",
 	     strerror(errno));
 	return false;
     }
@@ -829,7 +867,7 @@ static bool garmin_detect(struct gps_device_t *session)
     session->driver.garmin.BufferLen = 0;
 
     if (sizeof(session->driver.garmin.Buffer) < sizeof(Packet_t)) {
-	gpsd_report(LOG_ERROR, "garmin_detect: Compile error, garmin.Buffer too small.\n",
+	gpsd_report(LOG_ERROR, "garmin_usb_detect: Compile error, garmin.Buffer too small.\n",
 	     strerror(errno));
 	return false;
     }
@@ -848,9 +886,13 @@ static bool garmin_detect(struct gps_device_t *session)
     return true;
 }
 
-static void garmin_probe_subtype(struct gps_device_t *session, unsigned int seq)
+static void garmin_event_hook(struct gps_device_t *session, event_t event)
 {
-    if (seq == 0) {
+    /*
+     * FIXME: It might not be necessary to call this on reactivate.
+     * Experiment to see if the holds its settings through a close.
+     */
+    if (event == event_identified || event == event_reactivate) {
 	// Tell the device to send product data
 	gpsd_report(LOG_PROG, "Get Garmin Product Data\n");
 	Build_Send_SER_Packet(session, GARMIN_LAYERID_APPL
@@ -869,14 +911,9 @@ static void garmin_probe_subtype(struct gps_device_t *session, unsigned int seq)
 	      , GARMIN_PKTID_L001_COMMAND_DATA, 2, CMND_START_RM_DATA);
 #endif
     }
-}
-
-static void garmin_close(struct gps_device_t *session UNUSED)
-{
-    /* FIXME -- do we need to put the garmin to sleep?  or is closing the port
-       sufficient? */
-    gpsd_report(LOG_PROG, "garmin_close()\n");
-    return;
+    if (event == event_deactivate)
+	/* FIXME: is any action needed, or is closing the port sufficient? */
+	gpsd_report(LOG_PROG, "garmin_close()\n");
 }
 
 #define Send_ACK()    Build_Send_SER_Packet(session, 0, ACK, 0, 0)
@@ -1170,7 +1207,7 @@ static int GetPacket (struct gps_device_t *session )
 	/*@ ignore @*/
 	delay.tv_sec = 0;
 	delay.tv_nsec = 3330000L;
-	while (nanosleep(&delay, &rem) < 0)
+	while (nanosleep(&delay, &rem) == -1)
 	    continue;
 	/*@ end @*/
     }
@@ -1204,24 +1241,20 @@ const struct gps_type_t garmin_usb_binary_old =
     .packet_type    = GARMIN_PACKET;	/* associated lexer packet type */
     .trigger        = NULL,		/* no trigger, it has a probe */
     .channels       = GARMIN_CHANNELS,	/* consumer-grade GPS */
-    .probe_wakeup   = NULL,		/* no wakeup to be done before hunt */
-    .probe_detect   = garmin_detect,	/* how to detect at startup time */
-    .probe_subtype  = garmin_probe_subtype,	/* get subtype info */
+    .probe_detect   = garmin_usb_detect,/* how to detect at startup time */
     .get_packet     = garmin_get_packet,/* how to grab a packet */
     .parse_packet   = garmin_usb_parse,	/* parse message packets */
     .rtcm_writer    = NULL,		/* don't send DGPS corrections */
-#ifdef ALLOW_CONTROLSEND
-    .control_send   = garmin_control_send,	/* send raw bytes */
-#endif /* ALLOW_CONTROLSEND */
+    .event_hook     = garmin_event_hook,/* lifetime event handler */
 #ifdef ALLOW_RECONFIGURE
-    .configurator   = NULL,		/* does not allow reconfiguration */
     .speed_switcher = NULL,		/* no speed switcher */
     .mode_switcher  = NULL,		/* no mode switcher */
     .rate_switcher  = NULL,		/* no sample-rate switcher */
     .min_cycle      = 1,		/* not relevant, no rate switch */
-    .revert         = NULL,		/* no setting-reversion method */
 #endif /* ALLOW_RECONFIGURE */
-    .wrapup         = garmin_close,	/* close hook */
+#ifdef ALLOW_CONTROLSEND
+    .control_send   = garmin_control_send,	/* send raw bytes */
+#endif /* ALLOW_CONTROLSEND */
 };
 #endif /* __UNUSED__ */
 
@@ -1231,24 +1264,20 @@ const struct gps_type_t garmin_usb_binary =
     .packet_type    = GARMIN_PACKET,	/* associated lexer packet type */
     .trigger        = NULL,		/* no trigger, it has a probe */
     .channels       = GARMIN_CHANNELS,	/* consumer-grade GPS */
-    .probe_wakeup   = NULL,		/* no wakeup to be done before hunt */
-    .probe_detect   = garmin_detect,	/* how to detect at startup time */
-    .probe_subtype  = garmin_probe_subtype,	/* get subtype info */
+    .probe_detect   = garmin_usb_detect,/* how to detect at startup time */
     .get_packet     = generic_get,      /* how to grab a packet */
     .parse_packet   = garmin_ser_parse,	/* parse message packets */
     .rtcm_writer    = NULL,		/* don't send DGPS corrections */
-#ifdef ALLOW_CONTROLSEND
-    .control_send   = garmin_control_send,	/* send raw bytes */
-#endif /* ALLOW_CONTROLSEND */
+    .event_hook     = garmin_event_hook,/* lifetime ebent handler */
 #ifdef ALLOW_RECONFIGURE
-    .configurator   = NULL,	        /* enable what we need */
     .speed_switcher = NULL,		/* no speed switcher */
     .mode_switcher  = garmin_switcher,	/* how to change modes */
     .rate_switcher  = NULL,		/* no sample-rate switcher */
     .min_cycle      = 1,		/* not relevant, no rate switch */
-    .revert         = NULL,		/* no setting-reversion method */
 #endif /* ALLOW_RECONFIGURE */
-    .wrapup         = garmin_close,	/* close hook */
+#ifdef ALLOW_CONTROLSEND
+    .control_send   = garmin_control_send,	/* send raw bytes */
+#endif /* ALLOW_CONTROLSEND */
 };
 
 const struct gps_type_t garmin_ser_binary =
@@ -1257,24 +1286,20 @@ const struct gps_type_t garmin_ser_binary =
     .packet_type    = GARMIN_PACKET,	/* associated lexer packet type */
     .trigger        = NULL,		/* no trigger, it has a probe */
     .channels       = GARMIN_CHANNELS,	/* consumer-grade GPS */
-    .probe_wakeup   = NULL,		/* no wakeup to be done before hunt */
     .probe_detect   = NULL,        	/* how to detect at startup time */
-    .probe_subtype  = NULL,        	/* initialize the device */
     .get_packet     = generic_get,       /* how to grab a packet */
     .parse_packet   = garmin_ser_parse,	/* parse message packets */
     .rtcm_writer    = NULL,		/* don't send DGPS corrections */
-#ifdef ALLOW_CONTROLSEND
-    .control_send   = garmin_control_send,	/* send raw bytes */
-#endif /* ALLOW_CONTROLSEND */
+    .event_hook     = NULL,	        /* lifetime event handler */
 #ifdef ALLOW_RECONFIGURE
-    .configurator   = NULL,	        /* enable what we need */
     .speed_switcher = NULL,		/* no speed switcher */
     .mode_switcher  = garmin_switcher,	/* how to change modes */
     .rate_switcher  = NULL,		/* no sample-rate switcher */
     .min_cycle      = 1,		/* not relevant, no rate switch */
-    .revert         = NULL,		/* no setting-reversion method */
 #endif /* ALLOW_RECONFIGURE */
-    .wrapup         = NULL,	        /* close hook */
+#ifdef ALLOW_CONTROLSEND
+    .control_send   = garmin_control_send,	/* send raw bytes */
+#endif /* ALLOW_CONTROLSEND */
 };
 
 #endif /* GARMIN_ENABLE */

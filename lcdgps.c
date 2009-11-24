@@ -39,20 +39,26 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#ifndef S_SPLINT_S
 #include <unistd.h>
+#endif /* S_SPLINT_S */
 #include <math.h>
 #include <errno.h>
 #include <sys/select.h>
+#ifndef S_SPLINT_S
 #include <sys/socket.h>
+#endif /* S_SPLINT_S */
 
 #include <sys/time.h> /* select() */
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <termios.h>
 
+#ifndef S_SPLINT_S
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#endif /* S_SPLINT_S */
 #include <errno.h>
 
 #include <signal.h>
@@ -74,6 +80,7 @@ ssize_t sockreadline(int sockd,void *vptr,size_t maxlen);
 ssize_t sockwriteline(int sockd,const void *vptr,size_t n);
 int send_lcd(char *buf);
 
+static struct fixsource_t source;
 static struct gps_data_t *gpsdata;
 static float altfactor = METERS_TO_FEET;
 static float speedfactor = MPS_TO_MPH;
@@ -121,8 +128,8 @@ static void daemonize(void) {
 
   /* Run as my child. */
   i=fork();
-  if (i<0) exit(1); /* fork error */
-  if (i>0) exit(0); /* parent exits */
+  if (i == -1) exit(1); /* fork error */
+  if (i > 0) exit(0); /* parent exits */
 
   /* Obtain a new process group. */
   setsid();
@@ -252,8 +259,7 @@ static enum deg_str_type deg_type = deg_dd;
 /* This gets called once for each new sentence. */
 static void update_lcd(struct gps_data_t *gpsdata,
                        char *message UNUSED,
-                       size_t len UNUSED,
-                       int level UNUSED)
+                       size_t len UNUSED)
 {
   char tmpbuf[255];
 #ifdef CLIMB
@@ -266,6 +272,10 @@ static void update_lcd(struct gps_data_t *gpsdata,
 #endif
   char *s;
   int track;
+
+  /* this is where we implement source-device filtering */
+  if (gpsdata->dev.path[0] && source.device!=NULL && strcmp(source.device, gpsdata->dev.path) != 0)
+      return;
 
   /* Get our location in Maidenhead. */
   latlon2maidenhead(maidenhead,gpsdata->fix.latitude,gpsdata->fix.longitude);
@@ -342,9 +352,6 @@ static void usage( char *prog)
 int main(int argc, char *argv[]) 
 {
     int option, rc;
-    bool nojitter = false;
-    struct fixsource_t source;
-    char *err_str = NULL;
     struct sockaddr_in localAddr, servAddr;
     struct hostent *h;
 
@@ -358,7 +365,7 @@ int main(int argc, char *argv[])
 #endif 
 
     /* Process the options.  Print help if requested. */
-    while ((option = getopt(argc, argv, "Vhjl:su:")) != -1) {
+    while ((option = getopt(argc, argv, "Vhl:su:")) != -1) {
 	switch (option) {
 	case 'V':
 	    (void)fprintf(stderr, "$Id$\n");
@@ -366,9 +373,6 @@ int main(int argc, char *argv[])
 	case 'h':
 	default:
 	    usage(argv[0]);
-	    break;
-	case 'j':
-	    nojitter = true;
 	    break;
 	case 'l':
 	    switch ( optarg[0] ) {
@@ -427,18 +431,9 @@ int main(int argc, char *argv[])
     /* Open the stream to gpsd. */
     /*@i@*/gpsdata = gps_open(source.server, source.port);
     if (!gpsdata) {
-	switch ( errno ) {
-	case NL_NOSERVICE:        err_str = "can't get service entry"; break;
-	case NL_NOHOST:   err_str = "can't get host entry"; break;
-	case NL_NOPROTO:  err_str = "can't get protocol entry"; break;
-	case NL_NOSOCK:   err_str = "can't create socket"; break;
-	case NL_NOSOCKOPT:        err_str = "error SETSOCKOPT SO_REUSEADDR"; break;
-	case NL_NOCONNECT:        err_str = "can't connect to host"; break;
-	default:                  err_str = "Unknown"; break;
-	}
 	(void)fprintf( stderr,
 		       "cgps: no gpsd running or network error: %d, %s\n",
-		       errno, err_str);
+		       errno, gps_errstr(errno));
 	exit(2);
     }
 
@@ -455,7 +450,7 @@ int main(int argc, char *argv[])
 
     /* create socket */
     sd = socket(AF_INET, SOCK_STREAM, 0);
-    if(sd<0) {
+    if(sd == -1) {
 	perror("cannot open socket ");
 	exit(1);
     }
@@ -466,7 +461,7 @@ int main(int argc, char *argv[])
     localAddr.sin_port = htons(0);
 
     rc = bind(sd, (struct sockaddr *) &localAddr, sizeof(localAddr));
-    if(rc<0) {
+    if(rc == -1) {
 	printf("%s: cannot bind port TCP %u\n",argv[0],LCDDPORT);
 	perror("error ");
 	exit(1);
@@ -474,7 +469,7 @@ int main(int argc, char *argv[])
 
     /* connect to server */
     rc = connect(sd, (struct sockaddr *) &servAddr, sizeof(servAddr));
-    if(rc<0) {
+    if(rc == -1) {
 	perror("cannot connect ");
 	exit(1);
     }
@@ -484,18 +479,7 @@ int main(int argc, char *argv[])
 
     /* Here's where updates go. */
     gps_set_raw_hook(gpsdata, update_lcd);
-
-    /* If the user requested a specific device, try to change to it. */
-    if (source.device != NULL) {
-	(void)gps_query(gpsdata, "F=%s\n", source.device);
-    }
-
-    /* Turn on on jitter buffering if requested. */
-    if (nojitter)
-	(void)gps_query(gpsdata, "j=1\n");
-
-    /* Request "w+x" data from gpsd. */
-    (void)gps_query(gpsdata, "w+x\n");
+    gps_stream(gpsdata, WATCH_ENABLE|WATCH_NEWSTYLE, NULL);
 
     for (;;) { /* heart of the client */
 

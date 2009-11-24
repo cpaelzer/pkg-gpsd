@@ -11,14 +11,12 @@ NMEA_MAX = 86
 # Lowest debug level at which packet getter begins to emit messages, minus one
 BASELEVEL = gpspacket.LOG_IO
 
+highhalf_latch = True
+
 def hexdump(str):
     dmp = ""
     for (i, ch) in enumerate(str):
-        if curses.ascii.isprint(ord(ch)):
-            dmp += ch
-        elif ch == '\r' and i+1 < len(str) and str[i+1] == '\n':
-            dmp += ch
-        elif ch == '\n' and i-1 >= 0 and str[i-1] == '\r':
+        if curses.ascii.isprint(ord(ch)) or curses.ascii.isspace(ord(ch)):
             dmp += ch
         else:
             dmp += "\\x%02x" % ord(ch)
@@ -104,13 +102,10 @@ if __name__ == '__main__':
             if fd == tty and event == select.POLLIN:
                 if rawmode:
                     buf += os.read(tty, NMEA_MAX)
-                    if not buf.endswith("\n"):
-                        buf = hexdump(buf)
-                    sys.stdout.write(buf)
+                    sys.stdout.write(hexdump(buf))
                     buf = ""
                 else:
-                    (ptype, packet) = getter.get(tty)
-                    length = len(packet)
+                    (length, ptype, packet) = getter.get(tty)
                     seqno += 1
                     # Don't crap out if the first packet is bad, we might
                     # be seeing an incomplete read from a tty.
@@ -119,7 +114,7 @@ if __name__ == '__main__':
                             sys.stdout.write("gpscat: terminating on bad packet\n")
                         break
                     elif length == 0:
-                        continue
+                        break
                     if typeflag:
                         sys.stdout.write(`ptype` + " (" + `length` + "): " + hexdump(packet))
                         sys.stdout.write("\n")

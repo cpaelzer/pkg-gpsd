@@ -95,10 +95,10 @@ class TestLoad:
         #gpspacket.register_report(reporter)
         type_latch = None
         while True:
-            (ptype, packet) = getter.get(logfp.fileno())
-            if ptype == gpspacket.BAD_PACKET:
+            (len, ptype, packet) = getter.get(logfp.fileno())
+            if len <= 0:
                 break
-            elif ptype == gpspacket.EMPTY_PACKET:
+            elif ptype == gpspacket.BAD_PACKET:
                 break
             elif ptype == gpspacket.COMMENT_PACKET:
                 if "Serial:" in packet:
@@ -338,6 +338,9 @@ class TestSession:
     CLOSE_DELAY = 1
     def __init__(self, prefix=None, port=None, options=None, verbose=0, predump=False):
         "Initialize the test session by launching the daemon."
+        self.prefix = prefix
+        self.port = port
+        self.options = options
         self.verbose = verbose
         self.predump = predump
         self.daemon = DaemonInstance()
@@ -353,13 +356,14 @@ class TestSession:
             self.port = gps.GPSD_PORT
         self.progress = lambda x: None
         self.reporter = lambda x: None
-        for sig in (signal.SIGQUIT, signal.SIGINT, signal.SIGTERM):
-            signal.signal(sig, lambda signal, frame: self.cleanup())
-        self.daemon.spawn(background=True, prefix=prefix, port=self.port, options=options)
-        self.daemon.wait_pid()
         self.default_predicate = None
         self.fd_set = []
         self.threadlock = None
+    def spawn(self):
+        for sig in (signal.SIGQUIT, signal.SIGINT, signal.SIGTERM):
+            signal.signal(sig, lambda signal, frame: self.cleanup())
+        self.daemon.spawn(background=True, prefix=self.prefix, port=self.port, options=self.options)
+        self.daemon.wait_pid()
     def set_predicate(self, pred):
         "Set a default go predicate for the session."
         self.default_predicate = pred
@@ -401,7 +405,8 @@ class TestSession:
         self.progress("gpsfake: client_query(%d, %s)\n" % (id, `commands`))
         for obj in self.runqueue:
             if isinstance(obj, gps.gps) and obj.id == id:
-                obj.query(commands)
+                obj.send(commands)
+                obj.poll()
                 return obj.response
         return None
     def client_remove(self, cid):
@@ -514,7 +519,7 @@ class TestSession:
         "Arrange for client to ship specified commands when it goes active."
         client.enqueued = ""
         if not self.threadlock:
-            client.query(commands)
+            client.send(commands)
         else:
             client.enqueued = commands
     def start(self):

@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Remco Treffkorn">
-   <meta name="Description" content="GPSd is a utility that can listen to a GPS or Loran Receiver and re-publish the positional data in a simpler format.">
+   <meta name="Description" content="GPSd is a utility that can listen to a GPS or AIS yreceiver and re-publish the positional data in a simpler format.">
    <meta name="Keywords" content="GPS, translator, mxmap, GIS">
    <link rel="stylesheet" href="main.css" type="text/css"/>
    <title>GPSD project history</title>
@@ -32,6 +32,7 @@ A Brief History of GPSD
     <a href="hacking.html">Hacker's Guide</a><br/>
     <a href="compatibility">Application Compatibility</a>
     <a href="references.html">References</a><br/>
+    <a href="future.html">Future</a><br/>
     History<br/>
 
     <div>&nbsp;</div>
@@ -156,6 +157,11 @@ configuration tools; <code>gpsmon</code> dates from this time
 1.x days, a project called Gypsy positioned directly against what the
 author believes to be our design mistakes. We discuss it <a
 href="gypsy.html">here.</a>.</p>
+
+<p>In July and August 2009 ESR <a
+href="protocol-evolution.html">redesigned the GPSD command
+protocol</a> and gave <code>gpsd</code> the ability to read data from
+marine AIS receivers and pass it to clients.</p>
 
 <p>Further forks of <code>gpsd</code> seem unlikely, as the project is
 now sufficiently large and visible to co-opt most developers who might

@@ -1,3 +1,17 @@
+* Thu Nov 19 2009 Eric S. Raymond <esr@snark.thyrsus.com> - 2.90dev
+  GPSD-NG, the new JSON-based command protocol, is now deployed; as a
+  consequence, AIS is now fully supported in both daemon and client.
+  Detection of end of a fix-reporting cycle is now reliable;
+  accordingly data is accumulated from cycle start and the "J"
+  (nojitter) opoption on both server and client side is gone. We have
+  abandoned the gpsflash subproject since it has become apparent that
+  we can't do it without more vendor cooperation than we're likely to
+  get. Increase major version of shared library due to significant API
+  change. Added new driver for Motorola Oncore receivers, with help
+  from Håkan Johansson. gpsfake can now accept multiple logfiles,
+  interleaving test sentences from each.  gpsd now accepts error
+  estimates from the NMEA $GPGBS sentence.
+
 * Wed Mar 18 2009 Eric S. Raymond <esr@snark.thyrsus.com> - 2.39
   Fixed potential core dump in C client handling of "K" responses.
   Made device hotplugging work again; had been broken by changes in udev.
@@ -20,7 +34,7 @@
   localhost only by default to avoid security problems; this can be
   overridden with the -G command-line option. The packet-state machine
   can now recognize RTCM3 packets, though support is not yet complete.
-  Added support for ublox5 and mkt-3301 devices. Add a wrapper around
+  Added support for ublox5 and mtk-3301 devices. Add a wrapper around
   gpsd_hexdump to save CPU. Lots of little fixes to various packet
   parsers. Always keep the device open: "-n" is not optional any more.
   xgpsspeed no longer depends on Motif. gpsctl can now ship arbitrary

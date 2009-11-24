@@ -1,19 +1,11 @@
-/* 
+/* $Id$ */
+/*
  * Driver for AIS/AIVDM messages.
  *
- * The relevant standard is "ITU Recommendation M.1371":
- * <http://www.itu.int/rec/R-REC-M.1371-2-200603-I/en.
- * Alas, the distribution terms are evil.
+ * See the file AIVDM.txt on the GPSD website for documentation and references.
  *
- * Also see "IALA Technical Clarifications on Recommendation ITU-R
- * M.1371-1", at 
- * <http://www.navcen.uscg.gov/enav/ais/ITU-R_M1371-1_IALA_Tech_Note1.3.pdf>
- *
- * The page http://www.bosunsmate.org/ais/ reveals part of what's going on.
- *
- * There's a sentence decoder we can test with at http://rl.se/aivdm
- *
- * Open-source code at http://sourceforge.net/projects/gnuais
+ * Message types 1-11, 15, 18-21, and 24 have been tested against live data.
+ * Message types 12-14, 16-17, and 22-23 have not.
  */
 #include <sys/types.h>
 #include <stdio.h>
@@ -21,14 +13,13 @@
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
+#ifndef S_SPLINT_S
 #include <unistd.h>
+#endif /* S_SPLINT_S */
 #include <time.h>
 #include <stdio.h>
 
-#include "gpsd_config.h"
 #include "gpsd.h"
-#if defined(AIVDM_ENABLE)
-
 #include "bits.h"
 
 /**
@@ -52,7 +43,7 @@ static void from_sixbit(char *bitvec, uint start, int count, char *to)
     to[count-1] = '\0';
     /* trim spaces on right end */
     for (i = count-2; i >= 0; i--)
-	if (to[i] == ' ')
+	if (to[i] == ' ' || to[i] == '@')
 	    to[i] = '\0';
 	else
 	    break;
@@ -60,8 +51,10 @@ static void from_sixbit(char *bitvec, uint start, int count, char *to)
 }
 
 /*@ +charint @*/
-bool aivdm_decode(char *buf, size_t buflen, struct aivdm_context_t *ais_context)
+bool aivdm_decode(const char *buf, size_t buflen, 
+		  struct aivdm_context_t *ais_context, struct ais_t *ais)
 {
+#ifdef __UNUSED_DEBUG__
     char *sixbits[64] = {
 	"000000", "000001", "000010", "000011", "000100",
 	"000101", "000110", "000111", "001000", "001001",
@@ -75,11 +68,11 @@ bool aivdm_decode(char *buf, size_t buflen, struct aivdm_context_t *ais_context)
 	"101101", "101110", "101111", "110000",	"110001",
 	"110010", "110011", "110100", "110101",	"110110",
 	"110111", "111000", "111001", "111010",	"111011",
-	"111100", "111101", "111110", "111111",    
+	"111100", "111101", "111110", "111111",   
     };
-    int nfields = 0;    
+#endif /* __UNUSED_DEBUG__ */
+    int nfields = 0;
     unsigned char *data, *cp = ais_context->fieldcopy;
-    struct ais_t *ais = &ais_context->decoded;
     unsigned char ch;
     int i;
 
@@ -87,25 +80,24 @@ bool aivdm_decode(char *buf, size_t buflen, struct aivdm_context_t *ais_context)
 	return false;
 
     /* we may need to dump the raw packet */
-    gpsd_report(LOG_PROG, "AIVDM packet length %ld: %s", buflen, buf);
+    gpsd_report(LOG_PROG, "AIVDM packet length %zd: %s", buflen, buf);
 
     /* extract packet fields */
-    (void)strlcpy((char *)ais_context->fieldcopy, 
-		  (char*)buf,
-		  buflen);
+    (void)strlcpy((char *)ais_context->fieldcopy, buf, buflen);
     ais_context->field[nfields++] = (unsigned char *)buf;
-    for (cp = ais_context->fieldcopy; 
+    for (cp = ais_context->fieldcopy;
 	 cp < ais_context->fieldcopy + buflen;
 	 cp++)
 	if (*cp == ',') {
 	    *cp = '\0';
 	    ais_context->field[nfields++] = cp + 1;
 	}
-    ais_context->part = atoi((char *)ais_context->field[1]);
-    ais_context->await = atoi((char *)ais_context->field[2]);
+    ais_context->await = atoi((char *)ais_context->field[1]);
+    ais_context->part = atoi((char *)ais_context->field[2]);
     data = ais_context->field[5];
-    gpsd_report(LOG_PROG, "part=%d, awaiting=%d, data=%s\n",
-		ais_context->part, ais_context->await,
+    gpsd_report(LOG_PROG, "await=%d, part=%d, data=%s\n",
+		ais_context->await,
+		ais_context->part,
 		data);
 
     /* assemble the binary data */
@@ -121,7 +113,9 @@ bool aivdm_decode(char *buf, size_t buflen, struct aivdm_context_t *ais_context)
 	ch -= 48;
 	if (ch >= 40)
 	    ch -= 8;
+#ifdef __UNUSED_DEBUG__
 	gpsd_report(LOG_RAW, "%c: %s\n", *cp, sixbits[ch]);
+#endif /* __UNUSED_DEBUG__ */
 	/*@ -shiftnegative @*/
 	for (i = 5; i >= 0; i--) {
 	    if ((ch >> i) & 0x01) {
@@ -145,54 +139,55 @@ bool aivdm_decode(char *buf, size_t buflen, struct aivdm_context_t *ais_context)
 #define UBITS(s, l)	ubits((char *)ais_context->bits, s, l)
 #define SBITS(s, l)	sbits((char *)ais_context->bits, s, l)
 #define UCHARS(s, to)	from_sixbit((char *)ais_context->bits, s, sizeof(to), to)
-	ais->id = UBITS(0, 6);
-	ais->ri = UBITS(7, 2);
+	ais->type = UBITS(0, 6);
+	ais->repeat = UBITS(6, 2);
 	ais->mmsi = UBITS(8, 30);
-	gpsd_report(LOG_INF, "AIVDM message type %d, MMSI %09d:\n", 
-		    ais->id, ais->mmsi);
-	switch (ais->id) {
+	gpsd_report(LOG_INF, "AIVDM message type %d, MMSI %09d:\n",
+		    ais->type, ais->mmsi);
+	switch (ais->type) {
 	case 1:	/* Position Report */
 	case 2:
 	case 3:
-	    ais->type123.status = UBITS(38, 4);
-	    ais->type123.rot = SBITS(42, 8);
-	    ais->type123.sog = UBITS(50, 10);
-	    ais->type123.accuracy = (bool)UBITS(60, 1);
-	    ais->type123.longitude = SBITS(61, 28);
-	    ais->type123.latitude = SBITS(89, 27);
-	    ais->type123.cog = UBITS(116, 12);
-	    ais->type123.heading = UBITS(128, 9);
-	    ais->type123.utc_second = UBITS(137, 6);
-	    ais->type123.maneuver = UBITS(143, 2);
-	    ais->type123.spare = UBITS(145, 3);
-	    ais->type123.raim = UBITS(148, 1)!=0;
-	    ais->type123.radio = UBITS(149, 20);
+	    ais->type1.status		= UBITS(38, 4);
+	    ais->type1.turn		= SBITS(42, 8);
+	    ais->type1.speed		= UBITS(50, 10);
+	    ais->type1.accuracy	= (bool)UBITS(60, 1);
+	    ais->type1.lon		= SBITS(61, 28);
+	    ais->type1.lat		= SBITS(89, 27);
+	    ais->type1.course		= UBITS(116, 12);
+	    ais->type1.heading	= UBITS(128, 9);
+	    ais->type1.second		= UBITS(137, 6);
+	    ais->type1.maneuver	= UBITS(143, 2);
+	    //ais->type1.spare	= UBITS(145, 3);
+	    ais->type1.raim		= UBITS(148, 1)!=0;
+	    ais->type1.radio		= UBITS(149, 20);
 	    gpsd_report(LOG_INF,
-			"Nav=%d ROT=%d SOG=%d Q=%d Lon=%d Lat=%d COG=%d TH=%d Sec=%d\n",
-			ais->type123.status,
-			ais->type123.rot,
-			ais->type123.sog, 
-			(uint)ais->type123.accuracy,
-			ais->type123.longitude, 
-			ais->type123.latitude, 
-			ais->type123.cog, 
-			ais->type123.heading, 
-			ais->type123.utc_second);
+			"Nav=%d TURN=%d SPEED=%d Q=%d Lon=%d Lat=%d COURSE=%d TH=%d Sec=%d\n",
+			ais->type1.status,
+			ais->type1.turn,
+			ais->type1.speed,
+			(uint)ais->type1.accuracy,
+			ais->type1.lon,
+			ais->type1.lat,
+			ais->type1.course,
+			ais->type1.heading,
+			ais->type1.second);
 	    break;
-	case 4:	/* Base Station Report */
-	    ais->type4.year = UBITS(38, 14);
-	    ais->type4.month = UBITS(52, 4);
-	    ais->type4.day = UBITS(56, 5);
-	    ais->type4.hour = UBITS(61, 5);
-	    ais->type4.minute = UBITS(66, 6);
-	    ais->type4.second = UBITS(72, 6);
-	    ais->type4.accuracy = (bool)UBITS(78, 1);
-	    ais->type4.longitude = SBITS(79, 28);
-	    ais->type4.latitude = SBITS(107, 27);
-	    ais->type4.epfd = UBITS(134, 4);
-	    ais->type4.spare = UBITS(138, 10);
-	    ais->type4.raim = UBITS(148, 1)!=0;
-	    ais->type4.radio = UBITS(149, 19);
+	case 4: 	/* Base Station Report */
+	case 11:	/* UTC/Date Response */
+	    ais->type4.year		= UBITS(38, 14);
+	    ais->type4.month		= UBITS(52, 4);
+	    ais->type4.day		= UBITS(56, 5);
+	    ais->type4.hour		= UBITS(61, 5);
+	    ais->type4.minute		= UBITS(66, 6);
+	    ais->type4.second		= UBITS(72, 6);
+	    ais->type4.accuracy		= UBITS(78, 1)!=0;
+	    ais->type4.lon		= SBITS(79, 28);
+	    ais->type4.lat		= SBITS(107, 27);
+	    ais->type4.epfd		= UBITS(134, 4);
+	    //ais->type4.spare		= UBITS(138, 10);
+	    ais->type4.raim		= UBITS(148, 1)!=0;
+	    ais->type4.radio		= UBITS(149, 19);
 	    gpsd_report(LOG_INF,
 			"Date: %4d:%02d:%02dT%02d:%02d:%02d Q=%d Lat=%d  Lon=%d epfd=%d\n",
 			ais->type4.year,
@@ -202,83 +197,341 @@ bool aivdm_decode(char *buf, size_t buflen, struct aivdm_context_t *ais_context)
 			ais->type4.minute,
 			ais->type4.second,
 			(uint)ais->type4.accuracy,
-			ais->type4.latitude, 
-			ais->type4.longitude,
+			ais->type4.lat,
+			ais->type4.lon,
 			ais->type4.epfd);
 	    break;
 	case 5: /* Ship static and voyage related data */
 	    ais->type5.ais_version  = UBITS(38, 2);
-	    ais->type5.imo_id       = UBITS(40, 30);
+	    ais->type5.imo          = UBITS(40, 30);
 	    UCHARS(70, ais->type5.callsign);
-	    UCHARS(112, ais->type5.vessel_name);
-	    ais->type5.ship_type    = UBITS(232, 8);
+	    UCHARS(112, ais->type5.shipname);
+	    ais->type5.shiptype     = UBITS(232, 8);
 	    ais->type5.to_bow       = UBITS(240, 9);
 	    ais->type5.to_stern     = UBITS(249, 9);
-	    ais->type5.to_port      = UBITS(258, 9);
-	    ais->type5.to_starboard = UBITS(264, 9);
+	    ais->type5.to_port      = UBITS(258, 6);
+	    ais->type5.to_starboard = UBITS(264, 6);
 	    ais->type5.epfd         = UBITS(270, 4);
-	    ais->type5.minute       = UBITS(274, 6);
-	    ais->type5.hour         = UBITS(280, 5);
-	    ais->type5.day          = UBITS(285, 5);
-	    ais->type5.month        = UBITS(290, 4);
-	    ais->type5.draught      = UBITS(293, 9);
+	    ais->type5.month        = UBITS(274, 4);
+	    ais->type5.day          = UBITS(278, 5);
+	    ais->type5.hour         = UBITS(283, 5);
+	    ais->type5.minute       = UBITS(288, 6);
+	    ais->type5.draught      = UBITS(294, 8);
 	    UCHARS(302, ais->type5.destination);
 	    ais->type5.dte          = UBITS(422, 1);
-	    ais->type5.spare        = UBITS(423, 1);
+	    //ais->type5.spare        = UBITS(423, 1);
+	    gpsd_report(LOG_INF,
+			"AIS=%d callsign=%s, name=%s destination=%s\n",
+			ais->type5.ais_version,
+			ais->type5.callsign,
+			ais->type5.shipname,
+			ais->type5.destination);
+	    break;
+	case 6: /* Addressed Binary Message */
+	    ais->type6.seqno          = UBITS(38, 2);
+	    ais->type6.dest_mmsi      = UBITS(40, 30);
+	    ais->type6.retransmit     = (bool)UBITS(70, 1);
+	    //ais->type6.spare        = UBITS(71, 1);
+	    ais->type6.app_id         = UBITS(72, 16);
+	    ais->type6.bitcount       = ais_context->bitlen - 88;
+	    (void)memcpy(ais->type6.bitdata,
+			 (char *)ais_context->bits+11,
+			 (ais->type6.bitcount + 7) / 8);
+	    gpsd_report(LOG_INF, "seqno=%d, dest=%u, id=%u, cnt=%zd\n",
+			ais->type6.seqno,
+			ais->type6.dest_mmsi,
+			ais->type6.app_id,
+			ais->type6.bitcount);
+	    break;
+	case 7: /* Binary acknowledge */
+	case 13: /* Safety Related Acknowledge */
+	{
+	    unsigned int mmsi[4];
+	    for (i = 0; i < sizeof(mmsi)/sizeof(mmsi[0]); i++)
+		if (ais_context->bitlen > 40 + 32*i)
+		    mmsi[i] = UBITS(40 + 32*i, 30);
+		else
+		    mmsi[i] = 0;
+	    /*@ -usedef @*/
+	    ais->type7.mmsi1 = mmsi[0];
+	    ais->type7.mmsi2 = mmsi[1];
+	    ais->type7.mmsi3 = mmsi[2];
+	    ais->type7.mmsi4 = mmsi[3];
+	    /*@ +usedef @*/
+	    gpsd_report(LOG_INF, "\n");
+	    break;
+	}
+	case 8: /* Binary Broadcast Message */
+	    //ais->type8.spare        = UBITS(38, 2);
+	    ais->type8.app_id =       UBITS(40, 16);
+	    ais->type8.bitcount       = ais_context->bitlen - 56;
+	    (void)memcpy(ais->type8.bitdata,
+			 (char *)ais_context->bits+7,
+			 (ais->type8.bitcount + 7) / 8);
+	    gpsd_report(LOG_INF, "id=%u, cnt=%zd\n",
+			ais->type8.app_id,
+			ais->type8.bitcount);
 	    break;
 	case 9: /* Standard SAR Aircraft Position Report */
-	    ais->type9.altitude = UBITS(38, 12);
-	    ais->type9.sog = UBITS(50, 10);
-	    ais->type9.accuracy = (bool)UBITS(60, 1);
-	    ais->type9.longitude = SBITS(61, 28);
-	    ais->type9.latitude = SBITS(89, 27);
-	    ais->type9.cog = UBITS(116, 12);
-	    ais->type9.utc_second = UBITS(128, 6);
-	    ais->type9.regional = UBITS(134, 8);
-	    ais->type9.dte = UBITS(142, 1);
-	    ais->type9.spare = UBITS(143, 3);
-	    ais->type9.assigned = UBITS(144, 1)!=0;
-	    ais->type9.raim = UBITS(145, 1)!=0;
-	    ais->type9.radio = UBITS(146, 22);
+	    ais->type9.alt		= UBITS(38, 12);
+	    ais->type9.speed		= UBITS(50, 10);
+	    ais->type9.accuracy		= (bool)UBITS(60, 1);
+	    ais->type9.lon		= SBITS(61, 28);
+	    ais->type9.lat		= SBITS(89, 27);
+	    ais->type9.course		= UBITS(116, 12);
+	    ais->type9.second		= UBITS(128, 6);
+	    ais->type9.regional		= UBITS(134, 8);
+	    ais->type9.dte		= UBITS(142, 1);
+	    //ais->type9.spare		= UBITS(143, 3);
+	    ais->type9.assigned		= UBITS(146, 1)!=0;
+	    ais->type9.raim		= UBITS(147, 1)!=0;
+	    ais->type9.radio		= UBITS(148, 19);
 	    gpsd_report(LOG_INF,
-			"Alt=%d SOG=%d Q=%d Lon=%d Lat=%d COG=%d Sec=%d\n",
-			ais->type9.altitude,
-			ais->type9.sog, 
+			"Alt=%d SPEED=%d Q=%d Lon=%d Lat=%d COURSE=%d Sec=%d\n",
+			ais->type9.alt,
+			ais->type9.speed,
 			(uint)ais->type9.accuracy,
-			ais->type9.longitude, 
-			ais->type9.latitude, 
-			ais->type9.cog, 
-			ais->type9.utc_second);
+			ais->type9.lon,
+			ais->type9.lat,
+			ais->type9.course,
+			ais->type9.second);
+	    break;
+	case 10: /* UTC/Date inquiry */
+	    //ais->type10.spare        = UBITS(38, 2);
+	    ais->type10.dest_mmsi      = UBITS(40, 30);
+	    //ais->type10.spare2       = UBITS(70, 2);
+	    gpsd_report(LOG_INF, "dest=%u\n", ais->type10.dest_mmsi);
+	    break;
+	case 12: /* Safety Related Message */
+	    ais->type12.seqno          = UBITS(38, 2);
+	    ais->type12.dest_mmsi      = UBITS(40, 30);
+	    ais->type12.retransmit     = (bool)UBITS(70, 1);
+	    //ais->type12.spare        = UBITS(71, 1);
+	    from_sixbit((char *)ais_context->bits,
+			72, ais_context->bitlen-72,
+			ais->type12.text);
+	    gpsd_report(LOG_INF, "seqno=%d, dest=%u\n",
+			ais->type12.seqno,
+			ais->type12.dest_mmsi);
+	    break;
+	case 14:	/* Safety Related Broadcast Message */
+	    //ais->type14.spare          = UBITS(38, 2);
+	    from_sixbit((char *)ais_context->bits,
+			40, ais_context->bitlen-40,
+			ais->type14.text);
+	    gpsd_report(LOG_INF, "\n");
+	    break;
+	case 15:	/* Interrogation */
+	    (void)memset(&ais->type15, '\0', sizeof(ais->type15));
+	    //ais->type14.spare         = UBITS(38, 2);
+	    ais->type15.mmsi1		= UBITS(40, 30);
+	    ais->type15.type1_1		= UBITS(70, 6);
+	    ais->type15.type1_1		= UBITS(70, 6);
+	    ais->type15.offset1_1	= UBITS(76, 12);
+	    //ais->type14.spare2        = UBITS(88, 2);
+	    if (ais_context->bitlen > 90) {
+		ais->type15.type1_2	= UBITS(90, 6);
+		ais->type15.offset1_2	= UBITS(96, 12);
+		//ais->type14.spare3    = UBITS(108, 2);
+		if (ais_context->bitlen > 110) {
+		    ais->type15.type2_1	= UBITS(90, 6);
+		    ais->type15.offset2_1	= UBITS(96, 12);
+		    //ais->type14.spare4	= UBITS(108, 2);
+		}
+	    }
+	    gpsd_report(LOG_INF, "\n");
+	    break;
+	case 16:	/* Assigned Mode Command */
+	    ais->type16.mmsi1		= UBITS(40, 30);
+	    ais->type16.offset1		= UBITS(70, 12);
+	    ais->type16.increment1	= UBITS(82, 10);
+	    if (ais_context->bitlen <= 96)
+		ais->type16.mmsi2 = 0;
+	    else {
+		ais->type16.mmsi2	= UBITS(92, 30);
+		ais->type16.offset2	= UBITS(122, 12);
+		ais->type16.increment2	= UBITS(134, 10);
+	    }
+	    gpsd_report(LOG_INF, "\n");
+	    break;
+	case 17:	/* GNSS Broadcast Binary Message */
+	    //ais->type17.spare         = UBITS(38, 2);
+	    ais->type17.lon		= UBITS(40, 18);
+	    ais->type17.lat		= UBITS(58, 17);
+	    ais->type8.bitcount       = ais_context->bitlen - 56;
+	    (void)memcpy(ais->type17.bitdata,
+			 (char *)ais_context->bits + 10,
+			 (ais->type8.bitcount + 7) / 8);
+	    gpsd_report(LOG_INF, "\n");
 	    break;
 	case 18:	/* Standard Class B CS Position Report */
-	    ais->type18.reserved = UBITS(38, 8);
-	    ais->type18.sog = UBITS(46, 10);
-	    ais->type18.accuracy = (bool)UBITS(56, 1);
-	    ais->type18.longitude = SBITS(57, 28);
-	    ais->type18.latitude = SBITS(85, 27);
-	    ais->type18.cog = UBITS(112, 12);
-	    ais->type18.heading = UBITS(124, 9);
-	    ais->type18.utc_second = UBITS(133, 6);
-	    ais->type18.regional = UBITS(139, 2);
-	    ais->type18.spare = UBITS(141, 5);
-	    ais->type18.assigned = UBITS(146, 1)!=0;
-	    ais->type18.raim = UBITS(147, 1)!=0;
-	    ais->type18.radio = UBITS(148, 20);
+	    ais->type18.reserved	= UBITS(38, 8);
+	    ais->type18.speed		= UBITS(46, 10);
+	    ais->type18.accuracy	= UBITS(56, 1)!=0;
+	    ais->type18.lon		= SBITS(57, 28);
+	    ais->type18.lat		= SBITS(85, 27);
+	    ais->type18.course		= UBITS(112, 12);
+	    ais->type18.heading		= UBITS(124, 9);
+	    ais->type18.second		= UBITS(133, 6);
+	    ais->type18.regional	= UBITS(139, 2);
+	    ais->type18.cs		= UBITS(141, 1)!=0;
+	    ais->type18.display 	= UBITS(142, 1)!=0;
+	    ais->type18.dsc     	= UBITS(143, 1)!=0;
+	    ais->type18.band    	= UBITS(144, 1)!=0;
+	    ais->type18.msg22   	= UBITS(145, 1)!=0;
+	    ais->type18.assigned	= UBITS(146, 1)!=0;
+	    ais->type18.raim		= UBITS(147, 1)!=0;
+	    ais->type18.radio		= UBITS(148, 20);
 	    gpsd_report(LOG_INF,
-			"reserved=%x SOG=%d Q=%d Lon=%d Lat=%d COG=%d TH=%d Sec=%d\n",
+			"reserved=%d speed=%d accuracy=%d lon=%d lat=%d course=%d heading=%d sec=%d\n",
 			ais->type18.reserved,
-			ais->type18.sog, 
+			ais->type18.speed,
 			(uint)ais->type18.accuracy,
-			ais->type18.longitude, 
-			ais->type18.latitude, 
-			ais->type18.cog, 
-			ais->type18.heading, 
-			ais->type18.utc_second);
+			ais->type18.lon,
+			ais->type18.lat,
+			ais->type18.course,
+			ais->type18.heading,
+			ais->type18.second);
+	    break;	
+	case 19:	/* Extended Class B CS Position Report */
+	    ais->type19.reserved     = UBITS(38, 8);
+	    ais->type19.speed        = UBITS(46, 10);
+	    ais->type19.accuracy     = UBITS(56, 1)!=0;
+	    ais->type19.lon          = SBITS(57, 28);
+	    ais->type19.lat          = SBITS(85, 27);
+	    ais->type19.course       = UBITS(112, 12);
+	    ais->type19.heading      = UBITS(124, 9);
+	    ais->type19.second       = UBITS(133, 6);
+	    ais->type19.regional     = UBITS(139, 4);
+	    UCHARS(143, ais->type19.shipname);
+	    ais->type19.shiptype     = UBITS(263, 8);
+	    ais->type19.to_bow       = UBITS(271, 9);
+	    ais->type19.to_stern     = UBITS(280, 9);
+	    ais->type19.to_port      = UBITS(289, 6);
+	    ais->type19.to_starboard = UBITS(295, 6);
+	    ais->type19.epfd         = UBITS(299, 4);
+	    ais->type19.raim         = UBITS(302, 1)!=0;
+	    ais->type19.dte          = UBITS(305, 1)!=0;
+	    ais->type19.assigned     = UBITS(306, 1)!=0;
+	    //ais->type19.spare      = UBITS(307, 5);
+	    gpsd_report(LOG_INF,
+			"reserved=%d speed=%d accuracy=%d lon=%d lat=%d course=%d heading=%d sec=%d name=%s\n",
+			ais->type19.reserved,
+			ais->type19.speed,
+			(uint)ais->type19.accuracy,
+			ais->type19.lon,
+			ais->type19.lat,
+			ais->type19.course,
+			ais->type19.heading,
+			ais->type19.second,
+			ais->type19.shipname);
+	    break;
+	case 20:	/* Data Link Management Message */
+	    //ais->type20.spare		= UBITS(38, 2);
+	    ais->type20.offset1		= UBITS(40, 12);
+	    ais->type20.number1		= UBITS(52, 4);
+	    ais->type20.timeout1	= UBITS(56, 3);
+	    ais->type20.increment1	= UBITS(59, 11);
+	    ais->type20.offset2		= UBITS(70, 12);
+	    ais->type20.number2		= UBITS(82, 4);
+	    ais->type20.timeout2	= UBITS(86, 3);
+	    ais->type20.increment2	= UBITS(89, 11);
+	    ais->type20.offset3		= UBITS(100, 12);
+	    ais->type20.number3		= UBITS(112, 4);
+	    ais->type20.timeout3	= UBITS(116, 3);
+	    ais->type20.increment3	= UBITS(119, 11);
+	    ais->type20.offset4		= UBITS(130, 12);
+	    ais->type20.number4		= UBITS(142, 4);
+	    ais->type20.timeout4	= UBITS(146, 3);
+	    ais->type20.increment4	= UBITS(149, 11);
+	    break;
+	case 21:	/* Aid-to-Navigation Report */
+	    ais->type21.type = UBITS(38, 5);
+	    from_sixbit((char *)ais_context->bits, 
+			43, 21, ais->type21.name);
+	    if (strlen(ais->type21.name) == 20 && ais_context->bitlen > 272)
+		from_sixbit((char *)ais_context->bits, 
+			    272, (ais_context->bitlen - 272)/6, 
+			    ais->type21.name+20);
+	    ais->type21.accuracy     = UBITS(163, 1);
+	    ais->type21.lon          = SBITS(164, 28);
+	    ais->type21.lat          = SBITS(192, 27);
+	    ais->type21.to_bow       = UBITS(219, 9);
+	    ais->type21.to_stern     = UBITS(228, 9);
+	    ais->type21.to_port      = UBITS(237, 6);
+	    ais->type21.to_starboard = UBITS(243, 6);
+	    ais->type21.epfd         = UBITS(249, 4);
+	    ais->type21.second       = UBITS(253, 6);
+	    ais->type21.off_position = UBITS(259, 1)!=0;
+	    ais->type21.regional     = UBITS(260, 8);
+	    ais->type21.raim         = UBITS(268, 1)!=0;
+	    ais->type21.virtual_aid  = UBITS(269, 1)!=0;
+	    ais->type21.assigned     = UBITS(270, 1)!=0;
+	    //ais->type21.spare      = UBITS(271, 1);
+	    gpsd_report(LOG_INF,
+			"name=%s accuracy=%d lon=%d lat=%d sec=%d\n",
+			ais->type21.name,
+			(uint)ais->type19.accuracy,
+			ais->type19.lon,
+			ais->type19.lat,
+			ais->type19.second);
+	    break;
+	case 22:	/* Channel Management */
+	    ais->type22.channel_a    = UBITS(40, 12);
+	    ais->type22.channel_b    = UBITS(52, 12);
+	    ais->type22.txrx         = UBITS(64, 4);
+	    ais->type22.power        = UBITS(68, 1);
+	    ais->type22.ne_lon       = SBITS(69, 18);
+	    ais->type22.ne_lat       = SBITS(87, 17);
+	    ais->type22.sw_lon       = SBITS(104, 18);
+	    ais->type22.sw_lat       = SBITS(122, 17);
+	    ais->type22.addressed    = UBITS(139, 1);
+	    ais->type22.band_a       = UBITS(140, 1);
+	    ais->type22.band_b       = UBITS(141, 1);
+	    ais->type22.zonesize     = UBITS(142, 3);
+	    break;
+	case 23:	/* Group Assignment Command */
+	    ais->type23.ne_lon       = SBITS(40, 18);
+	    ais->type23.ne_lat       = SBITS(58, 17);
+	    ais->type23.sw_lon       = SBITS(75, 18);
+	    ais->type23.sw_lat       = SBITS(93, 17);
+	    ais->type23.stationtype  = UBITS(110, 4);
+	    ais->type23.shiptype     = UBITS(114, 8);
+	    ais->type23.txrx         = UBITS(144, 4);
+	    ais->type23.interval     = UBITS(146, 4);
+	    ais->type23.quiet        = UBITS(150, 4);
+	    break;
+	case 24:	/* Class B CS Static Data Report */
+	    switch (UBITS(38, 2)) {
+	    case 0:
+		UCHARS(40, ais_context->shipname);
+		//ais->type24.a.spare	= UBITS(160, 8);
+		return false;	/* data only partially decoded */
+	    case 1:
+		(void)strlcpy(ais->type24.shipname, 
+			      ais_context->shipname,
+			      sizeof(ais_context->shipname));
+		ais->type24.shiptype = UBITS(40, 8);
+		UCHARS(48, ais->type24.vendorid);
+		UCHARS(90, ais->type24.callsign);
+		if (AIS_AUXILIARY_MMSI(ais->mmsi))
+		    ais->type24.mothership_mmsi   = UBITS(132, 30);
+		else {
+		    ais->type24.dim.to_bow        = UBITS(132, 9);
+		    ais->type24.dim.to_stern      = UBITS(141, 9);
+		    ais->type24.dim.to_port       = UBITS(150, 6);
+		    ais->type24.dim.to_starboard  = UBITS(156, 6);
+		}
+		//ais->type24.b.spare	    = UBITS(162, 8);
+		break;
+	    }
+	    gpsd_report(LOG_INF, "\n");
 	    break;
 	default:
-	    gpsd_report(LOG_ERROR, "Unparsed AIVDM message type %d.\n",ais->id);
+	    gpsd_report(LOG_INF, "\n");
+	    gpsd_report(LOG_ERROR, "Unparsed AIVDM message type %d.\n",ais->type);
 	    break;
-	} 
+	}
 #undef UCHARS
 #undef SBITS
 #undef UBITS
@@ -292,387 +545,5 @@ bool aivdm_decode(char *buf, size_t buflen, struct aivdm_context_t *ais_context)
 }
 /*@ -charint @*/
 
-void  aivdm_dump(struct ais_t *ais, bool scaled, bool labeled, FILE *fp)
-{
-    static char *nav_legends[] = {
-	"Under way using engine",
-	"At anchor",
-	"Not under command",
-	"Restricted manoeuverability",
-	"Constrained by her draught",
-	"Moored",
-	"Aground",
-	"Engaged in fishing",
-	"Under way sailing",
-	"Reserved for HSC",
-	"Reserved for WIG",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Not defined",
-    };
-    static char *epfd_legends[] = {
-	"Undefined",
-	"GPS",
-	"GLONASS",
-	"Combined GPS/GLONASS",
-	"Loran-C",
-	"Chayka",
-	"Integrated navigation system",
-	"Surveyed",
-	"Galileo",
-    };
+/* driver_aivdm.c ends here */
 
-    static char *type_legends[100] = {
-	"Not available",
-	"Reserved for future use",
-	"Reserved for future use",
-	"Reserved for future use",
-	"Reserved for future use",
-	"Reserved for future use",
-	"Reserved for future use",
-	"Reserved for future use",
-	"Reserved for future use",
-	"Reserved for future use",
-	"Reserved for future use",
-	"Reserved for future use",
-	"Reserved for future use",
-	"Reserved for future use",
-	"Reserved for future use",
-	"Reserved for future use",
-	"Reserved for future use",
-	"Reserved for future use",
-	"Reserved for future use",
-	"Reserved for future use",
-	"Wing in ground (WIG), all ships of this type",
-	"Wing in ground (WIG), Hazardous category A",
-	"Wing in ground (WIG), Hazardous category B",
-	"Wing in ground (WIG), Hazardous category C",
-	"Wing in ground (WIG), Hazardous category D",
-	"Wing in ground (WIG), Reserved for future use",
-	"Wing in ground (WIG), Reserved for future use",
-	"Wing in ground (WIG), Reserved for future use",
-	"Wing in ground (WIG), Reserved for future use",
-	"Wing in ground (WIG), Reserved for future use",
-	"Fishing",
-	"Towing",
-	"Towing: length exceeds 200m or breadth exceeds 25m",
-	"Dredging or underwater ops",
-	"Diving ops",
-	"Military ops",
-	"Sailing",
-	"Pleasure Craft",
-	"Reserved",
-	"Reserved",
-	"High speed craft (HSC), all ships of this type",
-	"High speed craft (HSC), Hazardous category A",
-	"High speed craft (HSC), Hazardous category B",
-	"High speed craft (HSC), Hazardous category C",
-	"High speed craft (HSC), Hazardous category D",
-	"High speed craft (HSC), Reserved for future use",
-	"High speed craft (HSC), Reserved for future use",
-	"High speed craft (HSC), Reserved for future use",
-	"High speed craft (HSC), Reserved for future use",
-	"High speed craft (HSC), No additional information",
-	"Pilot Vessel",
-	"Search and Rescue vessel",
-	"Tug",
-	"Port Tender",
-	"Anti-pollution equipment",
-	"Law Enforcement",
-	"Spare - Local Vessel",
-	"Spare - Local Vessel",
-	"Medical Transport",
-	"Ship according to RR Resolution No. 18",
-	"Passenger, all ships of this type",
-	"Passenger, Hazardous category A",
-	"Passenger, Hazardous category B",
-	"Passenger, Hazardous category C",
-	"Passenger, Hazardous category D",
-	"Passenger, Reserved for future use",
-	"Passenger, Reserved for future use",
-	"Passenger, Reserved for future use",
-	"Passenger, Reserved for future use",
-	"Passenger, No additional information",
-	"Cargo, all ships of this type",
-	"Cargo, Hazardous category A",
-	"Cargo, Hazardous category B",
-	"Cargo, Hazardous category C",
-	"Cargo, Hazardous category D",
-	"Cargo, Reserved for future use",
-	"Cargo, Reserved for future use",
-	"Cargo, Reserved for future use",
-	"Cargo, Reserved for future use",
-	"Cargo, No additional information",
-	"Tanker, all ships of this type",
-	"Tanker, Hazardous category A",
-	"Tanker, Hazardous category B",
-	"Tanker, Hazardous category C",
-	"Tanker, Hazardous category D",
-	"Tanker, Reserved for future use",
-	"Tanker, Reserved for future use",
-	"Tanker, Reserved for future use",
-	"Tanker, Reserved for future use",
-	"Tanker, No additional information",
-	"Other Type, all ships of this type",
-	"Other Type, Hazardous category A",
-	"Other Type, Hazardous category B",
-	"Other Type, Hazardous category C",
-	"Other Type, Hazardous category D",
-	"Other Type, Reserved for future use",
-	"Other Type, Reserved for future use",
-	"Other Type, Reserved for future use",
-	"Other Type, Reserved for future use",
-	"Other Type, no additional information",
-    };
-
-    if (labeled)
-	(void)fprintf(fp, "type=%u,ri=%u,MMSI=%09u,", ais->id, ais->ri, ais->mmsi);
-    else
-	(void)fprintf(fp, "%u,%u,%09u,", ais->id, ais->ri, ais->mmsi);
-    /*@ -formatconst @*/
-    switch (ais->id) {
-    case 1:	/* Position Report */
-    case 2:
-    case 3:
-#define TYPE123_UNSCALED_UNLABELED "%u,%d,%u,%u,%d,%d,%u,%u,%u,%x,%d,%x\n"
-#define TYPE123_UNSCALED_LABELED   "st=%u,ROT=%u,SOG=%u,fq=%u,lon=%d,lat=%d,cog=%u,hd=%u,sec=%u,reg=%x,sp=%d,radio=%x\n"
-#define TYPE123_SCALED_UNLABELED "%s,%s,%.1f,%u,%.4f,%.4f,%u,%u,%u,%x,%d,%x\n"
-#define TYPE123_SCALED_LABELED   "st=%s,ROT=%s,SOG=%.1f,fq=%u,lon=%.4f,lat=%.4f,cog=%u,hd=%u,sec=%u,reg=%x,sp=%d,radio=%x\n"
-	if (scaled) {
-	    char rotlegend[10];
-
-	    /* 
-	     * Express ROT as nan if not available, 
-	     * "fastleft"/"fastright" for fast turns.
-	     */
-	    if (ais->type123.rot == -128)
-		(void) strlcpy(rotlegend, "nan", sizeof(rotlegend));
-	    else if (ais->type123.rot == -127)
-		(void) strlcpy(rotlegend, "fastleft", sizeof(rotlegend));
-	    else if (ais->type123.rot == 127)
-		(void) strlcpy(rotlegend, "fastright", sizeof(rotlegend));
-	    else
-		(void)snprintf(rotlegend, sizeof(rotlegend),
-			       "%.0f",
-			       ais->type123.rot * ais->type123.rot / 4.733);
-
-	    (void)fprintf(fp,
-			  (labeled ? TYPE123_SCALED_LABELED : TYPE123_SCALED_UNLABELED),
-			      
-			  nav_legends[ais->type123.status],
-			  rotlegend,
-			  ais->type123.sog / 10.0, 
-			  (uint)ais->type123.accuracy,
-			  ais->type123.longitude / AIS_LATLON_SCALE, 
-			  ais->type123.latitude / AIS_LATLON_SCALE, 
-			  ais->type123.cog, 
-			  ais->type123.heading, 
-			  ais->type123.utc_second,
-			  ais->type123.maneuver,
-			  ais->type123.raim,
-			  ais->type123.radio);
-	} else {
-	    (void)fprintf(fp,
-			  (labeled ? TYPE123_UNSCALED_LABELED : TYPE123_UNSCALED_UNLABELED),
-			  ais->type123.status,
-			  ais->type123.rot,
-			  ais->type123.sog, 
-			  (uint)ais->type123.accuracy,
-			  ais->type123.longitude,
-			  ais->type123.latitude,
-			  ais->type123.cog, 
-			  ais->type123.heading, 
-			  ais->type123.utc_second,
-			  ais->type123.maneuver,
-			  ais->type123.raim,
-			  ais->type123.radio);
-	}
-#undef TYPE123_UNSCALED_UNLABELED
-#undef TYPE123_UNSCALED_LABELED
-#undef TYPE123_SCALED_UNLABELED
-#undef TYPE123_SCALED_LABELED
-	break;
-    case 4:	/* Base Station Report */
-#define TYPE4_UNSCALED_UNLABELED "%04u:%02u:%02uT%02u:%02u:%02uZ,%u,%d,%d,%u,%u,%x\n"
-#define TYPE4_UNSCALED_LABELED "%4u:%02u:%02uT%02u:%02u:%02uZ,q=%u,lon=%d,lat=%d,epfd=%u,sp=%u,radio=%x\n"
-#define TYPE4_SCALED_UNLABELED	"%4u:%02u:%02uT%02u:%02u:%02uZ,%u,%.4f,%.4f,%s,%u,%x\n"
-#define TYPE4_SCALED_LABELED "%4u:%02u:%02uT%02u:%02u:%02uZ,q=%u,lon=%.4f,lat=%.4f,epfd=%s,sp=%u,radio=%x\n"
-	if (scaled) {
-	    (void)fprintf(fp,
-			  (labeled ? TYPE4_SCALED_LABELED : TYPE4_SCALED_UNLABELED),
-			  ais->type4.year,
-			  ais->type4.month,
-			  ais->type4.day,
-			  ais->type4.hour,
-			  ais->type4.minute,
-			  ais->type4.second,
-			  (uint)ais->type4.accuracy,
-			  ais->type4.latitude / AIS_LATLON_SCALE, 
-			  ais->type4.longitude / AIS_LATLON_SCALE,
-			  epfd_legends[ais->type4.epfd],
-			  ais->type4.raim,
-			  ais->type4.radio);
-	} else {
-	    (void)fprintf(fp,
-			  (labeled ? TYPE4_UNSCALED_LABELED : TYPE4_UNSCALED_UNLABELED),
-			  ais->type4.year,
-			  ais->type4.month,
-			  ais->type4.day,
-			  ais->type4.hour,
-			  ais->type4.minute,
-			  ais->type4.second,
-			  (uint)ais->type4.accuracy,
-			  ais->type4.latitude, 
-			  ais->type4.longitude,
-			  ais->type4.epfd,
-			  ais->type4.raim,
-			  ais->type4.radio);
-	}
-#undef TYPE4_UNSCALED_UNLABELED
-#undef TYPE4_UNSCALED_LABELED
-#undef TYPE4_SCALED_UNLABELED
-#undef TYPE4_SCALED_LABELED
-	break;
-    case 5: /* Ship static and voyage related data */
-#define TYPE5_SCALED_LABELED "ID=%u,AIS=%u,callsign=%s,name=%s,type=%s,bow=%u,stern=%u,port=%u,starboard=%u,epsd=%s,eta=%u:%uT%u:%uZ,draught=%.1f,dest=%s,dte=%u,sp=%u\n"
-#define TYPE5_SCALED_UNLABELED "%u,%u,%s,%s,%s,%u,%u,%u,%u,%s,%u:%uT%u:%uZ,%.1f,%s,%u,%u\n"
-	if (scaled) {
-	    (void)fprintf(fp,
-			  (labeled ? TYPE5_SCALED_LABELED : TYPE5_SCALED_UNLABELED),
-			  ais->type5.imo_id,
-			  ais->type5.ais_version,
-			  ais->type5.callsign,
-			  ais->type5.vessel_name,
-			  type_legends[ais->type5.ship_type],
-			  ais->type5.to_bow,
-			  ais->type5.to_stern,
-			  ais->type5.to_port,
-			  ais->type5.to_starboard,
-			  epfd_legends[ais->type5.epfd],
-			  ais->type5.month,
-			  ais->type5.day,
-			  ais->type5.hour,
-			  ais->type5.minute,
-			  ais->type5.draught / 10.0,
-			  ais->type5.destination,
-			  ais->type5.dte,
-			  ais->type5.spare);
-	} else {
-#define TYPE5_UNSCALED_LABELED "ID=%u,AIS=%u,callsign=%s,name=%s,type=%u,bow=%u,stern=%u,port=%u,starboard=%u,epsd=%u,eta=%u:%uT%u:%uZ,draught=%u,dest=%s,dte=%u,sp=%u\n"
-#define TYPE5_UNSCALED_UNLABELED "%u,%u,%s,%s,%u,%u,%u,%u,%u,%u,%u:%uT%u:%uZ,%u,%s,%u,%u\n"
-	    (void)fprintf(fp,
-			  (labeled ? TYPE5_UNSCALED_LABELED : TYPE5_UNSCALED_UNLABELED),
-			  ais->type5.imo_id,
-			  ais->type5.ais_version,
-			  ais->type5.callsign,
-			  ais->type5.vessel_name,
-			  ais->type5.ship_type,
-			  ais->type5.to_bow,
-			  ais->type5.to_stern,
-			  ais->type5.to_port,
-			  ais->type5.to_starboard,
-			  ais->type5.epfd,
-			  ais->type5.month,
-			  ais->type5.day,
-			  ais->type5.hour,
-			  ais->type5.minute,
-			  ais->type5.draught,
-			  ais->type5.destination,
-			  ais->type5.dte,
-			  ais->type5.spare);
-	}
-#undef TYPE5_UNSCALED_UNLABELED
-#undef TYPE5_UNSCALED_LABELED
-#undef TYPE5_SCALED_UNLABELED
-#undef TYPE5_SCALED_LABELED
-	break;
-    case 9:
-#define TYPE9_UNSCALED_UNLABELED "%u,%u,%u,%d,%d,%u,%u,%x,%u,%d,%x\n"
-#define TYPE9_UNSCALED_LABELED   "alt=%u,SOG=%u,fq=%u,lon=%d,lat=%d,cog=%u,sec=%u,reg=%x,dte=%u,sp=%d,radio=%x\n"
-#define TYPE9_SCALED_UNLABELED "%u,%u,%u,%.4f,%.4f,%.1f,%u,%x,%u,%d,%x\n"
-#define TYPE9_SCALED_LABELED   "alt=%u,SOG=%u,fq=%u,lon=%.4f,lat=%.4f,cog=%.1f,sec=%u,reg=%x,dte=%u,sp=%d,radio=%x\n"
-	if (scaled) {
-	    (void)fprintf(fp,
-			  (labeled ? TYPE9_SCALED_LABELED : TYPE9_SCALED_UNLABELED),
-			      
-			  ais->type9.altitude,
-			  ais->type9.sog, 
-			  (uint)ais->type9.accuracy,
-			  ais->type9.longitude / AIS_LATLON_SCALE, 
-			  ais->type9.latitude / AIS_LATLON_SCALE, 
-			  ais->type9.cog / 10.0, 
-			  ais->type9.utc_second,
-			  ais->type9.regional,
-			  ais->type9.dte, 
-			  ais->type9.raim,
-			  ais->type9.radio);
-	} else {
-	    (void)fprintf(fp,
-			  (labeled ? TYPE9_UNSCALED_LABELED : TYPE9_UNSCALED_UNLABELED),
-			  ais->type9.altitude,
-			  ais->type9.sog, 
-			  (uint)ais->type9.accuracy,
-			  ais->type9.longitude,
-			  ais->type9.latitude,
-			  ais->type9.cog, 
-			  ais->type9.utc_second,
-			  ais->type9.regional,
-			  ais->type9.dte, 
-			  ais->type9.raim,
-			  ais->type9.radio);
-	}
-#undef TYPE9_UNSCALED_UNLABELED
-#undef TYPE9_UNSCALED_LABELED
-#undef TYPE9_SCALED_UNLABELED
-#undef TYPE9_SCALED_LABELED
-	break;
-    case 18:
-#define TYPE18_UNSCALED_UNLABELED "%u,%u,%u,%d,%d,%u,%u,%u,%x,%d,%x\n"
-#define TYPE18_UNSCALED_LABELED   "res=%u,SOG=%u,fq=%u,lon=%d,lat=%d,cog=%u,hd=%u,sec=%u,reg=%x,sp=%d,radio=%x\n"
-#define TYPE18_SCALED_UNLABELED "%u,%.1f,%u,%.4f,%.4f,%.1f,%u,%u,%x,%d,%x\n"
-#define TYPE18_SCALED_LABELED   "res=%u,SOG=%.1f,fq=%u,lon=%.4f,lat=%.4f,cog=%.1f,hd=%u,sec=%u,reg=%x,sp=%d,radio=%x\n"
-	if (scaled) {
-	    (void)fprintf(fp,
-			  (labeled ? TYPE18_SCALED_LABELED : TYPE18_SCALED_UNLABELED),
-			      
-			  ais->type18.reserved,
-			  ais->type18.sog / 10.0, 
-			  (uint)ais->type18.accuracy,
-			  ais->type18.longitude / AIS_LATLON_SCALE, 
-			  ais->type18.latitude / AIS_LATLON_SCALE, 
-			  ais->type18.cog / 10.0,
-			  ais->type18.heading,
-			  ais->type18.utc_second,
-			  ais->type18.regional,
-			  ais->type18.raim,
-			  ais->type18.radio);
-	} else {
-	    (void)fprintf(fp,
-			  (labeled ? TYPE18_UNSCALED_LABELED : TYPE18_UNSCALED_UNLABELED),
-			  ais->type18.reserved,
-			  ais->type18.sog, 
-			  (uint)ais->type18.accuracy,
-			  ais->type18.longitude,
-			  ais->type18.latitude,
-			  ais->type18.cog, 
-			  ais->type18.heading,
-			  ais->type18.utc_second,
-			  ais->type18.regional,
-			  ais->type18.raim,
-			  ais->type18.radio);
-	}
-#undef TYPE18_UNSCALED_UNLABELED
-#undef TYPE18_UNSCALED_LABELED
-#undef TYPE18_SCALED_UNLABELED
-#undef TYPE18_SCALED_LABELED
-	break;
-    default:
-	gpsd_report(LOG_ERROR, "Unparsed AIVDM message type %u.\n",ais->id);
-	break;
-    }
-    /*@ +formatconst @*/
-}
-
-#endif /* defined(AIVDM_ENABLE) */

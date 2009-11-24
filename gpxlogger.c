@@ -89,7 +89,7 @@ static void print_fix(struct gps_fix_t *fix, struct tm *time)
      * we don't necessarily have access to some of the stuff in gsdata.
      * Might mean some of this stuff should be promoted.
      */
-    if ((gpsdata->status >= 2) && (gpsdata->fix.mode >= MODE_3D)){
+    if ((gpsdata->status >= 2) && (gpsdata->fix.mode >= MODE_3D)) {
 	/* dgps or pps */
 	if (gpsdata->fix.mode == 4) { /* military pps */
 	    (void)printf("        <fix>pps</fix>\n");
@@ -174,9 +174,9 @@ static struct gps_fix_t gpsfix;
 
 DBusConnection* connection;
 
-static char devname[BUFSIZ];
+static char gpsd_devname[BUFSIZ];
 
-static DBusHandlerResult handle_gps_fix (DBusMessage* message) 
+static DBusHandlerResult handle_gps_fix (DBusMessage* message)
 {
     DBusError	error;
 
@@ -198,9 +198,9 @@ static DBusHandlerResult handle_gps_fix (DBusMessage* message)
 			   DBUS_TYPE_DOUBLE, &gpsfix.eps,
 			   DBUS_TYPE_DOUBLE, &gpsfix.climb,
 			   DBUS_TYPE_DOUBLE, &gpsfix.epc,
-			   DBUS_TYPE_STRING, &devname,
+			   DBUS_TYPE_STRING, &gpsd_devname,
 			   DBUS_TYPE_INVALID);
-	
+
     conditionally_log_fix(&gpsfix);
     return DBUS_HANDLER_RESULT_HANDLED;
 }
@@ -264,11 +264,14 @@ static int dbus_mainloop(void)
  **************************************************************************/
 
 struct fixsource_t source;
-static int casoc = 0;
 
 static void process(struct gps_data_t *gpsdata,
-	     char *buf UNUSED, size_t len UNUSED, int level UNUSED)
+	     char *buf UNUSED, size_t len UNUSED)
 {
+    /* this is where we implement source-device filtering */
+    if (gpsdata->dev.path[0] && source.device!=NULL && strcmp(source.device, gpsdata->dev.path) != 0)
+	return;
+
     conditionally_log_fix(&gpsdata->fix);
 }
 
@@ -279,46 +282,16 @@ static int socket_mainloop(void)
 
     gpsdata = gps_open(source.server, source.port);
     if (!gpsdata) {
-	char *err_str;
-	switch (errno) {
-	case NL_NOSERVICE:
-	    err_str = "can't get service entry";
-	    break;
-	case NL_NOHOST:
-	    err_str = "can't get host entry";
-	    break;
-	case NL_NOPROTO:
-	    err_str = "can't get protocol entry";
-	    break;
-	case NL_NOSOCK:
-	    err_str = "can't create socket";
-	    break;
-	case NL_NOSOCKOPT:
-	    err_str = "error SETSOCKOPT SO_REUSEADDR";
-	    break;
-	case NL_NOCONNECT:
-	    err_str = "can't connect to host";
-	    break;
-	default:
-	    err_str = "Unknown";
-	    break;
-	}
 	fprintf(stderr,
 		"%s: no gpsd running or network error: %d, %s\n",
-		progname, errno, err_str);
+		progname, errno, gps_errstr(errno));
 	exit(1);
     }
 
-    if (casoc)
-	gps_query(gpsdata, "j1\n");
-    if (source.device != NULL)
-	gps_query(gpsdata, "f=%s\n", source.device);
-
     gps_set_raw_hook(gpsdata, process);
+    gps_stream(gpsdata, WATCH_ENABLE|WATCH_NEWSTYLE, NULL);
 
-    gps_query(gpsdata, "w+x");
-
-    for(;;){
+    for(;;) {
 	int data;
 	struct timeval tv;
 
@@ -329,7 +302,7 @@ static int socket_mainloop(void)
 	tv.tv_sec = 0;
 	data = select(gpsdata->gps_fd + 1, &fds, NULL, NULL, &tv);
 
-	if (data < 0) {
+	if (data == -1) {
 	    (void)fprintf(stderr,"%s\n", strerror(errno));
 	    break;
 	}
@@ -361,7 +334,7 @@ int main (int argc, char** argv)
     int ch;
 
     progname = argv[0];
-    while ((ch = getopt(argc, argv, "hi:j:V")) != -1){
+    while ((ch = getopt(argc, argv, "hi:V")) != -1) {
 	switch (ch) {
 	case 'i':		/* set polling interfal */
 	    timeout = (unsigned int)atoi(optarg);
@@ -370,10 +343,6 @@ int main (int argc, char** argv)
 	    if (timeout >= 3600)
 		fprintf(stderr,
 			"WARNING: track timeout is an hour or more!\n");
-	    break;
-	case 'j':		/* set data smoothing */
-	    casoc = (unsigned int)atoi(optarg);
-	    casoc = casoc ? 1 : 0;
 	    break;
 	case 'V':
 	    (void)fprintf(stderr, "SVN ID: $Id$ \n");

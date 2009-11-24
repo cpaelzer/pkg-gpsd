@@ -23,6 +23,24 @@ static unsigned long long uL1,uL2;
 static float f1;
 static double d1;
 
+
+static char /*@ observer @*/ *hexdump(const void *binbuf, size_t len)
+{
+    static char hexbuf[BUFSIZ];
+    size_t i, j = 0;
+    const char *ibuf = (const char *)binbuf;
+    const char *hexchar = "0123456789abcdef";
+
+    /*@ -shiftimplementation @*/
+    for (i = 0; i < len; i++) {
+	hexbuf[j++] = hexchar[ (ibuf[i]&0xf0)>>4 ];
+	hexbuf[j++] = hexchar[ ibuf[i]&0x0f ];
+    }
+    /*@ +shiftimplementation @*/
+    hexbuf[j] ='\0';
+    return hexbuf;
+}
+
 static void bedumpall(void)
 {
     (void)printf("getsb: %016llx %016llx %016llx %016llx\n",
@@ -84,6 +102,7 @@ static void ledumpall(void)
 }
 
 struct unsigned_test {
+    unsigned char *buf;
     unsigned int start, width;
     unsigned long long expected;
     char *description;
@@ -92,12 +111,17 @@ struct unsigned_test {
 /*@ -duplicatequals +ignorequals @*/
 int main(void)
 {
+    /*@ -observertrans -usereleased @*/
     struct unsigned_test *up, unsigned_tests[] = {
-	{0,  1,  0,    "first bit of first byte"},
-	{0,  8,  0x01,"first 8 bits"},
-	{32, 7,  2,    "first seven bits of fifth byte"},
-	{56, 12, 0x8f, "12 bits crossing 7th to 8th bytes (08ff)"},
-	{78, 4,  11,    "2 bits crossing 8th to 9th byte (fefd)"},
+	/* tests using the big buffer */
+	{buf, 0,  1,  0,    "first bit of first byte"},
+	{buf, 0,  8,  0x01,"first 8 bits"},
+	{buf, 32, 7,  2,    "first seven bits of fifth byte"},
+	{buf, 56, 12, 0x8f, "12 bits crossing 7th to 8th bytes (0x08ff)"},
+	{buf, 78, 4,  11,   "2 bits crossing 8th to 9th byte (0xfefd)"},
+	/* sporadic tests based on found bugs */
+	{(unsigned char *)"\x19\x23\f6", 
+	7, 2, 2, "2 bits crossing 1st to 2nd byte (0x1923)"},
     };
 
     unsigned char *sp;
@@ -106,6 +130,7 @@ int main(void)
     memcpy(buf+8,"\xff\xfe\xfd\xfc\xfb\xfa\xf9\xf8",8);
     memcpy(buf+16,"\x40\x09\x21\xfb\x54\x44\x2d\x18",8);
     memcpy(buf+24,"\x40\x49\x0f\xdb",4);
+    /*@ +observertrans +usereleased @*/
 
     (void)fputs("Test data:", stdout);
     for (sp = buf; sp < buf + 28; sp++)
@@ -113,6 +138,7 @@ int main(void)
     (void)putc('\n', stdout);
 
     /* big-endian test */
+    /*@-type@*/
     printf("Big-endian:\n");
     sb1 = getsb(buf, 0);
     sb2 = getsb(buf, 8);
@@ -132,10 +158,12 @@ int main(void)
     uL2 = getbeuL(buf, 8);
     f1 = getbef(buf, 24);
     d1 = getbed(buf, 16);
+    /*@+type@*/
     bedumpall();
 
     /* little-endian test */
     printf("Little-endian:\n");
+    /*@-type@*/
     sb1 = getsb(buf, 0);
     sb2 = getsb(buf, 8);
     ub1 = getub(buf, 0);
@@ -154,6 +182,7 @@ int main(void)
     uL2 = getleuL(buf, 8);
     f1 = getlef(buf, 24);
     d1 = getled(buf, 16);
+    /*@+type@*/
     ledumpall();
 
 
@@ -162,7 +191,8 @@ int main(void)
 	 up < unsigned_tests+sizeof(unsigned_tests)/sizeof(unsigned_tests[0]); 
 	 up++) {
 	unsigned long long res = ubits((char *)buf, up->start, up->width); 
-	(void)printf("ubits(..., %d, %d) %s should be %llu, is %llu: %s\n",
+	(void)printf("ubits(%s, %d, %d) %s should be %llu, is %llu: %s\n",
+		     hexdump(buf, strlen((char *)buf)),
 		     up->start, up->width, up->description, up->expected, res,
 		     res == up->expected ? "succeeded" : "FAILED");
     }
