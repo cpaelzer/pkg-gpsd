@@ -124,8 +124,7 @@ build-python: $(PYTHONS:%=build-python%-stamp) $(PYTHONS:%=build-python%-dbg-sta
 build-gpsd-stamp: configure-stamp
 	dh_testdir
 
-	#hack around broken --disable-python in configure
-	$(MAKE) PYEXTENSIONS='' noinst_SCRIPTS='' nodist_python_PYTHON='' PYTHONPAGES_DIST=''
+	$(MAKE) 
 
 	#this is a rather ugly hack to work around broken linebreaks
 	#from docbook
@@ -158,7 +157,7 @@ install: install-gpsd install-python
 install-gpsd: build-gpsd-stamp
 	dh_testdir
 	dh_testroot
-	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp PYEXTENSIONS='' noinst_SCRIPTS='' nodist_python_PYTHON='' dist_bin_SCRIPTS='' PYTHONPAGES_DIST=''
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp 
 	cp INSTALL TROUBLESHOOTING
 	#ldconfig link
 	dh_link -p$(PACKAGE_LIB) usr/lib/libgps.so.$(LIB_version) \
