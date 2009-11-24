@@ -1,0 +1,742 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Eric S. Raymond">
+   <meta name="Description" content="Programmer's guide to GPS hacking.">
+   <meta name="Keywords" content="GPS, translator, GIS">
+   <link rel="stylesheet" href="main.css" type="text/css"/>
+   <title>GPSD FAQ</title>
+</head>
+<body>
+
+<div id="Header">
+GPSD Frequently Asked Questions
+</div>
+
+<div id="Menu">
+    <img src="gpsd-logo-small.png"/><br />
+    <a href="index.html">Home</a><br/>
+    <a href="index.html#news">News</a><br/>
+    <a href="index.html#downloads">Downloads</a><br/>
+    <a href="index.html#mailing-lists">Mailing lists</a><br/>
+    <a href="index.html#documentation">Documentation</a><br/>
+    FAQ<br/>
+    <a href="xgps-sample.html">Screenshots</a><br/>
+    <a href="index.html#recipes">Recipes</a><br/>
+    <a href="index.html#others">Other GPSDs</a><br/>
+    <a href="hardware.html">Hardware</a><br/>
+    <a href="for-vendors.html">For GPS Vendors</a><br/>
+    <a href="wishlist.html">Wish List</a><br/>
+    <a href="hall-of-shame.html">Hall of Shame</a><br/>
+    <a href="hacking.html">Hacker's Guide</a><br/>
+    <a href="compatibility">Application Compatibility</a>
+    <a href="references.html">References</a><br/>
+    <a href="history.html">History</a><br/>
+    <a href="future.html">Future</a><br/>
+
+    <div>&nbsp;</div>
+
+    <a href='http://www.catb.org/hacker-emblem/'><img
+    src='http://www.catb.org/hacker-emblem/glider.png'
+    alt='hacker emblem' /></a><br />
+
+    <hr/>
+    <script type="text/javascript"><!--
+    google_ad_client = "pub-1458586455084261";
+    google_ad_width = 160;
+    google_ad_height = 600;
+    google_ad_format = "160x600_as";
+    google_ad_type = "text";
+    google_ad_channel = "";
+    //--></script>
+    <script type="text/javascript"
+      src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+    </script>
+    <hr/>
+
+    <a href="http://validator.w3.org/check/referer"><img
+          src="http://www.w3.org/Icons/valid-xhtml10"
+          alt="Valid XHTML 1.0!" height="31" width="88" /></a>
+</div>
+
+<div id="Content">
+
+<ul>
+<li><a href='#bug-reporting'>How do I report bugs in GPSD?</a><br/>
+<li><a href='#nodata'>I get no data from my GPS</a></h1>
+<li><a href='#oldcommands'>Why does the first A,E,O,P,T,U, or V command to a device always return "?"</a><br/>
+<li><a href="#singleshot">Why does my single-shot query fail to return fix data?</a><br/>
+<li><a href='#speed'>Why does my receiver report wildly fluctuating speed?</a><br/>
+<li><a href='#gpsdrive'>Why do I get implausibly low speeds when using gpsdrive?</a><br/>
+<li><a href='#flicker'>Why does the date field in <code>xgps</code> flicker to "n/a" part of the time even when there's a fix?</a><br/>
+<li><a href='#flicker'>Why does <code>xgps</code> flicker between displaying FIX and NOFIX about once a second?</a><br/>
+<li><a href='#flicker'>Why doesn't <code>gpsd</code> set its J=1 option by default and avoid the flicker problem?</a><br/>
+<li><a href='#kismet'>Why do I get flaky results when I try to use <code>gpsd</code> with Kismet?</a><br/>
+<li><a href='#bluetooth'>Why do I have to restart <code>gpsd</code> whenever I power-cycle my Bluetooth device?</a><br/>
+<li><a href='#lockup'>My <code>gpsd</code> sometimes stops responding overnight</a><br/>
+<li><a href='#why_migrate'>Why use this version of <code>gpsd</code>?</a><br/>
+<li><a href='#why_not_parse_nmea'>Why use the <code>gpsd</code> protocol rather than parsing raw NMEA?</a><br/>
+<li><a href='#interfacing'>How should  I interface my application with <code>gpsd</code>?</a><br/>
+<li><a href='#changes'>How has the <code>gpsd</code> interface changed since 1.x?</a><br/>
+<li><a href='#web'>How do I get gpsd data into a web page?</a><br/>
+</ul>
+
+<h1 id='bug-reporting'>How do I report bugs in GPSD?</h1>
+<blockquote>
+<p>When you have a problem with gpsd, here are some steps you can take to
+help get your bug resolved as quickly as possible.</p>
+
+<h3>1. Read this whole FAQ first</h3>
+
+<p>First, read this whole FAQ before reporting apparent misbehavior as a
+bug.  You may find a solution here.</p>
+
+<h3>2. Make sure it's not a problem with your toolchain or OS</h3>
+
+<p>See our page on <a href='upstream-bugs.html'>upstream bugs</a>.</p>
+
+<h3>3. Make sure it's not a problem in your client software</h3>
+
+<p>Make sure it is a real gpsd bug and not a problem with
+your client software.  A good way to do this is to run your client and
+the gpsd test client (xgps) side by side.  If xgps seems to report
+good numbers but your client does not, you have a client problem.
+If xgps reports the same sort of bad numbers as your client, you
+have a real <code>gpsd</code> bug.</p>
+
+<h3>4. Check the latest version of <code>gpsd</code> for the bug.</h3>
+
+<p>If you are using an old version of <code>gpsd</code>, it is
+possible your bug has already been fixed.  Download the latest public
+version from the <a
+href='http://developer.berlios.de/projects/gpsd/'>project page</a> and
+test it.  To be really helpful, check out the <a
+href='http://developer.berlios.de/svn/?group_id=2116'>Subversion
+head</a> and test that.  We don't mind getting bug reports that say 
+"I saw version foo had the following bug, but you've fixed it."</p>
+
+<h3>5. Capture a log that triggers the problem</h3>
+
+<p>If we can reproduce your gpsd problem, we can usually fix it very
+rapidly.  If we can't reproduce it, you might get lucky or you might
+not &mdash; and we try hard, but all too often the result is 'not'.</p>
+
+<p>Therefore the most important step you can take is to capture a log
+of some receiver output that reproduces the bug; <code>gpscat</code> will
+help you.</p>
+
+<h3>6. Trim the capture log that reproduces the problem</h3>
+
+<p>Your next step should be to feed the log you just captured to a
+<code>gpsd</code> instance through <code>gpsfake</code> to verify that
+the log does in fact reproduce the bug.</p>
+
+<p>Once you have the log, trim it to the smallest span of data that
+reproduces the bug.  A systematic way to do this is to cut the log in
+half at the middle and test each half.  If one half doesn't reproduce
+the bug but the other does, throw away the half that doesn't.  Repeat
+this procedure on each half that tickles the bug until you can't make
+it any smaller.  Then send us that.</p>
+
+<p>If possible, use the -l option of gpsfake to pin down the sentence
+or packet that produces the bug, and tell us that.</p>
+
+<h3>7. Look at <code>gpsd</code> log output to see if it gives you a clue</h3>
+
+<p>You may get a better handle on your problem by running gpsd in
+foreground (-N option) with the -D option set to a high level (-D 5 is
+often good).  If the transcript has anything that looks like a clue
+in it, send it along with your bug report.  When in doubt about
+whether it holds a clue, send it.</p>
+
+<p>One of the things this should tell you, if the chip reports it at
+all, is the firmware version.  You will want that for your report.</p>
+
+<h3 id="logformat">8. Annotate the capture log and send us a copy</h3>
+
+<!-- Note: his is also linked on the hardware page -->
+<p>We'll describe the annotation steps here for completeness, but the
+easiest way to do this is with <a
+href="https://www.mainframe.cx/cgi-bin/gps_report.cgi">our web
+form</a>
+
+<p>A logfile should consist of an identifying header followed by a
+straight unencoded dump of receiver data, whether NMEA or binary. The
+header should consist of text lines beginning with # and ending with LF.
+Here is the beginning of one log file I already have:</p>
+
+<pre>
+# Name: Magellan eXplorist 210
+# Chipset: unknown
+# Submitted-by: "Paul B van den Berg" <paulberg@wanadoo.nl>
+# Date: 20 May 2006
+# Location: Groningen, NL, 53.2N 6.6E
+#
+# mode V2.1 GSA
+# Lines up to but not including the first GPGLL are
+# `cat /dev/ttyACM0` at startup 
+# Following lines are
+# `cat /dev/ttyACM0` stationary
+$GPGSV,3,1,00,,,,,,,,,,,,,,,,*7B
+$GPGSV,3,2,00,,,,,,,,,,,,,,,,*78
+$GPGSV,3,3,00,,,,,,,,,,,,,,,,*79
+$PMGNST,01.75,3,F,816,11.1,+00000,20*5E
+$GPGSV,3,1,00,,,,,,,,,,,,,,,,*7B
+$GPGSV,3,2,00,,,,,,,,,,,,,,,,*78
+$GPGSV,3,3,00,,,,,,,,,,,,,,,,*79
+$PMGNST,01.75,3,F,816,11.1,+00000,20*5E
+$GPGSV,3,1,00,,,,,,,,,,,,,,,,*7B
+$GPGSV,3,2,00,,,,,,,,,,,,,,,,*78
+$GPGSV,3,3,00,,,,,,,,,,,,,,,,*79
+$PMGNST,01.75,3,F,822,11.2,+00000,20*5A
+$GPGSV,3,1,00,,,,,,,,,,,,,,,,*7B
+$GPGSV,3,2,00,,,,,,,,,,,,,,,,*78
+$GPGSV,3,3,00,,,,,,,,,,,,,,,,*79
+$PMGNST,01.75,3,F,822,11.2,+00000,20*5A
+$GPGSV,3,1,12,09,76,287,,17,38,073,36,26,34,163,,05,33,230,*72
+$GPGSV,3,2,12,29,27,161,,18,24,256,,22,24,299,,28,11,055,*73
+$GPGSV,3,3,12,14,08,319,,11,03,017,,30,02,232,,24,00,084,*71
+$PMGNST,01.75,3,F,822,11.2,-00673,20*5E
+$GPGLL,5313.2228,N,00634.4228,E,200619.295,A*35
+$GPGGA,200619.30,5313.2228,N,00634.4228,E,1,05,2.6,00000,M,,,,*2C
+$GPRMC,200619.30,A,5313.2228,N,00634.4228,E,00.0,000.0,200506,00,W*59
+$GPGSA,A,3,26,05,22,09,18,,,,,,,,05.1,02.6,04.4*03
+$GPGSV,3,1,10,09,78,288,39,17,38,071,,05,34,230,45,26,33,163,39*77
+$GPGSV,3,2,10,29,26,162,,18,24,255,42,22,24,298,44,28,10,056,*75
+$GPGSV,3,3,10,14,09,319,,11,03,016,,136,27,157,,124,28,162,*71
+</pre>
+
+<p>The way to fill in the Name, Submitted-by, and Date
+headers should be pretty obvious.</p>
+
+<p>Chipset should include the name and (if possible) model and/or
+firmware revision  of the chipset in the GPS.</p>
+
+<p>Please also include a Location header giving your city,
+state/province, country code, and a rough latitude/longitude.</p>
+
+<p>A log file is most useful when it contains (a) some sentences 
+generated when the GPS has no fix, (b) some sentences representing
+a fix with the GPS stationary, and (c) some sentences representing
+a fix with the GPS moving.</p>
+
+<p>If you have notes or comments on the logfile or the GPS, or any
+additional information you think might be helpful, add them as
+additional # comments (not containing a colon) after these headers.
+The test machinery that interprets the headers will ignore these and
+any empty comment lines.</p>
+
+<h3>9. If it's a dual-mode GPS, see if the problem reproduces in NMEA mode</h3>
+
+<p>If you're using a SiRF, Evermore, iTalk or u-blox GPS in binary mode
+(which you can tell from the -D 4 output), switch back to NMEA mode
+using the N command (or a vendor-provided tool) and see if the bug is
+still reproduceable.</p>
+
+<h3>10. If your bug core-dumps gpsd, send us a stack trace.</h3>
+
+<p>Though it happens seldom (and we had 2 report since about mid-2005),
+badly-formed input from a device with poor standards compliance has been
+known to core-dump gpsd.  If your gpsd has core-dumped, try to use gdb
+or whatever your local symbolic debugger is to generate a stack trace
+("bt full") of the crash, and send us that.</p>
+
+<h3>11. Try to determine what release introduced the bug</h3>
+
+<p>If you have upgraded from a previous version of <code>gpsd</code>,
+and the upgrade broke something that was working previously, the
+most useful thing you can do is pin down the release in which the
+bug was introduced.</p>
+
+<p>How efficiently you can do this depends on whether or not you have
+a client for the Subversion version control system.  If you don't, all
+you can do is download and test named releases.  If you do, you can
+pin down the exact change that introduced the bug.  The latter is
+far more helpful to us and will get your bug fixed faster, so we'll
+describe that procedure here.</p>
+
+<ol>
+<li><p>Follow <a
+href='http://developer.berlios.de/svn/?group_id=2116'>these
+instructions</a> to check out a copy of the software.</p></li>
+
+<li><p>Do "svn log *" in the top-level directory of the checked-out tree.
+Save the results.  This is your map of dates to revision levels.</p></li>
+
+<li><p>Determine the revision levels of the first known bad release
+and the last known good release.  You can do this by looking for the
+release dates from gpsd.spec in the log output. Note: pick the
+<em>first</em> revision matching the known-good date and the <em>last</em>
+revision matching the known-bad date.</p></li>
+
+<li><p>Use the <code>-r</code> option of <code>svn up</code> to check
+out the revision level in the middle of that range.  Thus, if the last
+known good release was 2502 and the known bad one is 2760, check out
+release (2760 + 2502) / 2 = 2631.  The command you want would be "svn
+-r 2631 up" in this case.</p></li>
+
+<li><p>Build and test the revision.  Whether it works or not, you will
+eliminate half the range.  If it works, you know the bug was introduced
+somewhere in the upper half range.  If it doesn't, the bug was introduced
+in the lower half.</p></li>
+
+<li><p>Do the same test on the half-range where the error was introduced;
+e.g. check out the middle version, test that, and narrow the range by another
+factor of 2.</p></li>
+
+<li><p>Repeat this bisection search until you know the exact revision that
+introduced your bug.  This will happen very quickly, as the number of
+tests required will be the log to the base 2 of the number of
+revisions in your original span.  Even if there are (say) 500
+revisions in the span you should only require 9 tests to nail down the
+exact change in question.</p></li>
+</ol>
+
+<h3>12. Include the vendor, mode, and firmware version in your report.</h3>
+
+<p>Always include with your bug report the receiver vendor and model.  Try
+to include the firmware version as well.  This should be in your xgps
+display if your device makes it available; in a form field before
+2.35, or as the window title in 2.35 and later.  If the ID string is
+too long to fit, let the daemon run for a few minutes and issue an "I"
+command to it.  Alternatively, running the daemon at -D 4 may reveal
+the version.</p>
+</blockquote>
+
+<h1 id="oldcommands">Why does the first A,E,O,P,T,U, or V command to a device always return "?"</h1>
+
+<p>Note: These commands are now deprecated. The old command protocol
+they are part of will be <a href="orotocol-transition.html">removed at
+some time in the future</a>.  If you rely on them, you will create
+problems for yourself. Use one of the client libraries included with
+<code>gpsd</code> to avoid problems.</p>
+
+<p>To understand what's going on, you need to know that
+<code>gpsd</code> does not immediately assign a client a GPS from its
+pool of known devices when the client connects.  Rather, it waits
+until the client issues a command that requires GPS information.</p>
+
+<p>The reason for this goes back to when multi-device support was
+added in 2.21.  In a multi-device world, what the client might want to
+do is list available GPSes (with K) and choose one (with F).  There is
+also at least one other command, L, that doesn't require a GPS.  And
+in general, waiting until a GPS is really needed to wake one up is a
+good idea &mdash; it saves power, which can be important because
+GPS-equipped computers are more than likely running off a battery.</p>
+
+<p>So <code>gpsd</code> now defers binding the device.  Your first
+request for fix data triggers the action of binding a GPS to your
+channel, but <em>at that time</em> no GPS is yet bound.  The GPS
+doesn't have a fix, so you get ?.  But by the time of your
+<em>next</em> request <code>gpsd</code> has polled the daemon and has
+a fix.</p>
+
+<p>Generally only human beings testing <code>gpsd</code> via telnet/ssh
+ever notice this behavior.  <code>gpsd</code>-using applications poll the
+daemon repeatedly; the delay before the second response comes in
+normally is not noticeable.</p>
+
+<p>We haven't fixed this because the test clients and libgps all use
+watcher mode.  In watcher mode, you get 'O' updates whenever the GPS
+ships a recognized sentence.  The old-style individual requests are
+obsolete, really; they were poorly thought out and are only retained
+for backward compatibility.  You should fix your application to use
+watcher mode &mdash; or better yet, the libgps client library.</p>
+
+<h1 id="nodata">I get no data from my GPS</h1>
+
+<p>This answer may apply if you have followed the Quick Start
+procedure on the manual page but <code>gpsd</code> reports no data.</p>
+
+<p>Check for the obvious thing &mdash; a disconnected or loose cable<
+&mdash; first. Make sure you specified the device your GPS is
+actually plugged into.</p>
+
+<p>A good test to try is to run <b>gpscat(1)</b> on the device with
+speed set to 4800, then 9600. Most devices will report NMEA text 
+at one of these speeds; a few will report binary spewage. Either
+is a good sign.  If yours reports no data at all, you probably
+have some low-level system problem with serial or USB that you'll
+need to fix before <code>gpsd</code> will operate.</p>
+
+<para>USB GPSes actually emulate RS232 serial using converter chips.
+Under Linux, the usbserial kernel module must be loaded for correct
+operation of this class of device. Normally this module load should
+happen automatically when the device activates, but if you don't
+receive data check for it with <b>lsmod(1)</b>.</p>
+
+<p>On Linux systems with module autoloading disabled or misconfigured,
+it is possible you may need to load the module manually with a command
+such as <code>sudo modprobe usbserial vendor=0×1a86
+product=0×7523</code>.  Do not copy those hex numbers slavishly, they
+are examples.  To get the right numbers, you will need to dig up the
+vendor and product ID of your USB-serial converter device.</p>
+
+<h1 id="singleshot">Why does my single-shot query fail to return fix data?</h1>
+
+<p>Note: The new protocol does not support single-shot queries at all &mdash;
+the race conditions aassociated wit them are intractable.  You should
+not rely on such commands.  Use the new protcol, preferably through
+a client libary, instead.</p>
+
+<p>This is closely related to the previous item.</p>
+
+<p>The old-style query commands such as P and A are are safe to use
+with J=1 if you're polling repeatedly, but they're a dicey way to go
+if you're opening a channel to <code>gpsd</code>, doing a single-shot
+query, and then hanging up.  Even repeating the query a few times
+won't necessarily work.</p>
+
+<p>The problem is that your queries are in a race with the daemon's logic for 
+assigning and initializing a GPS.  It won't try to assign a GPS to your
+channel until the first command that demands actual device information.</p>
+
+<p>Then the race begins. The daemon will be interleaving reads of whatever
+packet fragments the GPS is shipping with reads from your client
+socket.  It is entirely possible that the rest of your commands
+will get processed before the daemon reads and processes enough GPS 
+sentences to get a fix &mdash; especially if the serial device is 
+slow and the GPS has a long initialization sequence.</p>
+
+<p>(A similar race existed in <code>gpsd</code> versions before
+multi-device support was added in 2.21; if you issued a query too
+soon after device open it would fail in exactly this way.)</p>
+
+<p>The right way to code your client is to set watcher mode and
+read a couple of O responses before trying to parse one.  That way
+the daemon paces the action, actually telling the client when it
+receives packets.</p>
+
+<p>To be certain of having full fix data, you'd need to wait for as
+many O responses as there are sentences that set fix data in the
+device's normal cycle.  For SiRFs, one read will do because normally
+only one sentence in the cycle ships fix data.  For NMEA devices you
+don't have a full fix before five reads, enough for an entire
+GPRMC/GPGGA/GPVTG/GPGLL/GPGSV cycle in whatever permutation the device
+ships it.</p>
+
+<p>In practice, three O reads will always be enough to get you
+<em>some</em> fix information &mdash; worst case is your first O came
+from a GPGSA and all you get is a mode, and then you get GPVTG, but
+you'll always get lat/lon on the next O.</p>
+
+<p>Clients that poll P or A repeatedly won't have a problem; the race
+effects will show up but be limited to noise in the first few seconds
+of samples.</p>
+
+<h1 id='speed'>Why does my receiver report wildly fluctuating speed?</h1>
+
+<p>If your problem is wildly fluctuating speed reports on a SiRF,
+switching on static navigation mode using <code>gpsmon</code>. Static
+navigation mode will freeze your position if your speed is below 1.2
+m/s for three seconds, and will begin updating your position again
+when speed exceeds 1.4 m/s. This prevents multipath, weak signals, or
+poor constellation geometry from dragging your solutions around too
+much. Other receivers may suffer the same problem and may have a
+similar solution.</p>
+
+<h1 id='gpsdrive'>Why do I get implausibly low speeds when using gpsdrive?</h1>
+
+<p>This is a gpsdrive bug, as you can verify by running
+<code>xgps</code> alongside it.</p>
+
+<h1 id='flicker'>Why does the date field in <code>xgps</code> flicker 
+to "n/a" part of the time even when there's a fix?</h1>
+
+<p>The sentence or packet your GPS uses to report satellite
+bearing/elevation has no timestamp. The <code>xgps</code>
+date display flickers to "n/a" when it has just seen this report.</p>
+
+<p>This is a known problem.  It's not a bug &mdash; or, at least, not
+a bug in the GPSD code.  Blame the idiot protocol designers who
+saw fit not to timestamp their satellite-data packet.  (NMEA and Garmin 
+GPSes don't.  SiRF GPSes do.  Score one for SiRF.)</p>
+
+<p><code>gpsd</code> is faithfully reporting the information it is
+getting from the GPS, including the fact that the Y sentence contains
+no date. That's its job.  The libgps library is doing its bit by
+passing everything from <code>gpsd</code> on to the client application
+as it arrives, including the lack of date.</p>
+
+<p>The -j option of <code>xgps</code> will work around this problem.
+It sends <code>gpsd</code> an initialization command that causes it
+not to clear fix data at the beginning of each reporting cycle.  This
+will eliminate the flicker, but means that you may occasionally see
+stale and invalid data.</p>
+
+<h1 id='flicker'>Why does <code>xgps</code> flicker between displaying FIX
+and NOFIX about once a second?</h1>
+
+<p>It's the same problem as the previous entry, and can be banished
+with the -j option.</p>
+
+<p>Other fields may flicker as well; latitude is especially prone to
+this.  Usually the problem only affects NMEA devices, so if you are
+using something wuith a SiRF or other chipset that reports in a
+non-NMEA format you will never see it.</p>
+
+<h1 id='flicker'>Why doesn't <code>gpsd</code> set its J=1 option by
+default and avoid the flicker problem?</h1>
+
+<p>Because that's policy, and policy is really the client's job.  We
+choose to make <code>gpsd</code> report what the GPS tells it as
+faithfully as it can without making assumptions about how the client
+wants to use the data.</p>
+
+<p>The design issues here  are much thornier than they at first appear.  
+See <a href="hacking.html#buffering">this extended discussion</a> in
+the <a href="hacking.html">Hacker's Guide</a>.</p>
+
+<h1 id='kismet'>Why do I get flaky results when I try to use <code>gpsd</code> with Kismet?</h1>
+
+<p>Kismet's interface was designed for a much older version of
+<code>gpsd</code>, and tends to fight with the autobauding code in the
+newer versions.  The Kismet maintainer has promised to fix this.
+Until he does, the workaround is to start <code>gpsd</code> and make
+sure it has synced up to a GPS before running Kismet. You can <a
+href='start-kismet'>download a shellscript</a> that does this.</p>
+
+<p>Note that your Kismet configuration has to include the setting
+"gps=true"  This is s a surprisingly easy detail to forget.</p>
+
+<h1 id='bluetooth'>Why do I have to restart <code>gpsd</code> whenever I power-cycle my Bluetooth device?</h1>
+
+<p>The Bluetooth stack returns 0 for a read from a missing device,
+rather than -1, and doesn't set errno.  This is wrong and needs to be
+fixed at OS level.</p>
+
+<h1 id='lockup'>My <code>gpsd</code> sometimes stops responding overnight</h1>
+
+<p>At one point in the development of <code>gpsd</code> we got a
+report of the daemon ceasing to respond to queries when run for
+more than a day or so; the user, quite reasonably, suspected some sort
+of resource leak in the daemon.  On the other hand, other users reported
+good operation over much longer periods with the same version of
+the software. That suggests a bug at the level of the user's operating 
+system or local site configuration.</p>
+
+<p>Nevertheless, the possibility of a resource-leak bug alarmed us
+enough that after 2.26 one of us (ESR) built an entire test framework
+for auditing the code's dynamic behavior and used it to apply <a
+href="http://valgrind.org">Valgrind</a>.  You can look at the
+resulting script, valgrind-audit, in the source distribution.  This
+turned up a couple of minor leaks, but nothing sufficient to explain
+the report.</p>
+
+<p>One of our senior developers, Rob Janssen, has seen
+<code>gpsd</code> interact badly with overnight backups, pushing the
+system load average through the roof.  He says: "when you copy many
+gigabytes of data from disk to disk, the [Linux] kernel's buffer
+management goes completely haywire. [...]  I think this is caused both
+by allocation of many buffers for reading files, and by accumulation
+of many dirty buffers that still have to be written.  At some point,
+programs like gpsd (but also all interactive programs and the X
+display manager) come to a complete standstill while the system is
+swapping like mad."</p>
+
+<p>If Rob's analysis is correct, <code>gpsd</code> is a canary in a
+coal mine.  If your <code>gpsd</code> locks up after a long period of
+operation, you should look at your logs and see if you can connect the
+point at which it stopped responding to some kind of resource crisis 
+brought on by lots of I/O activity.</p>
+
+<p>Another thing to try is running <code>gpsd</code> under Valgrind overnight 
+and seeing if it reports any leaks.</p>
+
+<h1 id='why_migrate'>Why use this version of <code>gpsd</code>?</h1>
+
+<p>If you have written a <code>gpsd</code>-aware application using one
+of the old 1.x versions, or a fork such as <code>ngpsd</code> or
+<code>tgpsd</code>, here are some good functional reasons to migrate
+to 2.0:</p>
+
+<ol>
+<li>The new version supports AIS as well as GPS receivers.</li>
+
+<li>Hotplug- and reconnect support.  Your application does not have to be
+aware of GPS device connects and disconnects, but can choose to be by
+watching for X commands.</li>
+
+<li>Your application can now query whether or not the GPS is online
+and get an authoritative answer.</li>
+
+<li>Timestamps are now no longer truncated to seconds, but reported to 
+whatever resolution the GPS ships.  Often (notably on SiRF-II GPSes)
+this is milliseconds.</li>
+
+<li>There is a "watcher" mode.  It is like raw mode in that the
+GPS streams updates at you, but unlike it in that the updates are in 
+the simpler GPSD format rather than the more complex NMEA one.</li>
+
+<li>The daemon now automatically tries to reconnect to the GPS once
+a second when it is offline but clients are connected.</li>
+
+<li>Writes to clients are nonblocking, so new <code>gpsd</code> cannot
+be stalled by a wedged client.</li>
+
+<li>The code in the new version has been carefully audited for quality,
+static-checked using <a href='http://www.splint.org'>splint</a>, and
+is regression-tested before every release.</li>
+
+<li>It took us two years of hard work, but as of late 2006
+<code>gpsd</code> dominates its application niche so completely that
+every competitor we knew of in 2004 has been abandoned by its own
+maintainers in our favor.  The 1.x versions or any fork you use won't
+be getting any future maintenance.</li>
+</ol>
+
+<h1 id='why_not_parse_nmea'>Why use the <code>gpsd</code> protocol rather than parsing raw NMEA?</h1>
+
+<p>Some applications that use <code>gpsd</code> start raw mode with
+the 'r' command and parse the NMEA directly.  This is not a good idea.</p>
+
+<p>One problem with raw mode is that NMEA is a poorly specified
+standard.  There are, for example, two different and incompatible
+variants of GPVTG.  Another issue is that implementations vary as to
+whether they leave fields they don't supply empty or fill them in with
+a special value such as 0.0.  Interpretation of the different NMEA
+status fields is a black art.</p>
+
+<p>It is all too easy to write an NMEA parser that works well on one
+variant but breaks on another, delivering subtly incorrect results or
+even crashing your application.  Because <code>gpsd</code> specializes
+in the job, we collect knowledge on all variants and do parsing that
+is much less likely to get tripped up.</p>
+
+<p>Another issue is that some of the reports your application would
+like to have are not generated by all GPSes.  Estimated position error
+in meters is the most obvious example; climb/sink is another.  When a GPS
+doesn't supply these, <code>gpsd</code> can fill them in using the
+same sorts of computation that more capable GPSes use.</p>
+
+<h1 id='interfacing'>How should  I interface my application with <code>gpsd</code>?</h1>
+
+<p>The <code>gpsd</code> package provides two ways for C code to get
+data from a GPS or AIS rceiver.  Both go through the libgps.a library,
+which supports two sets of entry points. The <a
+href="libgpsd.html">low-level interface</a> talks directly to the GPS.
+The <a href="libgps.html">high-level interface</a> communicates with
+an instance of <code>gpsd</code>, which uses its own copy of libgps.a
+to talk to the device.</p>
+
+<p>A third way would be to open a socket to <code>gpsd</code> and
+interpret <code>gpsd</code> protocol or raw NMEA in your application.
+Before 2.0, all <code>gpsd</code>-aware applications had to do this
+because libgps.a didn't exist.  Now that it does, the exercise is
+rather pointless.  Using libgps.a will probably simplify your code a
+lot.</p>
+
+<p>You will almost always want to use the high-level interface and go
+through the daemon; among other things, this means more than one
+application will be able to query the GPS without causing confusion.
+The only exception will be in very space-constrained single-user
+scenarios, perhaps on embedded systems or PDAs. On those it may be
+appropriate to use the low-level interface directly, probably with a
+build from source that conditions out all but one of the drivers.</p>
+
+<p>For Python programmers, there is a gps.py module the high-level
+interface.  It exports a class that encapsulates a GPS session.</p>
+
+<h1 id='changes'>How has the <code>gpsd</code> interface changed since 1.x?</h1>
+
+<p>Note: This section describes evolutionary changes in the old
+1.x-2.x protocol.  This protocol is now deprecated; while still
+supported for backward compatibility, it will be removed in the
+future. You should be using the new JSON-based protocol. preferably
+through one of our client libraries.</p>
+
+<p>There are three minor incompatibilities with <code>gpsd</code> 1.x:</p>
+
+<p>First, <code>gpsd</code>-2's command-line options have been changed
+and simplified.  If your <code>gpsd</code>-using application is
+starting up <code>gpsd</code> directly you may find you have to modify
+the invocation.  However, we don't recommend this.  New
+<code>gpsd</code> is designed to be started by hotplug scripts when
+a USB device wakes up, or started at boot time and run
+continuously just like any normal daemon.  It will do nothing, and be
+swapped out, unless there are clients trying to query the GPS.</p>
+
+<p>Second, <code>gpsd</code> now returns "?" as the contents for a 
+field when it doesn't have valid data for that field (e.g. latitude 
+or longitude before the first fix).  This is only an issue if you are
+interpreting GPSD responses yourself rather than using libgps.a or the
+gps.py Python module.</p>
+
+<p>Third, the format of the timestamp returned by the D command has
+changed, from "%m/%d/%Y %H:%M:%S" to ISO-8601: "%Y-%m-%dT%H:%M:%SZ".
+No more U.S.-centric date-format assumptions!  Also, as previously
+noted, the seconds part may have one or more digits of decimal fractional
+seconds.</p>
+
+<p>The protocol and API around <code>gpsd</code> will need to change
+again in the future.  See <a href="compatibility.html">this
+compatibility page</a> for explanation, and for advice on how to
+minimize your exposure to the change.</p>
+
+<h1 id='web'>How do I get gpsd data into a web page?</h1>
+
+<p>The <code>gpsd</code> source-code distribution now includes a PHP
+script that makes this easy.  The script shows current fix data, a 
+satellite view, and can even incorporate a Google Maps display
+if you have a Google API key. Look at the end of the file INSTALL for
+instructions.</p>
+
+<p>Another way is to use a perl CGI script that leverages
+Net::GPSD like this...</p>
+
+<code><pre>
+#!/usr/bin/perl -w
+use strict;
+use Net::GPSD;
+
+my $g=new Net::GPSD;
+my $p=$g->get;
+
+print qq{
+&lt;?xml version='1.0'?&gt;
+&lt;Report xmlns:gml="http://www.opengis.net/gml"&gt;
+  &lt;items&gt;
+    &lt;Item&gt;
+      &lt;ID&gt;35643563245&lt;/ID&gt;
+      &lt;position&gt;
+        &lt;gml:Point srsDimension="2"
+srsName="urn:ogc:def:crs:EPSG:6.6:4326"&gt;
+          &lt;gml:pos&gt;}. $p-&gt;lat. " ". $p-&gt;lon. q{&lt;/gml:pos&gt;
+        &lt;/gml:Point&gt;
+      &lt;/position&gt;
+    &lt;/Item&gt;
+  &lt;/items&gt;
+&lt;/Report&gt;
+};
+&lt;/code&gt;
+</pre></code>
+
+<p>This will return something like:</p>
+
+<code><pre>
+&lt;?xml version='1.0'?&gt;
+&lt;Report xmlns:gml="http://www.opengis.net/gml"&gt;
+  &lt;items&gt;
+    &lt;Item&gt;
+      &lt;ID&gt;35643563245&lt;/ID&gt;
+      &lt;position&gt;
+        &lt;gml:Point srsDimension="2" srsName="urn:ogc:def:crs:EPSG:6.6:4326"&gt;
+          &lt;gml:pos&gt;38.865960 -77.108624&lt;/gml:pos&gt;
+        &lt;/gml:Point&gt;
+      &lt;/position&gt;
+    &lt;/Item&gt;
+  &lt;/items&gt;
+&lt;/Report&gt;
+</pre></code>
+
+</div>
+<hr/>
+<script language="JavaScript" src="datestamp.js" type='text/javascript'></script>
+</body>
+</html>
+<!--
+Local Variables:
+compile-command: "(scp faq.html shell.berlios.de:/home/groups/gpsd/htdocs)"
+End:
+-->

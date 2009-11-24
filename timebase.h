@@ -1,4 +1,4 @@
-/* $Id: timebase.h 5502 2009-03-18 21:09:31Z esr $ */
+/* $Id$ */
 #ifndef _GPSD_TIMEBASE_H_
 #define _GPSD_TIMEBASE_H_
 
@@ -33,11 +33,11 @@
  * as incorrect as the constant.  Currently this is true only for the
  * Evermore chipset.
  */
-#define LEAP_SECONDS	14
+#define LEAP_SECONDS	15
 
-/* IERS says no leap second will be inserted in June 2009.
+/* IERS says no leap second will be inserted in December 2009.
  */
-#define START_SUBFRAME	1262321999	/* 31 Dec 2009 23:59:59 */
+#define START_SUBFRAME	1277956799	/* 31 June 2010 23:59:59 */
 
 /*
  * This is used only when an NMEA device issues a two-digit year in a GPRMC

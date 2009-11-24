@@ -1,4 +1,4 @@
-/* $Id: test_packet.c 5320 2009-03-02 20:47:18Z ckuethe $ */
+/* $Id$ */
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -8,7 +8,7 @@
 #ifndef S_SPLINT_S
 #include <unistd.h>
 #endif /* S_SPLINT_S */
-#include "gpsd_config.h"
+
 #include "gpsd.h"
 
 static int verbose = 0;
@@ -287,7 +287,7 @@ int main(int argc, char *argv[])
 	    verbose = atoi(optarg); 
 	    break;
 	case 'V':
-	    (void)fprintf(stderr, "SVN ID: $Id: test_packet.c 5320 2009-03-02 20:47:18Z ckuethe $ \n");
+	    (void)fprintf(stderr, "SVN ID: $Id$ \n");
 	    exit(0);
 	}
     }

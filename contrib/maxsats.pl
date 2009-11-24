@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: maxsats.pl 4681 2008-02-13 06:03:11Z ckuethe $
+# $Id$
 
 # Copyright (c) 2008 Chris Kuethe <chris.kuethe@gmail.com>
 #

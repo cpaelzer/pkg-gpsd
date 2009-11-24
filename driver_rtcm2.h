@@ -1,4 +1,4 @@
-/* $Id: driver_rtcm2.h 5317 2009-03-02 20:04:36Z ckuethe $ */
+/* $Id$ */
 #ifndef _GPSD_RTCM2_H_
 #define _GPSD_RTCM2_H_
 

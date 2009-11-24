@@ -1,4 +1,4 @@
-/* $Id: monitor_proto.c 5333 2009-03-03 13:18:31Z esr $ */
+/* $Id$ */
 /*
  * Prototype file for a gpsmon monitor object.  
  */
@@ -15,6 +15,7 @@
 #include <assert.h>
 
 #include "gpsd_config.h"
+
 #ifdef HAVE_NCURSES_H
 #include <ncurses.h>
 #else
@@ -48,7 +49,7 @@ static bool PROTO_initialize(void)
      * When you enter it, two windows will be accessible to you; (1)
      * devicewin, just below the status and command line at top of
      * screen, and (2) packetwin, taking up the rest of the screen below
-     * it; packetwin will be enabled for scrolling. Mote, however,
+     * it; packetwin will be enabled for scrolling. Note, however,
      * that you cannot update packetwin safely, as it may be NULL
      * if the screen has no lines left over after allocating devicewin.
      *
@@ -58,7 +59,7 @@ static bool PROTO_initialize(void)
      * telling you firmware rev levels or whatever.
      */
 
-    /* return false if the window allocation failed; gpsmon will abort */ 
+    /* return false if the window allocation failed; gpsmon will abort */
     return true;
 }
 
@@ -143,7 +144,7 @@ const struct monitor_object_t PROTO_mmt = {
  *    nice by using session.msgbuf to assemble the message.
  *
  * void monitor_log(const char *fmt, ...)
- *    Write amessage to the packet window.  Safe if the packet window
+ *    Write a message to the packet window.  Safe if the packet window
  *    is not on screen.
  *
  * void monitor_complain(const char *fmt, ...)

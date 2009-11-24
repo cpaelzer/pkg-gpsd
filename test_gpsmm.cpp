@@ -1,4 +1,4 @@
-/* $Id: test_gpsmm.cpp 5320 2009-03-02 20:47:18Z ckuethe $ */
+/* $Id$ */
 /*
  * Copyright (C) 2005 Alfredo Pironti
  *
@@ -16,7 +16,7 @@
 
 using namespace std;
 
-static void callback(struct gps_data_t* p, char* buf, size_t len, int level);
+static void callback(struct gps_data_t* p, char* buf, size_t len);
 
 int main(void) {
 	gpsmm gps_rec;
@@ -49,7 +49,7 @@ int main(void) {
 	return 0;
 }
 
-static void callback(struct gps_data_t* p, char* buf, size_t len, int level) {
+static void callback(struct gps_data_t* p, char* buf, size_t len) {
 	
 	if (p==NULL) {
 		cout << "Error polling gpsd\n";

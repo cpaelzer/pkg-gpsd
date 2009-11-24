@@ -65,12 +65,12 @@ class spaceplot:
         if len(self.fixes) == 0:
             sys.stderr.write("No fixes collected, can't estimate accuracy.")
             sys.exit(1)
-        else:
-            self.centroid = (sum(map(lambda x:x[0], self.fixes))/len(self.fixes), sum(map(lambda x:x[1], self.fixes))/len(self.fixes))
-            # Sort fixes by distance from centroid
-            self.fixes.sort(lambda x, y: cmp(self.d(self.centroid, x), self.d(self.centroid, y)))
-            # Convert fixes to offsets from centroid in meters
-            self.recentered = map(lambda fix: gps.MeterOffset(self.centroid, fix[:2]), self.fixes)
+	# centroid is just arithmetic avg of lat,lon
+        self.centroid = (sum(map(lambda x:x[0], self.fixes))/len(self.fixes), sum(map(lambda x:x[1], self.fixes))/len(self.fixes))
+        # Sort fixes by distance from centroid
+        self.fixes.sort(lambda x, y: cmp(self.d(self.centroid, x), self.d(self.centroid, y)))
+        # Convert fixes to offsets from centroid in meters
+        self.recentered = map(lambda fix: gps.MeterOffset(self.centroid, fix[:2]), self.fixes)
         # Compute CEP(50%)
         cep_meters = gps.EarthDistance(self.centroid[:2], self.fixes[len(self.fixes)/2][:2])
         alt_sum = 0
@@ -181,30 +181,25 @@ class rawplot:
                  (title,
                   session.gps_id, session.baudrate,
                   session.stopbits, session.cycle)
-        res += "#"
-        for hn in ("tag", "T1", "E1", "D1", "W", "E2", "T2", "D2"):
-            res += "%8s\t" % hn
-        res += "\n#"
-        for i in range(0, 7):
-            res += "--------\t"
-        return res + "--------\n"
+        res += "# tag    len    xmit                  "
+        for hn in ("T1", "D1", "E2", "T2", "D2"):
+            res += "%-13s" % hn
+        res += "\n#------- -----  --------------------"
+        for i in range(0, 5):
+            res += "  " + ("-" * 11)
+        return res + "\n"
     def data(self, session):
         res = ""
         for timings in self.stats:
-            if timings.sentence_time:
-                e1 = timings.d_xmit_time
-            else:
-                e1 = 0
-            res += "%s\t%2d\t%2.6f\t%2.6f\t%2.6f\t%2.6f\t%2.6f\t%2.6f\t%2.6f\n" \
-                % (timings.sentence_tag,
-                   timings.sentence_length,
-                   e1, 
-                   timings.d_recv_time,
-                   timings.d_decode_time,
-                   timings.poll_time,
-                   timings.emit_time,
-                   timings.c_recv_time,
-                   timings.c_decode_time)
+            res += "% 8s  %4d  %2.9f  %2.9f  %2.9f  %2.9f  %2.9f  %2.9f\n" \
+                % (timings.tag,
+                   timings.len,
+                   timings.xmit, 
+                   timings.recv - timings.xmit,
+                   timings.decode - timings.recv,
+                   timings.emit - timings.decode,
+                   timings.c_recv - timings.emit,
+                   timings.c_decode - timings.c_recv)
         return res
     def plot(self, file, session):
         fmt = '''
@@ -212,19 +207,17 @@ set autoscale
 set key below
 set key title "Raw latency data, %s, %s, %dN%d, cycle %ds"
 plot \
-     "-" using 0:9 title "D2 = Client decode time" with impulses, \
-     "-" using 0:8 title "T2 =     TCP/IP latency" with impulses, \
-     "-" using 0:7 title "E2 = Daemon encode time" with impulses, \
-     "-" using 0:6 title "W  =     Poll wait time" with impulses, \
+     "-" using 0:8 title "D2 = Client decode time" with impulses, \
+     "-" using 0:7 title "T2 =     TCP/IP latency" with impulses, \
+     "-" using 0:6 title "E2 = Daemon encode time" with impulses, \
      "-" using 0:5 title "D1 = Daemon decode time" with impulses, \
-     "-" using 0:4 title "T1 =         RS232 time" with impulses, \
-     "-" using 0:3 title "E1 =        GPS latency" with impulses
+     "-" using 0:4 title "T1 =         RS232 time" with impulses
 '''
         res = fmt % (title,
                       session.gps_id, session.baudrate,
                       session.stopbits, session.cycle)
         res += self.header(session)
-        for dummy in range(0, 7):
+        for dummy in range(0, 5):
             res += self.data(session) + "e\n"
         return res
 
@@ -236,8 +229,8 @@ class splitplot:
         self.stats = []
     def gather(self, session):
         self.stats.append(copy.copy(session.timings))
-        if session.timings.sentence_tag not in self.sentences:
-            self.sentences.append(session.timings.sentence_tag)
+        if session.timings.tag not in self.sentences:
+            self.sentences.append(session.timings.tag)
         return True
     def header(self, session):
         res = "# Split latency data, %s, %s, %dN%d, cycle %ds\n#" % \
@@ -246,63 +239,56 @@ class splitplot:
                   session.stopbits, session.cycle)
         for s in splitplot.sentences:
             res += "%8s\t" % s
-        for hn in ("T1", "D1", "W", "E2", "T2", "D2", "length"):
+        for hn in ("T1", "D1", "E2", "T2", "D2", "length"):
             res += "%8s\t" % hn
         res += "tag\n# "
-        for s in tuple(splitplot.sentences) + ("T1", "D1", "W", "E2", "T2", "D2", "length"):
+        for s in tuple(splitplot.sentences) + ("T1", "D1", "E2", "T2", "D2", "length"):
             res += "---------\t"
         return res + "--------\n"
     def data(self, session):
         res = ""
         for timings in self.stats:
-            if timings.sentence_time:
-                e1 = timings.d_xmit_time
-            else:
-                e1 = 0
             for s in splitplot.sentences:
-                if s == timings.sentence_tag:
-                    res += "%2.6f\t" % e1
+                if s == timings.tag:
+                    res += "%2.6f\t" % timings.xmit
                 else:
                     res += "-       \t"
-            res += "%2.6f\t%2.6f\t%2.6f\t%2.6f\t%2.6f\t%2.6f\t%8d\t# %s\n" \
-                     % (timings.d_recv_time,
-                        timings.d_decode_time,
-                        timings.poll_time,
-                        timings.emit_time,
-                        timings.c_recv_time,
-                        timings.c_decode_time,
-                        timings.sentence_length,
-                        timings.sentence_tag)
+            res += "%2.6f\t%2.6f\t%2.6f\t%2.6f\t%2.6f\t%8d\t# %s\n" \
+                     % (timings.recv - timings.xmit,
+                        timings.decode - timings.recv,
+                        timings.emit - timings.decode,
+                        timings.c_recv - timings.emit,
+                        timings.c_decode - timings.c_recv,
+                        timings.len,
+                        timings.tag)
         return res
     def plot(self, title, session):
         fixed = '''
 set autoscale
 set key below
 set key title "Filtered latency data, %s, %s, %dN%d, cycle %ds"
-plot \\
-     "-" using 0:%d title "D2 = Client decode time" with impulses, \\
-     "-" using 0:%d title "T2 = TCP/IP latency" with impulses, \\
-     "-" using 0:%d title "E2 = Daemon encode time" with impulses, \\
-     "-" using 0:%d title "W  = Poll wait time" with impulses, \\
-     "-" using 0:%d title "D1 = Daemon decode time" with impulses, \\
-     "-" using 0:%d title "T1 = RS3232 time" with impulses, \\
+plot \
+     "-" using 0:%d title "D2 = Client decode time" with impulses, \
+     "-" using 0:%d title "T2 = TCP/IP latency" with impulses, \
+     "-" using 0:%d title "E2 = Daemon encode time" with impulses, \
+     "-" using 0:%d title "D1 = Daemon decode time" with impulses, \
+     "-" using 0:%d title "T1 = RS3232 time" with impulses, \
 '''
         sc = len(splitplot.sentences)
         fmt = fixed % (title,
                        session.gps_id, session.baudrate,
                        session.stopbits, session.cycle,
-                       sc+6,
                        sc+5,
                        sc+4,
                        sc+3,
                        sc+2,
                        sc+1)
         for i in range(sc):
-            fmt += '     "-" using 0:%d title "%s" with impulses, \\\n' % \
+            fmt += '     "-" using 0:%d title "%s" with impulses,' % \
                    (i+1, self.sentences[i])
-        res = fmt[:-4] + "\n"
+        res = fmt[:-1] + "\n"
         res += self.header(session)
-        for dummy in range(sc+6):
+        for dummy in range(sc+5):
             res += self.data(session) + "e\n"
         return res
 
@@ -323,16 +309,16 @@ class cycle:
         last_seen = {}
         for timing in self.stats:
             # Throw out everything but the leader in each GSV group
-            if timing.sentence_tag[-3:] == "GSV" and last_command[-3:] == "GSV":
+            if timing.tag[-3:] == "GSV" and last_command[-3:] == "GSV":
                 continue
-            last_command = timing.sentence_tag
+            last_command = timing.tag
             # Record timings
             received = timing.d_received()
-            if not timing.sentence_tag in intervals:
-                intervals[timing.sentence_tag] = []
-            if timing.sentence_tag in last_seen:
-                intervals[timing.sentence_tag].append(roundoff(received - last_seen[timing.sentence_tag])) 
-            last_seen[timing.sentence_tag] = received
+            if not timing.tag in intervals:
+                intervals[timing.tag] = []
+            if timing.tag in last_seen:
+                intervals[timing.tag].append(roundoff(received - last_seen[timing.tag])) 
+            last_seen[timing.tag] = received
 
         # Step three: get command frequencies and the basic send cycle time
         frequencies = {}
@@ -395,54 +381,81 @@ def plotframe(await, fname, speed, threshold, title):
             sys.stderr.write("gpsprof: no such formatter.\n")
             sys.exit(1)
     try:
-        session = gps.gps()
+        session = gps.gps(verbose=verbose)
     except socket.error:
         sys.stderr.write("gpsprof: gpsd unreachable.\n")
         sys.exit(1)
+    # Initialize
+    session.poll()
+    if session.version == None:
+        print >>sys.stderr, "gpsprof: requires gpsd to speak new protocol."
+        sys.exit(1)
+    session.send("?DEVICES;")
+    while session.poll() != -1:
+        if session.data["class"] == "DEVICES":
+            break
+    if len(session.data.devices) != 1:
+        print >>sys.stderr, "gpsprof: exactly one device must be attached."
+        sys.exit(1)
+    device = session.data.devices[0]
+    path = device["path"]
+    session.baudrate = device["bps"] 
+    session.parity = device["bps"] 
+    session.stopbits = device["stopbits"] 
+    session.cycle = device["cycle"]
+    session.gps_id = device["driver"]
+    # Set parameters
+    if speed:
+        session.send('?DEVICE={"path":"%s","bps:":%d}' % (path, speed))
+        session.poll()
+        if session.baudrate != speed:
+            sys.stderr.write("gpsprof: baud rate change failed.\n")
+    options = ""
+    if formatter not in (spaceplot, uninstrumented):
+        options = ',"timing":true'
     try:
-        if speed:
-            session.query("b=%d\n" % speed)
-            if session.baudrate != speed:
-                sys.stderr.write("gpsprof: baud rate change failed.\n")
-        session.query("w+bci\n")
-        if formatter not in (spaceplot, uninstrumented):
-            session.query("z+\n")
         #session.set_raw_hook(lambda x: sys.stderr.write(`x`+"\n"))
+        session.send('?WATCH={"enable":true%s}' % options)
         baton = Baton("gpsprof: looking for fix", "done")
         countdown = await
         basetime = time.time()
         while countdown > 0:
-            if session.poll() == None:
+            if session.poll() == -1:
                 sys.stderr.write("gpsprof: gpsd has vanished.\n")
                 sys.exit(1)
             baton.twirl()
-            if session.fix.mode <= gps.MODE_NO_FIX:
-                continue
-            if countdown == await:
-                sys.stderr.write("first fix in %.2fsec, gathering samples..." % (time.time()-basetime,))
+            if session.data["class"] == "WATCH":
+                if "timing" in options and not session.data.get("timing"):
+                    sys.stderr.write("gpsprof: timing is not enabled.\n")
+                    sys.exit(1)
             # We can get some funky artifacts at start of session
             # apparently due to RS232 buffering effects. Ignore
             # them.
-            if threshold and session.timings.c_decode_time > session.cycle * threshold:
+            if threshold and time.time()-basetime < session.cycle * threshold:
                 continue
+            if session.fix.mode <= gps.MODE_NO_FIX:
+                continue
+            if countdown == await:
+                sys.stderr.write("first fix in %.2fsec, gathering %d samples..." % (time.time()-basetime,await))
             if plotter.gather(session):
                 countdown -= 1
         baton.end()
     finally:
-        session.query("w-z-\n")
+        session.send('?WATCH={"enable":false,"timing":false}')
     command = plotter.plot(title, session)
     del session
     return command
 
 if __name__ == '__main__':
     try:
-        (options, arguments) = getopt.getopt(sys.argv[1:], "f:hm:n:s:t:")
+        (options, arguments) = getopt.getopt(sys.argv[1:], "f:hm:n:s:t:v")
         formatter = "space"
         raw = False
         speed = 0
         title = time.ctime()
         threshold = 0
         await = 100
+        verbose = False
         for (switch, val) in options:
             if (switch == '-f'):
                 formatter = val
@@ -454,6 +467,8 @@ if __name__ == '__main__':
                 speed = int(val)
             elif (switch == '-t'):
                 title = val
+            elif (switch == '-v'):
+                verbose = True
             elif (switch == '-h'):
                 sys.stderr.write(\
                     "usage: gpsprof [-h] [-m threshold] [-n samplecount] \n"

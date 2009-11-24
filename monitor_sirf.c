@@ -1,4 +1,4 @@
-/* $Id: monitor_sirf.c 5395 2009-03-06 14:55:03Z esr $ */
+/* $Id$ */
 /*
  * SiRF object for the GPS packet monitor.
  *
@@ -16,6 +16,7 @@
 #include <assert.h>
 
 #include "gpsd_config.h"
+
 #ifdef HAVE_NCURSES_H
 #include <ncurses.h>
 #else
@@ -429,7 +430,7 @@ static void sirf_update(void)
 	display(mid19win, 1, 20, "%d", getub(buf, 5));	/* Alt. hold mode */
     display(mid19win, 2, 20, "%d", getub(buf, 6));	/* Alt. hold source*/
     display(mid19win, 3, 20, "%dm", (int)getbeuw(buf, 7));	/* Alt. source input */
-    if (getub(buf, 9) != (unsigned char)'\0')
+    if (getub(buf, 9) != (uint8_t)'\0')
 	display(mid19win, 4, 20, "%dsec", getub(buf, 10));	/* Degraded timeout*/
     else
 	display(mid19win, 4, 20, "N/A   ");
@@ -622,7 +623,7 @@ static void sirf_update(void)
 
 #ifdef ALLOW_CONTROLSEND
     /* elicit navigation parameters */
-    if (dispmode && (time(NULL) % 10 == 0)){
+    if (dispmode && (time(NULL) % 10 == 0)) {
 	(void)monitor_control_send((unsigned char *)"\x98\x00", 2);
     }
 #endif /* ALLOW_CONTROLSEND */

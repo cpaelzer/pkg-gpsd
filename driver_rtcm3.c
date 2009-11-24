@@ -1,4 +1,4 @@
-/* $Id: driver_rtcm3.c 5498 2009-03-18 17:37:53Z esr $ */
+/* $Id$ */
 /*****************************************************************************
 
 This is a decoder for RTCM-104 3.x, a serial protocol used for
@@ -26,15 +26,18 @@ firmware.
 *****************************************************************************/
 
 #include <sys/types.h>
+#ifndef S_SPLINT_S
 #include <unistd.h>
+#endif /* S_SPLINT_S */
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <assert.h>
+#ifndef S_SPLINT_S
 #include <arpa/inet.h>	/* for ntohl(3) and friends */
+#endif /* S_SPLINT_S */
 
-#include "gpsd_config.h"
 #include "gpsd.h"
 #include "bits.h"
 
@@ -206,11 +209,11 @@ void rtcm3_unpack(/*@out@*/struct rtcm3_t *rtcm, char *buf)
 	rtcm->rtcmtypes.rtcm3_1005.station_id = (unsigned short)ugrab(12);
 	ugrab(6);	/* reserved */
 	if ((bool)ugrab(1))
-	    rtcm->rtcmtypes.rtcm3_1005.system = gps;
+	    rtcm->rtcmtypes.rtcm3_1005.system = NAVSYSTEM_GPS;
 	else if ((bool)ugrab(1))
-	    rtcm->rtcmtypes.rtcm3_1005.system = glonass;
+	    rtcm->rtcmtypes.rtcm3_1005.system = NAVSYSTEM_GLONASS;
 	else if ((bool)ugrab(1))
-	    rtcm->rtcmtypes.rtcm3_1005.system = galileo;
+	    rtcm->rtcmtypes.rtcm3_1005.system = NAVSYSTEM_GALILEO;
 	rtcm->rtcmtypes.rtcm3_1005.reference_station = (bool)ugrab(1);
 	rtcm->rtcmtypes.rtcm3_1005.ecef_x = sgrab(38) * ANTENNA_POSITION_RESOLUTION;
 	rtcm->rtcmtypes.rtcm3_1005.single_receiver = ugrab(1);
@@ -225,11 +228,11 @@ void rtcm3_unpack(/*@out@*/struct rtcm3_t *rtcm, char *buf)
 	rtcm->rtcmtypes.rtcm3_1006.station_id = (unsigned short)ugrab(12);
 	ugrab(6);	/* reserved */
 	if ((bool)ugrab(1))
-	    rtcm->rtcmtypes.rtcm3_1006.system = gps;
+	    rtcm->rtcmtypes.rtcm3_1006.system = NAVSYSTEM_GPS;
 	else if ((bool)ugrab(1))
-	    rtcm->rtcmtypes.rtcm3_1006.system = glonass;
+	    rtcm->rtcmtypes.rtcm3_1006.system = NAVSYSTEM_GLONASS;
 	else if ((bool)ugrab(1))
-	    rtcm->rtcmtypes.rtcm3_1006.system = galileo;
+	    rtcm->rtcmtypes.rtcm3_1006.system = NAVSYSTEM_GALILEO;
 	rtcm->rtcmtypes.rtcm3_1006.reference_station = (bool)ugrab(1);
 	rtcm->rtcmtypes.rtcm3_1006.ecef_x = sgrab(38) * ANTENNA_POSITION_RESOLUTION;
 	rtcm->rtcmtypes.rtcm3_1006.single_receiver = ugrab(1);

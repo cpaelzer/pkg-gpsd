@@ -1,4 +1,4 @@
-/* $Id: driver_italk.h 5361 2009-03-04 18:49:43Z ckuethe $ */
+/* $Id$ */
 #ifndef _GPSD_ITALK_H_
 #define _GPSD_ITALK_H_
 
@@ -135,6 +135,9 @@
 #define UTC_IONO_MODEL_UTCVALID  	0x0001
 #define UTC_IONO_MODEL_IONOVALID 	0x0002
 
+/* SUBFRAME */
+#define SUBFRAME_WORD_FLAG_MASK		0x03ff
+#define SUBFRAME_GPS_PREAMBLE_INVERTED  0x0400
 
 /* MEMCTRL */
 #define MEM_WRITE		0x0002

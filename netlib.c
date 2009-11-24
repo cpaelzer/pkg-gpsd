@@ -1,10 +1,11 @@
-/* $Id: netlib.c 5052 2009-01-21 10:42:24Z esr $ */
+/* $Id$ */
 #include <sys/types.h>
+
 #include "gpsd_config.h"
-#ifdef HAVE_SYS_SOCKET_H
+
 #ifndef S_SPLINT_S
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
-#endif /* S_SPLINT_S */
 #endif
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
@@ -12,16 +13,19 @@
 #ifdef HAVE_NETINET_IN_SYSTM_H
 #include <netinet/in_systm.h>
 #endif
-#ifndef S_SPLINT_S
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/ip.h>
-#endif /* S_SPLINT_S */
 #endif
+#endif /* S_SPLINT_S */
+#ifndef S_SPLINT_S
 #include <netdb.h>
 #include <arpa/inet.h>
+#endif /* S_SPLINT_S */
 #include <errno.h>
 #include <stdlib.h>
+#ifndef S_SPLINT_S
 #include <unistd.h>
+#endif /* S_SPLINT_S */
 #include <string.h>
 
 #include "gpsd.h"
@@ -48,8 +52,10 @@ int netlib_connectsock(const char *host, const char *service, const char *protoc
 
     if ((phe = gethostbyname(host)))
 	memcpy((char *) &sin.sin_addr, phe->h_addr, phe->h_length);
+#ifndef S_SPLINT_S
     else if ((sin.sin_addr.s_addr = inet_addr(host)) == INADDR_NONE)
 	return NL_NOHOST;
+#endif /* S_SPLINT_S */
 
     ppe = getprotobyname(protocol);
     if (strcmp(protocol, "udp") == 0) {
@@ -60,13 +66,13 @@ int netlib_connectsock(const char *host, const char *service, const char *protoc
 	proto = (ppe) ? ppe->p_proto : IPPROTO_TCP;
     }
 
-    if ((s = socket(PF_INET, type, proto)) < 0)
+    if ((s = socket(PF_INET, type, proto)) == -1)
 	return NL_NOSOCK;
     if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *)&one, sizeof(one))==-1) {
 	(void)close(s);
 	return NL_NOSOCKOPT;
     }
-    if (connect(s, (struct sockaddr *) &sin, sizeof(sin)) < 0) {
+    if (connect(s, (struct sockaddr *) &sin, sizeof(sin)) == -1) {
 	(void)close(s);
 	return NL_NOCONNECT;
     }
@@ -87,6 +93,19 @@ int netlib_connectsock(const char *host, const char *service, const char *protoc
     /*@ +type +mustfreefresh @*/
 }
 
+char /*@observer@*/ *netlib_errstr(const int err)
+{
+    switch (err) {
+    case NL_NOSERVICE:  return "can't get service entry";
+    case NL_NOHOST:     return "can't get host entry";
+    case NL_NOPROTO:    return "can't get protocol entry";
+    case NL_NOSOCK:     return "can't create socket";
+    case NL_NOSOCKOPT:  return "error SETSOCKOPT SO_REUSEADDR";
+    case NL_NOCONNECT:  return "can't connect to host/port pair";
+    default:		return "unknown error";
+    }
+}
+
 char *sock2ip(int fd)
 {
     struct sockaddr fsin;
@@ -96,7 +115,7 @@ char *sock2ip(int fd)
 
     r = getpeername(fd, (struct sockaddr *) &fsin, &alen);
     /*@ -branchstate @*/
-    if (r == 0){
+    if (r == 0) {
 	ip = inet_ntoa(((struct sockaddr_in *)(&fsin))->sin_addr);
     } else {
 	gpsd_report(LOG_INF, "getpeername() = %d, error = %s (%d)\n", r, strerror(errno), errno);

@@ -1,4 +1,4 @@
-$Id: TODO 5355 2009-03-04 15:07:01Z esr $
+$Id$
 
 This is the gpsd to-do list.  If you're viewing it with Emacs, try
 doing Ctl-C Ctl-t and browsing through the outline headers.  Ctl-C Ctl-a 
@@ -24,11 +24,24 @@ fix the driver yourself and send us the patch, contact Bill Powell
 <bpowell@tntc.com> at True North Technologies and tell him he needs
 to reverse his refusal to send us an eval unit.
 
+*** SiRF 15-second lag
+
+The tendency of SiRF chips to lag real-time by 15 seconds or so
+under some (unexplained) circumstances is still...unexplained. Or,
+rather, we have several different possible explanations and have
+not been able to verify any of them.  Note, this is not properly
+a gpsd problem, but it may well be there is some sort
+of mode switch we should be uttering.
+
+*** Driver issues
+**** uBlox-lea-4h.log.chk: Time value in TPVs looks like garbage.
+**** uBlox-lea-4t.log.chk: ubx driver is dumping garbage values in GSA. 
+
 ** To do:
 
 *** Complete and test the speed/parity/stopbit methods in the drivers
 
-These are used for the 'B' command.  All work for 8N1.
+These are used for the '?DEVICE' (old 'B') command.  All work for 8N1.
 
 **** superstar2: not implemented (driver is unfinished)
 **** italk: not implemented (but could be)
@@ -41,6 +54,12 @@ These are used for the 'B' command.  All work for 8N1.
 
 SiRF, UBX, TSIP, and even Zodiac can support non-8N1 modes; these need
 to be tested.
+
+*** Rewrite xgps
+
+The Motif/Lesstif dependency is a pain in the butt, the code is a 
+maintainability problem, and we'd like to extend it to display AIS
+messages. Probably the thing to do is write something pygtk-based.
 
 *** Support the D-Bus signals recognized by libgypsy
 
@@ -64,9 +83,8 @@ At the moment, when a gpsd client using libgps is connected to the
 gpsd server, and the server is restarted, the client loses the
 connection and do not update any more.
 
-It would be nice if the gps_poll() and gps_query() would try to
-reconnect to the server if the read() and write() calls on the tcp
-socket fail.
+It would be nice if gps_poll() would try to reconnect to the server if
+the read() and write() calls on the tcp socket fail.
 
 To test this, start gpsd first (/etc/init.d/gpsd start), xgps second,
 and then restart gpsd (/etc/init.d/gpsd restart).  The xgps client
@@ -98,11 +116,6 @@ This is Berlios FR #3789.
 *** Full Python wrapper for libgpsd
 
 This would be useful for test code of all kinds.
-
-*** New features for xgps.
-
-Add J option checkbox.  Maybe embed the speedometer widget from
-xgpspeed in some of the unused space and nuke xgpsspeed.
 
 *** Per-driver restore of changed config settings on exit.
 
@@ -140,20 +153,6 @@ GPSD_UNITS environment variable and chooses its UI mode depending on
 whether or not it's running under X.  There is controversy about this 
 proposal on the dev list.
 
-*** SiRF firmware uploader
-
-Chris Kuethe has shipped a 0.0 pre-alpha version.  It is not yet 
-resolved whether SiRF Technology will allow us to ship the 
-binary loader code needed to actually use it.
-
-*** uBlox firmware uploader
-
-uBlox does make firmware updates available on their website and a cursory
-inspection suggests that their flash process should plug directly in to
-gpsflash - they use the same three stage process as SiRF: send a binary
-command to enter programming mode, send a tiny reflash bootstrap program
-and then send the actual firmware image.
-
 *** Industry-standard format dumping of raw satellite data
 
 It would be useful to be able to extract RINEX (or some other standard)
@@ -182,7 +181,7 @@ events, e.g. the world moving to RTCM3. We have support for analyzing
 RTCM3 messages, but it's entirely theoretical - written from the
 standard.  We need to find a pair of files consisting of a
 representative set of RTCM3 sentences and some sort of ASCII dump of
-thgem so we can test whether our analyzer gets all the bitfield
+them so we can test whether our analyzer gets all the bitfield
 boundaries right.
 
 *** Do the research to figure out just what is going on with status bits
@@ -229,7 +228,7 @@ include:
 **** Detect IPv6 support and getaddrinfo(3) in configure.ac
 
 This web page may be helpful, but is probably overkill - the world has
-gotten simper since then:
+gotten simpler since then:
 http://cvs.deepspace6.net/view/example-ipv6-package/configure.ac?rev=1.2&content-type=text/vnd.viewcvs-markup
 
 **** Change from one listening socket to N

@@ -1,15 +1,16 @@
-/* $Id: gpsutils.c 4900 2009-01-05 21:47:53Z esr $ */
+/* $Id$ */
 /* gpsutils.c -- code shared between low-level and high-level interfaces */
 #include <sys/types.h>
 #include <stdio.h>
+#ifndef S_SPLINT_S
 #include <unistd.h>
+#endif /* S_SPLINT_S */
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
 #include <stdarg.h>
 #include <time.h>
 
-#include "gpsd_config.h"
 #include "gpsd.h"
 
 #define MONTHSPERYEAR	12		/* months per calendar year */
@@ -25,13 +26,15 @@ void gps_clear_fix(/*@out@*/struct gps_fix_t *fixp)
     fixp->climb = NAN;
     fixp->altitude = NAN;
     fixp->ept = NAN;
-    fixp->eph = NAN;
+    fixp->epx = NAN;
+    fixp->epy = NAN;
     fixp->epv = NAN;
     fixp->epd = NAN;
     fixp->eps = NAN;
     fixp->epc = NAN;
 }
 
+#ifdef __UNUSED__
 unsigned int gps_valid_fields(/*@in@*/struct gps_fix_t *fixp)
 {
     unsigned int valid = 0;
@@ -52,7 +55,7 @@ unsigned int gps_valid_fields(/*@in@*/struct gps_fix_t *fixp)
 	valid |= CLIMB_SET;
     if (isnan(fixp->ept) == 0)
 	valid |= TIMERR_SET;
-    if (isnan(fixp->eph) == 0)
+    if (isnan(fixp->epx) == 0 && isnan(fixp->epy) == 0)
 	valid |= HERR_SET;
     if (isnan(fixp->epv) == 0)
 	valid |= VERR_SET;
@@ -99,6 +102,7 @@ char *gps_show_transfer(int transfer)
     return showbuf;
 /*@ +statictrans @*/
 }
+#endif /* __UNUSED__ */
 
 void gps_merge_fix(/*@ out @*/struct gps_fix_t *to,
 		   gps_mask_t transfer,
@@ -125,8 +129,10 @@ void gps_merge_fix(/*@ out @*/struct gps_fix_t *to,
 	to->climb = from->climb;
     if ((transfer & TIMERR_SET)!=0)
 	to->ept = from->ept;
-    if ((transfer & HERR_SET)!=0)
-	to->eph = from->eph;
+    if ((transfer & HERR_SET)!=0) {
+	to->epx = from->epx;
+	to->epy = from->epy;
+    }
     if ((transfer & VERR_SET)!=0)
 	to->epv = from->epv;
     if ((transfer & SPEEDERR_SET)!=0)
@@ -135,10 +141,10 @@ void gps_merge_fix(/*@ out @*/struct gps_fix_t *to,
 	to->epc = from->epc;
 }
 
-double timestamp(void) 
+double timestamp(void)
 {
-    struct timeval tv; 
-    (void)gettimeofday(&tv, NULL); 
+    struct timeval tv;
+    (void)gettimeofday(&tv, NULL);
     /*@i1@*/return(tv.tv_sec + tv.tv_usec*1e-6);
 }
 
@@ -201,14 +207,14 @@ double iso8601_to_unix(/*@in@*/char *isotime)
 
     (void)strftime(timestr, sizeof(timestr), "%Y-%m-%dT%H:%M:%S", &when);
     (void)snprintf(fractstr, sizeof(fractstr), "%.1f", fractional);
-    /* add fractional part, ignore leading 0; "0.2" -> ".2" */ 
+    /* add fractional part, ignore leading 0; "0.2" -> ".2" */
     (void)snprintf(isotime, len, "%s%sZ", timestr, fractstr+1);
     return isotime;
 }
 
 /*
- * The 'week' part of GPS dates are specified in weeks since 0000 on 06 
- * January 1980, with a rollover at 1024.  At time of writing the last 
+ * The 'week' part of GPS dates are specified in weeks since 0000 on 06
+ * January 1980, with a rollover at 1024.  At time of writing the last
  * rollover happened at 0000 22 August 1999.  Time-of-week is in seconds.
  *
  * This code copes with both conventional GPS weeks and the "extended"
@@ -289,7 +295,7 @@ double earth_distance(double lat1, double lon1, double lat2, double lon2)
     // calculations.  This is prone to happen when the argument points
     // are very close together.  Return NaN so calculations trying
     // to use this will also blow up.
-    if (fabs(a) > 1) 
+    if (fabs(a) > 1)
 	return NAN;
     else
 	return CalcRad((lat1+lat2) / 2) * acos(a);
@@ -297,7 +303,7 @@ double earth_distance(double lat1, double lon1, double lat2, double lon2)
 
 /*****************************************************************************
 
-Carl Carter of SiRF supplied this algorithm for computing DOPs from 
+Carl Carter of SiRF supplied this algorithm for computing DOPs from
 a list of visible satellites (some typos corrected)...
 
 For satellite n, let az(n) = azimuth angle from North and el(n) be elevation.
@@ -340,11 +346,11 @@ Here's how we implement it...
 
 First, each compute element P(i,j) of the 4x4 product A~*A.
 If S(k=1,k=n): f(...) is the sum of f(...) as k varies from 1 to n, then
-applying the definition of matrix product tells us: 
+applying the definition of matrix product tells us:
 
 P(i,j) = S(k=1,k=n): B(i, k) * A(k, j)
 
-But because B is the transpose of A, this reduces to 
+But because B is the transpose of A, this reduces to
 
 P(i,j) = S(k=1,k=n): A(k, i) * A(k, j)
 
@@ -383,6 +389,11 @@ driver.
 
 ******************************************************************************/
 
+void clear_dop(/*@out@*/struct dop_t *dop)
+{
+    dop->xdop = dop->ydop = dop->vdop = dop->tdop = dop->hdop = dop->pdop = dop->gdop = NAN;
+}
+
 /*@ -fixedformalarray -mustdefine @*/
 static bool invert(double mat[4][4], /*@out@*/double inverse[4][4])
 {
@@ -396,9 +407,9 @@ static bool invert(double mat[4][4], /*@out@*/double inverse[4][4])
   double Det2_13_01 = mat[1][0]*mat[3][1] - mat[1][1]*mat[3][0];
   //double Det2_13_02 = mat[1][0]*mat[3][2] - mat[1][2]*mat[3][0];
   double Det2_13_03 = mat[1][0]*mat[3][3] - mat[1][3]*mat[3][0];
-  //double Det2_13_12 = mat[1][1]*mat[3][2] - mat[1][2]*mat[3][1];  
+  //double Det2_13_12 = mat[1][1]*mat[3][2] - mat[1][2]*mat[3][1]; 
   double Det2_13_13 = mat[1][1]*mat[3][3] - mat[1][3]*mat[3][1];
-  //double Det2_13_23 = mat[1][2]*mat[3][3] - mat[1][3]*mat[3][2];  
+  //double Det2_13_23 = mat[1][2]*mat[3][3] - mat[1][3]*mat[3][2]; 
   double Det2_23_01 = mat[2][0]*mat[3][1] - mat[2][1]*mat[3][0];
   double Det2_23_02 = mat[2][0]*mat[3][2] - mat[2][2]*mat[3][0];
   double Det2_23_03 = mat[2][0]*mat[3][3] - mat[2][3]*mat[3][0];
@@ -407,15 +418,15 @@ static bool invert(double mat[4][4], /*@out@*/double inverse[4][4])
   double Det2_23_23 = mat[2][2]*mat[3][3] - mat[2][3]*mat[3][2];
 
   // Find all NECESSARY 3x3 subdeterminants
-  double Det3_012_012 = mat[0][0]*Det2_12_12 - mat[0][1]*Det2_12_02 
-  				+ mat[0][2]*Det2_12_01;
-  //double Det3_012_013 = mat[0][0]*Det2_12_13 - mat[0][1]*Det2_12_03 
+  double Det3_012_012 = mat[0][0]*Det2_12_12 - mat[0][1]*Det2_12_02
+				+ mat[0][2]*Det2_12_01;
+  //double Det3_012_013 = mat[0][0]*Det2_12_13 - mat[0][1]*Det2_12_03
   //				+ mat[0][3]*Det2_12_01;
   //double Det3_012_023 = mat[0][0]*Det2_12_23 - mat[0][2]*Det2_12_03
   //				+ mat[0][3]*Det2_12_02;
-  //double Det3_012_123 = mat[0][1]*Det2_12_23 - mat[0][2]*Det2_12_13 
+  //double Det3_012_123 = mat[0][1]*Det2_12_23 - mat[0][2]*Det2_12_13
   //				+ mat[0][3]*Det2_12_12;
-  //double Det3_013_012 = mat[0][0]*Det2_13_12 - mat[0][1]*Det2_13_02 
+  //double Det3_013_012 = mat[0][0]*Det2_13_12 - mat[0][1]*Det2_13_02
   //				+ mat[0][2]*Det2_13_01;
   double Det3_013_013 = mat[0][0]*Det2_13_13 - mat[0][1]*Det2_13_03
 				+ mat[0][3]*Det2_13_01;
@@ -423,7 +434,7 @@ static bool invert(double mat[4][4], /*@out@*/double inverse[4][4])
   //				+ mat[0][3]*Det2_13_02;
   //double Det3_013_123 = mat[0][1]*Det2_13_23 - mat[0][2]*Det2_13_13
   //				+ mat[0][3]*Det2_13_12;
-  //double Det3_023_012 = mat[0][0]*Det2_23_12 - mat[0][1]*Det2_23_02 
+  //double Det3_023_012 = mat[0][0]*Det2_23_12 - mat[0][1]*Det2_23_02
   //				+ mat[0][2]*Det2_23_01;
   //double Det3_023_013 = mat[0][0]*Det2_23_13 - mat[0][1]*Det2_23_03
   //				+ mat[0][3]*Det2_23_01;
@@ -431,20 +442,20 @@ static bool invert(double mat[4][4], /*@out@*/double inverse[4][4])
 				+ mat[0][3]*Det2_23_02;
   //double Det3_023_123 = mat[0][1]*Det2_23_23 - mat[0][2]*Det2_23_13
   //				+ mat[0][3]*Det2_23_12;
-  double Det3_123_012 = mat[1][0]*Det2_23_12 - mat[1][1]*Det2_23_02 
+  double Det3_123_012 = mat[1][0]*Det2_23_12 - mat[1][1]*Det2_23_02
 				+ mat[1][2]*Det2_23_01;
-  double Det3_123_013 = mat[1][0]*Det2_23_13 - mat[1][1]*Det2_23_03 
+  double Det3_123_013 = mat[1][0]*Det2_23_13 - mat[1][1]*Det2_23_03
 				+ mat[1][3]*Det2_23_01;
-  double Det3_123_023 = mat[1][0]*Det2_23_23 - mat[1][2]*Det2_23_03 
+  double Det3_123_023 = mat[1][0]*Det2_23_23 - mat[1][2]*Det2_23_03
 				+ mat[1][3]*Det2_23_02;
-  double Det3_123_123 = mat[1][1]*Det2_23_23 - mat[1][2]*Det2_23_13 
+  double Det3_123_123 = mat[1][1]*Det2_23_23 - mat[1][2]*Det2_23_13
 				+ mat[1][3]*Det2_23_12;
 
   // Find the 4x4 determinant
   static double det;
-          det =   mat[0][0]*Det3_123_123 
-		- mat[0][1]*Det3_123_023 
-		+ mat[0][2]*Det3_123_013 
+	  det =   mat[0][0]*Det3_123_123
+		- mat[0][1]*Det3_123_023
+		+ mat[0][2]*Det3_123_013
 		- mat[0][3]*Det3_123_012;
 
   // Very small determinants probably reflect floating-point fuzz near zero
@@ -472,16 +483,15 @@ static bool invert(double mat[4][4], /*@out@*/double inverse[4][4])
   inverse[3][3] =  Det3_012_012 / det;
 
   return true;
-}  
+}
 /*@ +fixedformalarray +mustdefine @*/
 
-gps_mask_t dop(struct gps_data_t *gpsdata)
+gps_mask_t fill_dop(const struct gps_data_t *gpsdata, struct dop_t *dop)
 {
     double prod[4][4];
     double inv[4][4];
     double satpos[MAXCHANNELS][4];
-    double hdop, vdop, pdop, tdop, gdop;
-    gps_mask_t mask;
+    double xdop, ydop, hdop, vdop, pdop, tdop, gdop;
     int i, j, k, n;
 
 #ifdef __UNUSED__
@@ -514,12 +524,12 @@ gps_mask_t dop(struct gps_data_t *gpsdata)
 #endif /* __UNUSED__ */
 
     for (i = 0; i < 4; ++i) { //< rows
-        for (j = 0; j < 4; ++j) { //< cols
-            prod[i][j] = 0.0;
-            for (k = 0; k < n; ++k) {
-                prod[i][j] += satpos[k][i] * satpos[k][j];
-            }
-        }
+	for (j = 0; j < 4; ++j) { //< cols
+	    prod[i][j] = 0.0;
+	    for (k = 0; k < n; ++k) {
+		prod[i][j] += satpos[k][i] * satpos[k][j];
+	    }
+	}
     }
 
 #ifdef __UNUSED__
@@ -541,50 +551,54 @@ gps_mask_t dop(struct gps_data_t *gpsdata)
 	    gpsd_report(LOG_RAW, "%f %f %f %f\n",
 			inv[k][0], inv[k][1], inv[k][2], inv[k][3]);
 	}
-	gpsd_report(LOG_INF, "HDOP: reported = %f, computed = %f\n",
-		    gpsdata->hdop, sqrt(inv[0][0] + inv[1][1]));
 #endif /* __UNUSED__ */
     } else {
-	gpsd_report(LOG_WARN, "LOS matrix is singular, can't calculate DOPs.\n");
+	gpsd_report(LOG_DATA,
+	    "LOS matrix is singular, can't calculate DOPs - source '%s'\n",
+	    gpsdata->dev.path);
 	return 0;
     }
 
+    xdop = sqrt(inv[0][0]);
+    ydop = sqrt(inv[1][1]);
     hdop = sqrt(inv[0][0] + inv[1][1]);
     vdop = sqrt(inv[2][2]);
     pdop = sqrt(inv[0][0] + inv[1][1] + inv[2][2]);
     tdop = sqrt(inv[3][3]);
     gdop = sqrt(inv[0][0] + inv[1][1] + inv[2][2] + inv[3][3]);
-    mask = 0;
 
-    gpsd_report(LOG_PROG, "DOPS computed/reported: H=%f/%f, V=%f/%f, P=%f/%f, T=%f/%f, G=%f/%f\n",
-		hdop, gpsdata->hdop,
-		vdop, gpsdata->vdop,
-		pdop, gpsdata->pdop,
-		tdop, gpsdata->tdop,
-		gdop, gpsdata->gdop);
+    gpsd_report(LOG_DATA, "DOPS computed/reported: X=%f/%f, Y=%f/%f, H=%f/%f, V=%f/%f, P=%f/%f, T=%f/%f, G=%f/%f\n",
+		xdop, dop->xdop,
+		ydop, dop->ydop,
+		hdop, dop->hdop,
+		vdop, dop->vdop,
+		pdop, dop->pdop,
+		tdop, dop->tdop,
+		gdop, dop->gdop);
 
     /*@ -usedef @*/
-    if (isnan(gpsdata->hdop)!=0) {
-	gpsdata->hdop = hdop;
-	mask |= HDOP_SET;
+    if (isnan(dop->xdop)!=0) {
+	dop->xdop = xdop;
     }
-    if (isnan(gpsdata->vdop)!=0) {
-	gpsdata->vdop = vdop;
-	mask |= VDOP_SET;
+    if (isnan(dop->ydop)!=0) {
+	dop->ydop = ydop;
     }
-    if (isnan(gpsdata->pdop)!=0) {
-	gpsdata->pdop = pdop;
-	mask |= PDOP_SET;
+    if (isnan(dop->hdop)!=0) {
+	dop->hdop = hdop;
     }
-    if (isnan(gpsdata->tdop)!=0) {
-	gpsdata->tdop = tdop;
-	mask |= TDOP_SET;
+    if (isnan(dop->vdop)!=0) {
+	dop->vdop = vdop;
     }
-    if (isnan(gpsdata->gdop)!=0) {
-	gpsdata->gdop = gdop;
-	mask |= GDOP_SET;
+    if (isnan(dop->pdop)!=0) {
+	dop->pdop = pdop;
+    }
+    if (isnan(dop->tdop)!=0) {
+	dop->tdop = tdop;
+    }
+    if (isnan(dop->gdop)!=0) {
+	dop->gdop = gdop;
     }
     /*@ +usedef @*/
 
-    return mask;
+    return DOP_SET;
 }

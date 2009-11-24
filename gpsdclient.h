@@ -1,4 +1,4 @@
-/* $Id: gpsdclient.h 5330 2009-03-03 04:05:42Z ckuethe $ */
+/* $Id$ */
 /* gpsdclient.h -- common functions for GPSD clients */
 
 #ifndef _GPSD_GPSDCLIENT_H_
@@ -9,7 +9,7 @@ struct fixsource_t
     char *spec;		/* pointer to actual storage */
     char *server;
     char *port;
-    char *device;
+    /*@null@*/char *device;
 };
 
 enum unit {unspecified, imperial, nautical, metric};

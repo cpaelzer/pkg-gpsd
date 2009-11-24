@@ -28,14 +28,21 @@ C:
     <paramdef>char * <parameter>port</parameter></paramdef>
 </funcprototype>
 <funcprototype>
-<funcdef>int <function>gps_query</function></funcdef>
+<funcdef>int <function>gps_open_r</function></funcdef>
+    <paramdef>char *<parameter>server</parameter></paramdef>
+    <paramdef>char * <parameter>port</parameter></paramdef>
+    <paramdef>struct gps_data_t *<parameter>gpsdata</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+<funcdef>int <function>gps_send</function></funcdef>
     <paramdef>struct gps_data_t *<parameter>gpsdata</parameter></paramdef>
     <paramdef>char *<parameter>fmt</parameter>...</paramdef>
 </funcprototype>
 <funcprototype>
 <funcdef>void <function>gps_set_raw_hook</function></funcdef>
     <paramdef>struct gps_data_t *<parameter>gpsdata</parameter></paramdef>
-    <paramdef>void (*<parameter>hook</parameter>)(struct gps_data_t *, char *buf)</paramdef>
+    <paramdef>void (*<parameter>hook</parameter>)(struct gps_data_t *,
+    char *buf, size_t len)</paramdef>
 </funcprototype>
 <funcprototype>
 <funcdef>int <function>gps_poll</function></funcdef>
@@ -48,7 +55,8 @@ C:
 <funcprototype>
 <funcdef>void <function>gps_set_callback</function></funcdef>
     <paramdef>struct gps_data_t *<parameter>gpsdata</parameter></paramdef>
-    <paramdef>void (*<parameter>callback</parameter>)(struct gps_data_t *sentence, char *buf)</paramdef>
+    <paramdef>void (*<parameter>callback</parameter>)(struct
+    gps_data_t *sentence, char *buf, size_t len)</paramdef>
     <paramdef>pthread_t *<parameter>handler</parameter></paramdef>
 </funcprototype>
 <funcprototype>
@@ -61,6 +69,16 @@ C:
     <paramdef>struct rtcm_t *<parameter>rtcmp</parameter></paramdef>
     <paramdef>char *<parameter>buf</parameter></paramdef>
 </funcprototype>
+<funcprototype>
+<funcdef>int <function>gps_stream</function></funcdef>
+    <paramdef>struct gps_data_t *<parameter>gpsdata</parameter></paramdef>
+    <paramdef>unsigned int<parameter>flags</parameter></paramdef>
+    <paramdef>void *<parameter>data</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+<funcdef>char *<function>gps_errstr</function></funcdef>
+    <paramdef>int <parameter>err</parameter></paramdef>
+</funcprototype>
 <funcsynopsisinfo>
 
 Python:
@@ -71,9 +89,10 @@ session = gps.gps(host="127.0.0.1", port="2947")
 
 session.set_raw_hook(raw_hook)
 
-session.query(commands)
+session.stream(WATCH_ENABLE)
 
-session.poll()
+for report in session:
+    process(report)
 
 del session
 
@@ -101,7 +120,7 @@ version 4. Take care to conditionalize your code on the major and
 minor API version symbols in <filename>gps.h</filename>; ideally,
 force a compilation failure if the header is not exporting a version
 you recognize.  See the GPSD project website for more information on
-the protocol and API change.</para></warning>
+the protocol and API changes.</para></warning>
 
 <para>Calling <function>gps_open()</function> initializes a GPS-data
 structure to hold the data collected by the GPS, and returns a socket
@@ -111,6 +130,11 @@ attached to
 set depending on the error returned from the the socket layer; see
 <filename>gps.h</filename> for values and explanations.</para>
 
+<para><function>gps_open_r()</function> is a reentrent-friendly
+version That put the session storage where you wish to allocate it.
+It returns 0 on success and -1 on failure, with errno set
+appropriately.</para>
+
 <para><function>gps_close()</function> ends the session.
 NB: ending the session does not destroy any threads created to handle
 callbacks.  You must delete all callbacks prior to
@@ -118,6 +142,17 @@ calling <function>gps_close()</function>.  Failure to do so results in
 undefined behavior.  Currently it will leak a thread, and in the
 future might result in aborting the program.
 </para>
+
+<para><function>gps_send()</function> writes a command to the daemon.
+The second argument must be a format string containing elements from
+the command set documented at
+<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>1</manvolnum></citerefentry>.
+It may have % elements as for
+<citerefentry><refentrytitle>sprintf</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+which will be filled in from any following arguments.  This function
+returns a -1 if there was a Unix-level write error, otherwise
+0. Please read the LIMITATIONS section for additional information and
+cautions.</para>
 
 <para><function>gps_poll()</function> accepts a response, or sequence
 of responses, from the daemon and interprets it as though it were a
@@ -127,17 +162,17 @@ received structure.  This function does a blocking read waiting for
 data from the daemon; it returns 0 for success, or -1 on a Unix-level
 read error. </para>
 
-<para><function>gps_query()</function> writes a command to the
-daemon, accepts a one-line response, and updates parts of the GPS-data
-structure that correspond to data changed since the last call.  The
-second argument must be a format string containing letters from the command
-set documented at
-<citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>1</manvolnum></citerefentry>.
-It may have % elements as for 
-<citerefentry><refentrytitle>sprintf</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
-which will be filled in from any following arguments.
-This function returns a 0 on success, or a -1 if there was a
-Unix-level read error.</para>
+<para><function>gps_stream()</function> asks
+<application>gpsd</application> to stream the reports it has at you,
+to be made available whenn you poll.  It is preferable to the
+older-style (pre-2.39) way of doing this,
+<function>gps_query()</function> with a "w+" argument, because it
+insulates your code from whether your client library and your
+<application>gpsd</application> are using old or new protocol.
+The second argument is a flag mask that sets various policy bits; 
+see gps.h for description.  Calling <function>gps_stream()</function>
+more than once with different flag masks is allowed.The third
+argument is not presently used but reserved for expansion.</para>
 
 <para><function>gps_set_raw_hook()</function> takes a function you
 specify and run it (synchronously) on the raw data pulled by a
@@ -167,6 +202,10 @@ calling <function>gps_close()</function>.
 function previously set with <function>gps_set_callback()</function>.
 After the invocation of this function no operation will be done when
 new data arrives.</para>
+
+<para><function>gps_errstr()</function> returns an ASCII string (in
+English) describing the error indicated by a nonzero return value from
+<function>gps_open()</function>.</para>
 
 <para>Consult <filename>gps.h</filename> to learn more about the data members 
 and associated timestamps.  Note that information will accumulate
@@ -212,7 +251,7 @@ code that calls gps_poll(gpsdata).
 
     gps_set_raw_hook(gpsdata, update_panel);
 	
-    (void)gps_query(gpsdata, "w+x\n");
+    (void)gps_stream(gpsdata, WATCH_ENABLE, NULL);
 
     (void)XtAppAddInput(app, gpsdata->gps_fd, 
 		  (XtPointer)XtInputReadMask, handle_input, NULL);
@@ -221,6 +260,42 @@ code that calls gps_poll(gpsdata).
     (void)gps_close(gpsdata);
 </programlisting>
 
+</refsect1>
+
+<refsect1 id='limitations'><title>LIMITATIONS</title>
+
+<para>Incautious use of <function>gps_send()</function> may lead to
+subtle bugs. In order to not bloat <structname>struct
+gps_data_t</structname> with space used by responses that are not
+expected to be shipped in close sequence with each other, the storage
+for fields associated with certain responses are combined in a union.</para>
+
+<para>Sends that might invoke this set of responses need to be
+sequenced carefully so the unpacking of multiple responses arriving in
+the same socket read cannot result in later updates to the union
+obliterating data from earlier ones before it becomes visible to the
+client application.</para>
+
+<para>The risky set of responses includes VERSION, DEVICELIST, RTCM2,
+RTCM3, and AIS; it may not be limited to that set.  The logic of the
+daemon's watcher mode is careful to avoid dangerous sequences, but
+you should read and understand the layout of <structname>struct
+gps_data_t</structname> before using <function>gps_send()</function>
+to request any of these responses.</para>
+
+</refsect1>
+
+<refsect1 id='compatibility'><title>COMPATIBILITY</title>
+
+<para>The <function>gps_query()</function> supported in major versions
+1 and 2 of this library has been removed.  With the new
+streaming-oriented wire protocol behind this library, it is extremely
+unwise to assume that the first transmission from the damon after a
+command is shipped to it will be the reponse to command.</para>
+
+<para>If you must send commands to the daemon explicity, use
+<function>gps_send()</function> but beware that this ties your code to
+the GPSD wire protocol. It is not recommended.</para>
 </refsect1>
 
 <refsect1 id='see_also'><title>SEE ALSO</title>
