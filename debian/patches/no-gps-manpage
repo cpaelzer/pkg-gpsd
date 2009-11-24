@@ -36,7 +36,7 @@
  <citerefentry><refentrytitle>gpsprof</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
 --- a/gpsd.xml
 +++ b/gpsd.xml
-@@ -1100,7 +1100,7 @@ Version 3</citetitle> RTCM Paper 177-200
+@@ -1957,7 +1957,7 @@ Version 3</citetitle> RTCM Paper 177-200
  </refsect1>
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
@@ -47,7 +47,7 @@
  <citerefentry><refentrytitle>gpsprof</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
 --- a/gpsfake.xml
 +++ b/gpsfake.xml
-@@ -142,7 +142,7 @@ other application which is able to creat
+@@ -146,7 +146,7 @@ other application which is able to creat
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
  <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
@@ -56,20 +56,9 @@
  <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
  <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
  <citerefentry><refentrytitle>gpsctl</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
---- a/gpsflash.xml
-+++ b/gpsflash.xml
-@@ -90,7 +90,7 @@ WARNED.</para></warning>
- <refsect1 id='see_also'><title>SEE ALSO</title>
- <para>
- <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
--<citerefentry><refentrytitle>gps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
-+<citerefentry><refentrytitle>cgps</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
- <citerefentry><refentrytitle>libgps</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
- <citerefentry><refentrytitle>libgpsd</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
- <citerefentry><refentrytitle>srec</refentrytitle><manvolnum>5</manvolnum></citerefentry>.
 --- a/gpsprof.xml
 +++ b/gpsprof.xml
-@@ -165,7 +165,7 @@ Python interpreter's decode time. A C cl
+@@ -150,7 +150,7 @@ a usage message and exit.</para>
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
  <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
@@ -80,7 +69,7 @@
  <citerefentry><refentrytitle>gpsfake</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
 --- a/libgps.xml
 +++ b/libgps.xml
-@@ -226,7 +226,7 @@ code that calls gps_poll(gpsdata).
+@@ -301,7 +301,7 @@ the GPSD wire protocol. It is not recomm
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
  <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
@@ -91,7 +80,7 @@
  </para>
 --- a/libgpsd.xml
 +++ b/libgpsd.xml
-@@ -157,7 +157,7 @@ a mutex.</para>
+@@ -155,7 +155,7 @@ a mutex.</para>
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
  <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
@@ -102,7 +91,7 @@
  </refsect1>
 --- a/libgpsmm.xml
 +++ b/libgpsmm.xml
-@@ -65,7 +65,7 @@ The analogue of the C function <function
+@@ -69,7 +69,7 @@ The analogue of the C function <function
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
  <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
@@ -113,7 +102,7 @@
  </refsect1>
 --- a/rtcm-104.xml
 +++ b/rtcm-104.xml
-@@ -465,7 +465,7 @@ not described here.</para>
+@@ -476,7 +476,7 @@ buggy. Anyone interested in it should re
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
  <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
@@ -124,7 +113,7 @@
  <citerefentry><refentrytitle>gpsprof</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
 --- a/srec.xml
 +++ b/srec.xml
-@@ -283,7 +283,7 @@ indicating the starting execution addres
+@@ -284,7 +284,7 @@ indicating the starting execution addres
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
  <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
@@ -135,7 +124,7 @@
  <citerefentry><refentrytitle>gpsfake</refentrytitle><manvolnum>1</manvolnum></citerefentry>.
 --- a/gpsdecode.xml
 +++ b/gpsdecode.xml
-@@ -154,7 +154,7 @@ code.</para>
+@@ -174,7 +174,7 @@ code.</para>
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
  <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
@@ -146,7 +135,7 @@
  <citerefentry><refentrytitle>gpsprof</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
 --- a/gpsmon.xml
 +++ b/gpsmon.xml
-@@ -329,7 +329,7 @@ connected to a GPS type it knows nothing
+@@ -334,7 +334,7 @@ mode.
  <refsect1 id='see_also'><title>SEE ALSO</title>
  <para>
  <citerefentry><refentrytitle>gpsd</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
