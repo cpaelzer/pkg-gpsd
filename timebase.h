@@ -1,4 +1,4 @@
-/* $Id: timebase.h 5502 2009-03-18 21:09:31Z esr $ */
+/* $Id$ */
 #ifndef _GPSD_TIMEBASE_H_
 #define _GPSD_TIMEBASE_H_
 

@@ -1,4 +1,4 @@
-/* $Id: driver_nmea.c 5479 2009-03-16 07:04:58Z esr $ */
+/* $Id$ */
 #include <sys/types.h>
 #include <stdio.h>
 #include <unistd.h>

@@ -1,4 +1,4 @@
-/* $Id: motosend.c 4688 2008-02-23 17:49:41Z ckuethe $ */
+/* $Id$ */
 #include <sys/types.h>
 #include <machine/endian.h>
 #include <sys/limits.h>

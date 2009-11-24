@@ -1,4 +1,4 @@
-/* $Id: monitor_ubx.c 5439 2009-03-12 00:54:34Z ckuethe $ */
+/* $Id$ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

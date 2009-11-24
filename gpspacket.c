@@ -1,4 +1,4 @@
-/* $Id: gpspacket.c 4996 2009-01-13 01:42:35Z esr $ */
+/* $Id$ */
 /*
  * Python binding for the packet.c module.
  */

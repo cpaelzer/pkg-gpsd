@@ -1,4 +1,4 @@
-/* $Id: netlib.c 5052 2009-01-21 10:42:24Z esr $ */
+/* $Id$ */
 #include <sys/types.h>
 #include "gpsd_config.h"
 #ifdef HAVE_SYS_SOCKET_H

@@ -1,4 +1,4 @@
-/* $Id: monitor_nmea.c 5395 2009-03-06 14:55:03Z esr $ */
+/* $Id$ */
 /*
  * nmeamon.c - gpsmon support for NMEA devices.
  *

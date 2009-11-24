@@ -1,4 +1,4 @@
-/* $Id: strl.c 4075 2006-12-05 00:05:19Z ckuethe $ */
+/* $Id$ */
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>

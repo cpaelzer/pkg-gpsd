@@ -1,4 +1,4 @@
-/* $Id: geoid.c 4958 2009-01-08 17:45:01Z ckuethe $ */
+/* $Id$ */
 /* 
  * geoid.c -- ECEF to WGS84 conversions, including ellipsoid-to-MSL height
  *

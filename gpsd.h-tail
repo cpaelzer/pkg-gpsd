@@ -1,6 +1,6 @@
 /* Feature configuration switches end here */
 
-/* $Id: gpsd.h-tail 5498 2009-03-18 17:37:53Z esr $ */
+/* $Id$ */
 
 /* Some internal capabilities depend on which drivers we're compiling. */
 #ifdef EARTHMATE_ENABLE

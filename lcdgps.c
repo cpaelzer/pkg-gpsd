@@ -1,4 +1,4 @@
-/* $Id: lcdgps.c 5496 2009-03-18 16:43:52Z jfrancis $ */
+/* $Id$ */
 /*
  * Copyright (c) 2005 Jeff Francis <jeff@gritch.org>
  *
@@ -361,7 +361,7 @@ int main(int argc, char *argv[])
     while ((option = getopt(argc, argv, "Vhjl:su:")) != -1) {
 	switch (option) {
 	case 'V':
-	    (void)fprintf(stderr, "$Id: lcdgps.c 5496 2009-03-18 16:43:52Z jfrancis $\n");
+	    (void)fprintf(stderr, "$Id$\n");
 	    exit(0);
 	case 'h':
 	default:

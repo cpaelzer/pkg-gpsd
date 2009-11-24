@@ -1,4 +1,4 @@
-/* $Id: cgps.c 5496 2009-03-18 16:43:52Z jfrancis $ */
+/* $Id$ */
 /*
  * Copyright (c) 2005 Jeff Francis <jeff@gritch.org>
  *
@@ -686,7 +686,7 @@ int main(int argc, char *argv[])
       fixclear_flag=1;
       break;
     case 'V':
-      (void)fprintf(stderr, "SVN ID: $Id: cgps.c 5496 2009-03-18 16:43:52Z jfrancis $ \n");
+      (void)fprintf(stderr, "SVN ID: $Id$ \n");
       exit(0);
     case 'l':
       switch ( optarg[0] ) {

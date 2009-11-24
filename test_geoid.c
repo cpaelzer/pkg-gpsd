@@ -1,4 +1,4 @@
-/* $Id: test_geoid.c 5320 2009-03-02 20:47:18Z ckuethe $ */
+/* $Id$ */
 /* 
  * test driver for the ECEF to WGS84 conversions in geoid.c
  *

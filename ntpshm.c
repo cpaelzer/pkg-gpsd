@@ -1,4 +1,4 @@
-/* $Id: ntpshm.c 4909 2009-01-06 15:45:47Z ckuethe $ */
+/* $Id$ */
 /* 
  * ntpshm.c - put time information in SHM segment for xntpd
  * struct shmTime and getShmTime from file in the xntp distribution:

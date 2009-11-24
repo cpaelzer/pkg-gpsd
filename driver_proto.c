@@ -1,4 +1,4 @@
-/* $Id: driver_proto.c 5412 2009-03-07 16:11:17Z esr $
+/* $Id$
  *
  * A prototype driver.  Doesn't run, doesn't even compile.
  *

@@ -1,4 +1,4 @@
-/* $Id: gpsutils.c 4900 2009-01-05 21:47:53Z esr $ */
+/* $Id$ */
 /* gpsutils.c -- code shared between low-level and high-level interfaces */
 #include <sys/types.h>
 #include <stdio.h>

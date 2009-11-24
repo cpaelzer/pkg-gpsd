@@ -1,4 +1,4 @@
-/* $Id: ashctl.c 4611 2007-12-23 18:44:43Z ckuethe $ */
+/* $Id$ */
 #include <sys/types.h>
 #include <err.h>
 #include <errno.h>

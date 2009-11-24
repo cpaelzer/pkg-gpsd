@@ -1,4 +1,4 @@
-/* $Id: libgpsmm.h 4794 2008-08-03 16:42:57Z ckuethe $ */
+/* $Id$ */
 #ifndef _GPSD_GPSMM_H_
 #define _GPSD_GPSMM_H_
 

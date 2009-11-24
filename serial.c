@@ -1,4 +1,4 @@
-/* $Id: serial.c 5306 2009-03-02 11:50:56Z esr $ */
+/* $Id$ */
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>

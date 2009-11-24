@@ -1,4 +1,4 @@
-/* $Id: libgpsd_core.c 5498 2009-03-18 17:37:53Z esr $ */
+/* $Id$ */
 /* libgpsd_core.c -- direct access to GPSes on serial or USB devices. */
 #include <sys/time.h>
 #include <sys/ioctl.h>

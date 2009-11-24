@@ -1,4 +1,4 @@
-/* $Id: test_gpsmm.cpp 5320 2009-03-02 20:47:18Z ckuethe $ */
+/* $Id$ */
 /*
  * Copyright (C) 2005 Alfredo Pironti
  *

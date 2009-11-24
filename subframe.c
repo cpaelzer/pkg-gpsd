@@ -1,4 +1,4 @@
-/* $Id: subframe.c 3770 2006-11-02 05:07:11Z esr $ */
+/* $Id$ */
 /* subframe.c -- interpret satellite subframe data. */
 #include <sys/types.h>
 #include "gpsd_config.h"

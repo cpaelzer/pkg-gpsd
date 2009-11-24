@@ -1,4 +1,4 @@
-/* $Id: gpxlogger.c 5326 2009-03-02 23:24:03Z esr $ */
+/* $Id$ */
 #include <sys/types.h>
 #include <string.h>
 #include <stdlib.h>
@@ -376,7 +376,7 @@ int main (int argc, char** argv)
 	    casoc = casoc ? 1 : 0;
 	    break;
 	case 'V':
-	    (void)fprintf(stderr, "SVN ID: $Id: gpxlogger.c 5326 2009-03-02 23:24:03Z esr $ \n");
+	    (void)fprintf(stderr, "SVN ID: $Id$ \n");
 	    exit(0);
 	default:
  	    usage();

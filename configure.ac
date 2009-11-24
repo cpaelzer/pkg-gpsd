@@ -1,4 +1,4 @@
-dnl $Id: configure.ac 5502 2009-03-18 21:09:31Z esr $
+dnl $Id$
 AC_INIT
 AM_INIT_AUTOMAKE(gpsd, 2.39)
 dnl AC_PREFIX_PROGRAM(gcc)

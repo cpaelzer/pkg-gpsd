@@ -1,4 +1,4 @@
-/* $Id: gpsd.c 5498 2009-03-18 17:37:53Z esr $ */
+/* $Id$ */
 #include <sys/types.h>
 #ifndef S_SPLINT_S
 #include <sys/socket.h>

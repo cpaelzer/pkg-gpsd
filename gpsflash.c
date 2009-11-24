@@ -1,4 +1,4 @@
-/* $Id: gpsflash.c 5055 2009-01-21 16:42:52Z esr $ */
+/* $Id$ */
 /*
  * This is the GPS-type-independent part of the gpsflash program.
  *
@@ -361,7 +361,7 @@ main(int argc, char **argv){
 			verbosity = atoi(optarg);
 			break;
 		case 'V':
-			(void)fprintf(stderr, "SVN ID: $Id: gpsflash.c 5055 2009-01-21 16:42:52Z esr $ \n");
+			(void)fprintf(stderr, "SVN ID: $Id$ \n");
 			exit(0);
 		default:
 			usage();

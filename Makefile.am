@@ -1,5 +1,5 @@
 # Automake description for gpsd
-# $Id: Makefile.am 5494 2009-03-18 15:16:41Z esr $
+# $Id$
 
 #SUBDIRS = contrib
 

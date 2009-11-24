@@ -1,4 +1,4 @@
-/* $Id: driver_ubx.c 5501 2009-03-18 19:14:22Z ckuethe $
+/* $Id$
  *
  * UBX driver
  */

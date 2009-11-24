@@ -1,4 +1,4 @@
-/* $Id: driver_navcom.c 5410 2009-03-07 15:32:23Z esr $ */
+/* $Id$ */
 /*
  * Driver for Navcom receivers using propietary NCT messages, a binary protocol.
  *

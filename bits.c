@@ -1,4 +1,4 @@
-/* $Id: bits.c 5498 2009-03-18 17:37:53Z esr $ */
+/* $Id$ */
 /*
  * Bitfield extraction functions.  In each, start is a bit index (not
  * a byte index) and width is a bit width.  The width bounded above by

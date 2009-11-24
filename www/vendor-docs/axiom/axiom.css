@@ -1,0 +1,106 @@
+/* Style Definitions for Axiom pages.
+ *
+ * This used to be full of Microsoft Word crud and fixed font sizes.
+ * In general, 'medium' equates to an original font size of 12.0pt,
+ * 'small' to 10.0pt, 'x-small' to 8.0pt, 'large' to 14pt, x-large 
+ * to 18pt, xx-large to 24.0pt.
+ *
+ * If a browser has a basic 12-point size and uses the W3C recommended 
+ * factor of 1.2 this will work almost perfectly except at the high end, which
+ * should be about 21.  We still use some fixed margins, though, which
+ * could look a little odd if the browser default font is very large or small. 
+ */
+body
+	{background-color:white;
+	tab-interval:0.5in;}
+
+p, li, div
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:medium;
+	font-family:Arial;
+	color:black;}
+h1
+	{font-size:xx-large;
+	margin-top:0.5ex;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	page-break-after:avoid;
+	font-family:Arial;
+	color:black;
+	font-weight:normal;}
+h2
+	{font-size:x-large;
+	margin-top:0.75ex;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	page-break-after:avoid;
+	font-family:Arial;
+	color:black;
+	font-weight:normal}
+h3
+	{font-size:large;
+	margin-top:0.75ex;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	page-break-after:avoid;
+	font-family:Arial;
+	color:black;
+	font-weight:normal;}
+h4
+	{font-size:medium;
+	margin-top:1ex;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	page-break-after:avoid;
+	font-family:Arial;
+	color:black;
+	font-weight:normal;}
+h5
+	{margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	font-size:small;
+	font-family:Arial;
+	color:black;
+	font-weight:normal;}
+h6
+	{font-size:x-small;
+	margin-top:1.5ex;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	font-family:Arial;
+	color:black;
+	font-weight:normal;}
+p.heading, li.heading, div.heading
+	{margin-top:0in;
+	margin-right:0in;
+	margin-bottom:12.0pt;
+	margin-left:0in;
+	page-break-after:avoid;
+	font-size:x-large;
+	font-family:Arial;}
+a:link, span.MsoHyperlink
+	{/*color:#660000;*/
+	text-decoration:underline;
+	text-underline:single;}
+a:visited, span.MsoHyperlinkFollowed
+	{/*color:#003399;*/
+	text-decoration:underline;
+	text-underline:single;}
+p.inversehead, li.inversehead, div.inversehead
+	{margin-right:0in;
+	margin-left:0in;
+	font-size:medium;
+	font-family:"Times New Roman";}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}

@@ -1,4 +1,4 @@
-/* $Id: Tachometer.c 4427 2007-10-16 13:40:03Z esr $ */
+/* $Id$ */
 /*
  * Tachometer Widget Implementation
  *

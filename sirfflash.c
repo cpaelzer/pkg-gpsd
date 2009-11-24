@@ -1,4 +1,4 @@
-/* $Id: sirfflash.c 5059 2009-01-21 20:02:28Z ckuethe $ */
+/* $Id$ */
 /*
  * Copyright (c) 2005-2007 Chris Kuethe <chris.kuethe@gmail.com>
  * Copyright (c) 2005-2007 Eric S. Raymond <esr@thyrsus.com>

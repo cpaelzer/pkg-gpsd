@@ -1,4 +1,4 @@
-/* $Id: driver_zodiac.c 5410 2009-03-07 15:32:23Z esr $ */
+/* $Id$ */
 /*
  * Handle the Rockwell binary packet format supported by the old Zodiac chipset
  */

@@ -1,4 +1,4 @@
-/* $Id: hex.c 5498 2009-03-18 17:37:53Z esr $ */
+/* $Id$ */
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>

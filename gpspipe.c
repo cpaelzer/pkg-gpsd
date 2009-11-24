@@ -1,4 +1,4 @@
-/* $Id: gpspipe.c 5326 2009-03-02 23:24:03Z esr $ */
+/* $Id$ */
 /*
  * gpspipe
  *
@@ -126,7 +126,7 @@ static void open_serial(char* device)
 static void usage(void)
 {
     (void)fprintf(stderr, "Usage: gpspipe [OPTIONS] [server[:port[:device]]]\n\n"
-		  "SVN ID: $Id: gpspipe.c 5326 2009-03-02 23:24:03Z esr $ \n"
+		  "SVN ID: $Id$ \n"
 		  "-d Run as a daemon.\n"
 		  "-f [file] Write output to file.\n"
 		  "-h Show this help.\n"
@@ -197,7 +197,7 @@ int main( int argc, char **argv)
 	    (void)strlcat(buf, "j=1;", sizeof(buf));
 	    break;
 	case 'V':
-	    (void)fprintf(stderr, "%s: SVN ID: $Id: gpspipe.c 5326 2009-03-02 23:24:03Z esr $ \n", argv[0]);
+	    (void)fprintf(stderr, "%s: SVN ID: $Id$ \n", argv[0]);
 	    exit(0);
 	case 's':
 	    serialport = optarg;

@@ -1,4 +1,4 @@
-/* $Id: monitor_sirf.c 5395 2009-03-06 14:55:03Z esr $ */
+/* $Id$ */
 /*
  * SiRF object for the GPS packet monitor.
  *

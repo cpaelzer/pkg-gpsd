@@ -1,4 +1,4 @@
-/* $Id: xgps.c 5326 2009-03-02 23:24:03Z esr $ */
+/* $Id$ */
 /* $gpsd: xgps.c 3871 2006-11-13 00:40:00Z esr $ */
 
 /*
@@ -1236,7 +1236,7 @@ altunits_ok:
 	while ((option = getopt(argc, argv, "Vhjl:")) != -1) {
 		switch (option) {
 		case 'V':
-		    (void)fprintf(stderr, "SVN ID: $Id: xgps.c 5326 2009-03-02 23:24:03Z esr $ \n");
+		    (void)fprintf(stderr, "SVN ID: $Id$ \n");
 		    exit(0);
 		case 'j':
 		    jitteropt = true;

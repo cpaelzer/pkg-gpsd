@@ -1,4 +1,4 @@
-/* $Id: test_float.c 5321 2009-03-02 20:49:04Z ckuethe $ */
+/* $Id$ */
 #include <stdio.h>
 
 /*

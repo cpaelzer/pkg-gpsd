@@ -1,5 +1,5 @@
 """
-$Id: gpsfake.py 5050 2009-01-21 09:29:24Z esr $
+$Id$
 
 gpsfake.py -- classes for creating a controlled test environment around gpsd.
 

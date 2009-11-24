@@ -1,4 +1,4 @@
-/* $Id: ntrip.c 5052 2009-01-21 10:42:24Z esr $ */
+/* $Id$ */
 /* ntrip.c -- gather and dispatch DGNSS data from Ntrip broadcasters */
 #include <sys/types.h>
 #ifndef S_SPLINT_S

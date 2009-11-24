@@ -1,4 +1,4 @@
-/* $Id: monitor_proto.c 5333 2009-03-03 13:18:31Z esr $ */
+/* $Id$ */
 /*
  * Prototype file for a gpsmon monitor object.  
  */

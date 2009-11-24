@@ -1,4 +1,4 @@
-/* $Id: driver_rtcm2.c 5317 2009-03-02 20:04:36Z ckuethe $ */
+/* $Id$ */
 /*****************************************************************************
 
 This is a decoder for RTCM-104 2.x, an obscure and complicated serial

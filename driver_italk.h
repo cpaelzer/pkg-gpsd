@@ -1,4 +1,4 @@
-/* $Id: driver_italk.h 5361 2009-03-04 18:49:43Z ckuethe $ */
+/* $Id$ */
 #ifndef _GPSD_ITALK_H_
 #define _GPSD_ITALK_H_
 

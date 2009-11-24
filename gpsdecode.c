@@ -1,4 +1,4 @@
-/* $Id: gpsdecode.c 5498 2009-03-18 17:37:53Z esr $ */
+/* $Id$ */
 #include <sys/types.h>
 #ifndef S_SPLINT_S
 #include <unistd.h>
@@ -188,7 +188,7 @@ int main(int argc, char **argv)
 	    break;
 
 	case 'V':
-	    (void)fprintf(stderr, "SVN ID: $Id: gpsdecode.c 5498 2009-03-18 17:37:53Z esr $ \n");
+	    (void)fprintf(stderr, "SVN ID: $Id$ \n");
 	    exit(0);
 
 	case '?':

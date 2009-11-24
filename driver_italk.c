@@ -1,4 +1,4 @@
-/* $Id: driver_italk.c 5410 2009-03-07 15:32:23Z esr $ */
+/* $Id$ */
 /*
  * Driver for the iTalk binary protocol used by FasTrax
  */

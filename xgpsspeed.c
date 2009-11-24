@@ -1,4 +1,4 @@
-/* $Id: xgpsspeed.c 5326 2009-03-02 23:24:03Z esr $ */
+/* $Id$ */
 /* GPS speedometer as a wrapper around an Athena widget Tachometer
  * - Derrick J Brashear <shadow@dementia.org>
  */

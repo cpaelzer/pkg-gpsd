@@ -1,4 +1,4 @@
-/* $Id: test_mkgmtime.c 5494 2009-03-18 15:16:41Z esr $ */
+/* $Id$ */
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,4 +1,4 @@
-/* $Id: dgnss.c 5052 2009-01-21 10:42:24Z esr $ */
+/* $Id$ */
 /* dgnss.c -- common interface to a number of Differential GNSS services */
 
 #include <sys/types.h>

@@ -1,4 +1,4 @@
-/* $Id: gpsflash.h 5054 2009-01-21 16:36:20Z esr $ */
+/* $Id$ */
 #ifndef _GPSD_GPSFLASH_H_
 #define _GPSD_GPSFLASH_H_
 

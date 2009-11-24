@@ -1,4 +1,4 @@
-/* $Id: isgps.c 4916 2009-01-06 16:54:33Z ckuethe $ */
+/* $Id$ */
 /*****************************************************************************
 
 This is a decoder for the unnamed protocol described in IS-GPS-200,

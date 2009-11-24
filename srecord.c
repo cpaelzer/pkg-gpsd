@@ -1,4 +1,4 @@
-/* $Id: srecord.c 3666 2006-10-26 23:11:51Z ckuethe $ */
+/* $Id$ */
 /*
  * Copyright (c) 2005 Chris Kuethe <chris.kuethe@gmail.com>
  *
