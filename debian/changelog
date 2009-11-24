@@ -1,3 +1,15 @@
+gpsd (2.40~svn6588-1) experimental; urgency=low
+
+  * SVN Snapshot.
+  * [10b2460a] Include gps.h in Tachometer.c, needed to define UNUSED.
+  * [3f75872e] Merge branch 'experimental-upstream' into experimental
+  * [33831f96] Update gbp config for experimental.
+  * [476e547e] Update soname in debian/control.
+  * [0561c6cf] Updaing patches, dropping those which were applied
+    upstream.
+
+ -- Bernd Zeimetz <bzed@debian.org>  Tue, 24 Nov 2009 19:07:48 +0100
+
 gpsd (2.39-8) unstable; urgency=low
 
   * [a9e9d167] Export needed variables for the hotplug script. (Closes:
