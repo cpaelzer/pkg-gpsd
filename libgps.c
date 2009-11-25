@@ -114,12 +114,10 @@ void gps_set_raw_hook(struct gps_data_t *gpsdata,
 #ifdef LIBGPS_DEBUG
 static void libgps_dump_state(struct gps_data_t *collect, time_t now)
 {
-    extern /*@observer@*/const char *gpsd_maskdump(gps_mask_t);
-
     char *status_values[] = {"NO_FIX", "FIX", "DGPS_FIX"};
     char *mode_values[] = {"", "NO_FIX", "MODE_2D", "MODE_3D"};
 
-    /* FIXME: We di=on't dump the entire state here yet */
+    /* FIXME: We don't dump the entire state here yet */
     (void)fprintf(debugfp, "flags: (0x%04x) %s\n", 
 		  collect->set, gpsd_maskdump(collect->set));
     if (collect->set & ONLINE_SET)
@@ -763,31 +761,26 @@ static void onsig(int sig)
 }
 
 /* must start zeroed, otherwise the unit test will try to chase garbage pointer fields. */
-struct gps_data_t gpsdata;
-static char buf[] = "GPSD,O=RMC 1207318966.000 0.005 49.026225 12.188348 375.20 19.20 10.40 70.8900 24.899 0.000 75.6699 38.40 ? 3\r\n$GPVTG,70.89,T,,M,48.40,N,89.6,K,A*34\r\n";
-
-static void unpack_unit_test(void)
-/* torture the unpacking function */
-{
-    (void)signal(SIGSEGV, onsig);
-    (void)signal(SIGBUS, onsig);
-
-    (void)gps_unpack(buf, &gpsdata);
-    libgps_dump_state(&gpsdata, time(NULL));
-}
+static struct gps_data_t gpsdata;
 
 int main(int argc, char *argv[])
 {
     struct gps_data_t *collect;
     char buf[BUFSIZ];
     int option;
-    bool unpack_test = false;
+    bool batchmode = false;
+    int debug = 0;
 
-    gps_enable_debug(0, stdout);
-    while ((option = getopt(argc, argv, "uhs?")) != -1) {
+    (void)signal(SIGSEGV, onsig);
+    (void)signal(SIGBUS, onsig);
+
+    while ((option = getopt(argc, argv, "bd:hs?")) != -1) {
 	switch (option) {
-	case 'u':
-	    unpack_test = true;
+	case 'b':
+	    batchmode = true;
+	    break;
+	case 'd':
+	    debug = atoi(optarg);
 	    break;
 	case 's':
 	    (void)printf("Sizes: rtcm2=%zd rtcm3=%zd ais=%zd compass=%zd raw=%zd devices=%zd policy=%zd version=%zd\n",
@@ -803,14 +796,19 @@ int main(int argc, char *argv[])
 	case '?':
 	case 'h':
 	default:
-	    (void)fputs("usage: libps [-u]\n", stderr);
+	    (void)fputs("usage: libps [-b] [-d lvl] [-s]\n", stderr);
 	    exit(1);
 	}
     }
 
-    if (unpack_test) {
-	unpack_unit_test();
-	return 0;
+    gps_enable_debug(debug, stdout);
+    if (batchmode) {
+	while (fgets(buf, sizeof(buf), stdin) != NULL) {
+	    if (isalpha(buf[0])) {
+		gps_unpack(buf, &gpsdata);
+		libgps_dump_state(&gpsdata, time(NULL));
+	    }
+	}
     } else if ((collect = gps_open(NULL, 0)) == NULL) {
 	(void)fputs("Daemon is not running.\n", stdout);
 	exit(1);
@@ -821,6 +819,7 @@ int main(int argc, char *argv[])
 	gps_send(collect, buf);
 	gps_poll(collect);
 	libgps_dump_state(collect, time(NULL));
+	(void)gps_close(collect);
     } else {
 	int	tty = isatty(0);
 
@@ -840,9 +839,9 @@ int main(int argc, char *argv[])
 	    gps_poll(collect);
 	    libgps_dump_state(collect, time(NULL));
 	}
+	(void)gps_close(collect);
     }
 
-    (void)gps_close(collect);
     return 0;
 }
 
