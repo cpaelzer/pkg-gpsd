@@ -1,4 +1,4 @@
-gpsd (2.40~svn6596-1) experimental; urgency=low
+gpsd (2.40~svn6613-1) experimental; urgency=low
 
   * SVN Snapshot.
   * [10b2460a] Include gps.h in Tachometer.c, needed to define UNUSED.
