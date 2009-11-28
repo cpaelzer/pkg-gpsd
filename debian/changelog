@@ -1,4 +1,4 @@
-gpsd (2.40~svn6613-1) experimental; urgency=low
+gpsd (2.40~svn6614-1) experimental; urgency=low
 
   * SVN Snapshot.
   * [10b2460a] Include gps.h in Tachometer.c, needed to define UNUSED.
@@ -8,7 +8,7 @@ gpsd (2.40~svn6613-1) experimental; urgency=low
   * [0561c6cf] Updaing patches, dropping those which were applied
     upstream.
 
- -- Bernd Zeimetz <bzed@debian.org>  Tue, 24 Nov 2009 19:07:48 +0100
+ -- Bernd Zeimetz <bzed@debian.org>  Sat, 28 Nov 2009 21:04:43 +0100
 
 gpsd (2.39-8) unstable; urgency=low
 
