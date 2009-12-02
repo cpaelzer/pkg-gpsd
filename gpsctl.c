@@ -17,6 +17,7 @@
 #include <signal.h>
 
 #include "gpsd.h"
+#include "revision.h"
 
 static int debuglevel;
 
@@ -199,9 +200,11 @@ int main(int argc, char **argv)
 	case 'D':		/* set debugging level */
 	    debuglevel = atoi(optarg);
 	    gpsd_hexdump_level = debuglevel;
+	    gps_enable_debug(debuglevel, stderr);
 	    break;
 	case 'V':
-	    (void)fprintf(stderr, "gpsctl at svn revision $Rev$\n");
+	    (void)fprintf(stderr, "gpsctl: version %s (revision %s)\n",
+			  VERSION, REVISION);
 	    break;
 	case 'h':
 	default:
@@ -360,16 +363,16 @@ int main(int argc, char **argv)
 		}
 		if (status == 0)
 		    (void)gps_query(gpsdata, 
-				    "?DEVICE={\"path\":\"%s\",\"bps\":%s,\"serialmode\":\"8%c%c\"}\r\n", 
+				    "?DEVICE={\"path\":\"%s\",\"bps\":%s,\"parity\":\"%c\",\"stopbits\":%c}\r\n", 
 				    device, speed, parity, stopbits);
 	    }
 	    if (atoi(speed) != (int)gpsdata->dev.baudrate) {
-		gpsd_report(LOG_ERROR, "%s driver won't support %s%c%d\n", 
+		gpsd_report(LOG_ERROR, "%s driver won't support %s%c%c\n", 
 			    gpsdata->dev.path,
 			    speed, parity, stopbits);
 		status = 1;
 	    } else
-		gpsd_report(LOG_PROG, "%s change to %s%c%d succeeded\n", 
+		gpsd_report(LOG_PROG, "%s change to %s%c%c succeeded\n", 
 			    gpsdata->dev.path,
 			    speed, parity, stopbits);
 	}

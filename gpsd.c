@@ -55,6 +55,7 @@
 #include "gpsd.h"
 #include "gps_json.h"
 #include "timebase.h"
+#include "revision.h"
 
 /*
  * The name of a tty device from which to pick up whatever the local
@@ -975,8 +976,10 @@ static void set_serial(struct gps_device_t *device,
 	}
     }
 
+    gpsd_report(LOG_PROG, "set_serial(,%d,%s) %c%d\n", speed, modestring,
+    	parity, stopbits);
     /* no support for other word sizes yet */
-    if (wordsize != (int)(9 - stopbits) && device->device_type->speed_switcher!=NULL)
+    if (wordsize == (int)(9 - stopbits) && device->device_type->speed_switcher!=NULL)
 	if (device->device_type->speed_switcher(device,
 						speed,
 						parity,
@@ -1802,6 +1805,7 @@ int main(int argc, char *argv[])
 	case 'D':
 	    debuglevel = (int) strtol(optarg, 0, 0);
 	    gpsd_hexdump_level = debuglevel;
+	    gps_enable_debug(debuglevel, stderr);
 	    break;
 	case 'F':
 	    control_socket = optarg;
@@ -1844,7 +1848,7 @@ int main(int argc, char *argv[])
 	    pid_file = optarg;
 	    break;
 	case 'V':
-	    (void)printf("gpsd %s\n", VERSION);
+	    (void)printf("gpsd: %s (revision %s)\n", VERSION, REVISION);
 	    exit(0);
 	case 'h': case '?':
 	default:
@@ -2316,7 +2320,7 @@ int main(int argc, char *argv[])
 			    report_fix = true;
 #ifdef DBUS_ENABLE
 			if (report_fix)
-			    send_dbus_fix(channel);
+			    send_dbus_fix(channel->device);
 #endif /* DBUS_ENABLE */
 #ifdef OLDSTYLE_ENABLE
 			if (!newstyle(sub)) {
