@@ -38,6 +38,7 @@
 #include <assert.h>
 #include "gpsd.h"
 #include "gpsdclient.h"
+#include "revision.h"
 
 static int fd_out = 1;		/* output initially goes to standard output */ 
 static void spinner(unsigned int, unsigned int);
@@ -49,47 +50,48 @@ static void spinner(unsigned int, unsigned int);
 static struct termios oldtio, newtio;
 static char serbuf[255];
 
+static void daemonize(void) 
 /* Daemonize me. */
-static void daemonize(void) {
-  int i;
-  pid_t pid;
+{
+    int i;
+    pid_t pid;
 
-  /* Run as my child. */
-  pid=fork();
-  if (pid == -1) exit(1); /* fork error */
-  if (pid>0) exit(0); /* parent exits */
+    /* Run as my child. */
+    pid=fork();
+    if (pid == -1) exit(1); /* fork error */
+    if (pid>0) exit(0); /* parent exits */
 
-  /* Obtain a new process group. */
-  (void)setsid();
+    /* Obtain a new process group. */
+    (void)setsid();
 
-  /* Close all open descriptors. */
-  for(i=getdtablesize();i>=0;--i)
-      (void)close(i);
+    /* Close all open descriptors. */
+    for(i=getdtablesize();i>=0;--i)
+	(void)close(i);
 
-  /* Reopen STDIN, STDOUT, STDERR to /dev/null. */
-  i=open("/dev/null",O_RDWR);	/* STDIN */
-  /*@ -sefparams @*/
-  assert(dup(i) != -1); 	/* STDOUT */
-  assert(dup(i) != -1);		/* STDERR */
+    /* Reopen STDIN, STDOUT, STDERR to /dev/null. */
+    i=open("/dev/null",O_RDWR);	/* STDIN */
+    /*@ -sefparams @*/
+    assert(dup(i) != -1); 	/* STDOUT */
+    assert(dup(i) != -1);		/* STDERR */
 
-  /* Know thy mask. */
-  (void)umask(0x033);
+    /* Know thy mask. */
+    (void)umask(0x033);
 
-  /* Run from a known spot. */
-  assert(chdir("/") != -1);
-  /*@ +sefparams @*/
+    /* Run from a known spot. */
+    assert(chdir("/") != -1);
+    /*@ +sefparams @*/
 
-  /* Catch child sig */
-  (void)signal(SIGCHLD,SIG_IGN);
+    /* Catch child sig */
+    (void)signal(SIGCHLD,SIG_IGN);
 
-  /* Ignore tty signals */
-  (void)signal(SIGTSTP,SIG_IGN);
-  (void)signal(SIGTTOU,SIG_IGN);
-  (void)signal(SIGTTIN,SIG_IGN);
+    /* Ignore tty signals */
+    (void)signal(SIGTSTP,SIG_IGN);
+    (void)signal(SIGTTOU,SIG_IGN);
+    (void)signal(SIGTTIN,SIG_IGN);
 }
 
-/* open the serial port and set it up */
 static void open_serial(char* device)
+/* open the serial port and set it up */
 {
     /* 
      * Open modem device for reading and writing and not as controlling
@@ -125,14 +127,12 @@ static void open_serial(char* device)
 static void usage(void)
 {
     (void)fprintf(stderr, "Usage: gpspipe [OPTIONS] [server[:port[:device]]]\n\n"
-		  "SVN ID: $Id$ \n"
 		  "-d Run as a daemon.\n"
 		  "-f [file] Write output to file.\n"
 		  "-h Show this help.\n"
 		  "-r Dump raw NMEA.\n"
 		  "-R Dump super-raw mode (GPS binary).\n"
 		  "-w Dump gpsd native data.\n"
-		  "-j Turn on server-side buffering.\n"
 		  "-l Sleep for ten seconds before connecting to gpsd.\n"
 		  "-t Time stamp the data.\n"
 		  "-s [serial dev] emulate a 4800bps NMEA GPS on serial port (use with '-r').\n"
@@ -154,7 +154,10 @@ int main( int argc, char **argv)
     bool binary = false;
     bool sleepy = false;
     bool new_line = true;
+    bool raw = false;
+    bool watch = false;
     long count = -1;
+    bool nopipe = false;
     int option;
     unsigned int vflag = 0, l = 0;
     FILE * fp;
@@ -164,18 +167,19 @@ int main( int argc, char **argv)
     char *serialport = NULL;
     char *filename = NULL;
 
-    buf[0] = '\0';
-    while ((option = getopt(argc, argv, "?dlhrRwjtvVn:s:f:")) != -1) {
+    while ((option = getopt(argc, argv, "?dlhrRwtvVn:Ns:f:")) != -1) {
 	switch (option) {
 	case 'n':
 	    count = strtol(optarg, 0, 0);
 	    break;
+	case 'N':	/* not documented - diagnotic option */
+	    nopipe = true;
+	    break;
 	case 'r':
-	    (void)strlcat(buf, "r=1;", sizeof(buf));
+	    raw = true;
 	    break;
 	case 'R':
 	    binary=true;
-	    (void)strlcat(buf, "r=2;", sizeof(buf));
 	    break;
 	case 'd':
 	    daemon = true;
@@ -190,13 +194,11 @@ int main( int argc, char **argv)
 	    vflag++;
 	    break;
 	case 'w':
-	    (void)strlcat(buf, "w=1;", sizeof(buf));
-	    break;
-	case 'j':
-	    (void)strlcat(buf, "j=1;", sizeof(buf));
+	    watch = true;
 	    break;
 	case 'V':
-	    (void)fprintf(stderr, "%s: SVN ID: $Id$ \n", argv[0]);
+	    (void)fprintf(stderr, "%s: %s (revision %s)\n", 
+			  argv[0], VERSION, REVISION);
 	    exit(0);
 	case 's':
 	    serialport = optarg;
@@ -212,7 +214,41 @@ int main( int argc, char **argv)
 	}
     }
 
-    if (serialport!=NULL && strstr(buf, "r=1")==NULL) {
+    /* Grok the server, port, and device. */
+    if (optind < argc) {
+	gpsd_source_spec(argv[optind], &source);
+    } else
+	gpsd_source_spec(NULL, &source);
+
+    /*
+     * Assemble the initialization command. 
+     * FIXME: Should be done with a slightly enhanced gps_stream(),
+     * but we're in feature freeze.
+     */
+    (void)strlcpy(buf, "?WATCH={", sizeof(buf));
+    if (watch)
+	(void)strlcat(buf, "\"enable\":true,", sizeof(buf));
+    else
+	(void)strlcat(buf, "\"enable\":false,", sizeof(buf));
+    if (raw)
+	/* 
+	 * Yes, -r invokes NMEA mode rather than proper raw mode.
+	 * This emulates the behavior under the old protocol.
+	 */
+	(void)strlcat(buf, "\"nmea\":true,", sizeof(buf));
+    if (binary)
+	(void)strlcat(buf, "\"raw\":2,", sizeof(buf));
+    if (source.device != NULL)
+	(void)snprintf(buf, sizeof(buf), "\"path\":\"%s\",", source.device);
+    if (buf[strlen(buf)-1] == ',')
+	buf[strlen(buf)-1] = '\0';
+    (void)strlcat(buf, "}\r\n", sizeof(buf));
+
+    /* diagnostic option -- lets us see the generated initializartion command */
+    if (nopipe)
+	(void)fputs(buf, stdout);
+
+    if (serialport!=NULL && raw) {
 	(void)fprintf(stderr, "gpsipipe: use of '-s' requires '-r'.\n");
 	exit(1);
     }
@@ -222,20 +258,13 @@ int main( int argc, char **argv)
 	exit(1);
     }
 
-    if (strstr(buf, "r=")==NULL && strstr(buf, "w=1")==NULL) {
+    if (!raw && !watch && !binary) {
 	(void)fprintf(stderr, "gpspipe: one of '-R', '-r' or '-w' is required.\n");
 	exit(1);
     }
-    /* Grok the server, port, and device. */
-    if (optind < argc) {
-	gpsd_source_spec(argv[optind], &source);
-    } else
-	gpsd_source_spec(NULL, &source);
 
-    if (source.device != NULL) {
-	(void)strlcat(buf, "F=", sizeof(buf));
-	(void)strlcat(buf, source.device, sizeof(buf));
-    }
+    if (nopipe)
+	exit(0);
 
     /* Daemonize if the user requested it. */
     if (daemon)

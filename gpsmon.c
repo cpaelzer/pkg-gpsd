@@ -46,6 +46,7 @@
 
 #include "gpsdclient.h"
 #include "gpsmon.h"
+#include "revision.h"
 
 #ifdef S_SPLINT_S
 extern struct tm *localtime_r(const time_t *,/*@out@*/struct tm *tp)/*@modifies tp@*/;
@@ -157,7 +158,7 @@ static ssize_t readpkt(void)
 
     FD_ZERO(&select_set);
     FD_SET(session.gpsdata.gps_fd,&select_set);
-    if (controlfd < -1)
+    if (controlfd > -1)
 	FD_SET(controlfd,&select_set);
     timeval.tv_sec = 0;
     timeval.tv_usec = 500000;
@@ -422,7 +423,7 @@ int main (int argc, char **argv)
 	    controlsock = optarg;
 	    break;
 	case 'V':
-	    (void)printf("gpsmon %s\n", VERSION);
+	    (void)printf("gpsmon: %s (revision %s)\n", VERSION, REVISION);
 	    exit(0);
 	case 'l':		/* list known device types */
 	    (void) fputs("General commands available per type. '+' means there are private commands.\n", stdout);

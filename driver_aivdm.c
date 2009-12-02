@@ -4,8 +4,8 @@
  *
  * See the file AIVDM.txt on the GPSD website for documentation and references.
  *
- * Message types 1-11, 15, 18-21, and 24 have been tested against live data.
- * Message types 12-14, 16-17, and 22-23 have not.
+ * Message types 1-12, 14-15, 18-21, and 24 have been tested against live data
+ * with known-good decodings. Message types 13, 16-17 and 22-23 have not.
  */
 #include <sys/types.h>
 #include <stdio.h>
@@ -36,11 +36,17 @@ static void from_sixbit(char *bitvec, uint start, int count, char *to)
     const char sixchr[64] = "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^- !\"#$%&`()*+,-./0123456789:;<=>?";
 #endif /* S_SPLINT_S */
     int i;
+    char newchar;
 
     /* six-bit to ASCII */
-    for (i = 0; i < count-1; i++)
-	to[i] = sixchr[ubits(bitvec, start + 6*i, 6U)];
-    to[count-1] = '\0';
+    for (i = 0; i < count-1; i++) {
+	newchar = sixchr[ubits(bitvec, start + 6*i, 6U)];
+	if (newchar == '@')
+	    break;
+	else
+	    to[i] = newchar;
+    }
+    to[i] = '\0';
     /* trim spaces on right end */
     for (i = count-2; i >= 0; i--)
 	if (to[i] == ' ' || to[i] == '@')

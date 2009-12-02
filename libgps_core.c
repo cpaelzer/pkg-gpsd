@@ -138,7 +138,7 @@ static void libgps_dump_state(struct gps_data_t *collect, time_t now)
 	       collect->status, status_values[collect->status]);
     if (collect->set & MODE_SET)
 	(void)fprintf(debugfp, "MODE: mode: %d (%s)\n",
-	   collect->set, mode_values[collect->fix.mode]);
+	   collect->fix.mode, mode_values[collect->fix.mode]);
     if (collect->set & DOP_SET)
 	(void)fprintf(debugfp, "DOP: satellites %d, pdop=%lf, hdop=%lf, vdop=%lf\n",
 	   collect->satellites_used,
@@ -709,13 +709,10 @@ int main(int argc, char *argv[])
     (void)signal(SIGSEGV, onsig);
     (void)signal(SIGBUS, onsig);
 
-    while ((option = getopt(argc, argv, "bd:hs?")) != -1) {
+    while ((option = getopt(argc, argv, "bhsD:?")) != -1) {
 	switch (option) {
 	case 'b':
 	    batchmode = true;
-	    break;
-	case 'd':
-	    debug = atoi(optarg);
 	    break;
 	case 's':
 	    (void)printf("Sizes: rtcm2=%zd rtcm3=%zd ais=%zd compass=%zd raw=%zd devices=%zd policy=%zd version=%zd\n",
@@ -728,6 +725,9 @@ int main(int argc, char *argv[])
 			 sizeof(struct policy_t),
 			 sizeof(struct version_t));
 	    exit(0);
+	case 'D':
+	    debug = atoi(optarg);
+	    break;
 	case '?':
 	case 'h':
 	default:
