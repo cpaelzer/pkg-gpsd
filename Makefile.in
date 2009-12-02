@@ -206,8 +206,7 @@ xgps_OBJECTS = $(am_xgps_OBJECTS)
 xgps_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) libgps.la \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) libgps.la
 am__objects_5 = xgpsspeed.$(OBJEXT) Tachometer.$(OBJEXT)
 am_xgpsspeed_OBJECTS = $(am__objects_5)
 xgpsspeed_OBJECTS = $(am_xgpsspeed_OBJECTS)
@@ -482,7 +481,7 @@ PYTHONPAGES_DIST = gpsprof.1 gpsfake.1 gpscat.1
 # Build xgps
 #
 xgps_SOURCES = xgps.c
-xgps_LDADD = $(LIBM) $(LIBC) $(LIBNSL) $(LIBSOCKET) $(XM_LIBS) $(XT_LIBS) $(X_LIBS) $(X_PRE_LIBS) libgps.la -lm $(LIBPTHREAD)
+xgps_LDADD = $(LIBM) $(LIBC) $(LIBNSL) $(LIBSOCKET) $(XM_LIBS) $(XT_LIBS) $(X_LIBS) $(X_PRE_LIBS) libgps.la -lm
 
 #
 # Build xgpsspeed
