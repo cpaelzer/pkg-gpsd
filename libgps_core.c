@@ -9,9 +9,6 @@
 #include <string.h>
 #include <errno.h>
 #include <stdarg.h>
-#ifndef S_SPLINT_S
-#include <pthread.h>	/* pacifies OpenBSD's compiler */
-#endif
 #include <math.h>
 #include <locale.h>
 
@@ -139,20 +136,20 @@ static void libgps_dump_state(struct gps_data_t *collect, time_t now)
     if (collect->set & STATUS_SET)
 	(void)fprintf(debugfp, "STATUS: status: %d (%s)\n",
 	       collect->status, status_values[collect->status]);
-    if (collect->fix.mode & MODE_SET)
+    if (collect->set & MODE_SET)
 	(void)fprintf(debugfp, "MODE: mode: %d (%s)\n",
-	   collect->fix.mode, mode_values[collect->fix.mode]);
-    if (collect->fix.mode & DOP_SET)
+	   collect->set, mode_values[collect->fix.mode]);
+    if (collect->set & DOP_SET)
 	(void)fprintf(debugfp, "DOP: satellites %d, pdop=%lf, hdop=%lf, vdop=%lf\n",
 	   collect->satellites_used,
 	   collect->dop.pdop, collect->dop.hdop, collect->dop.vdop);
-    if (collect->fix.mode & VERSION_SET)
+    if (collect->set & VERSION_SET)
 	(void)fprintf(debugfp, "VERSION: release=%s rev=%s proto=%d.%d\n",
 		      collect->version.release, 
 		      collect->version.rev,
 		      collect->version.proto_major, 
 		      collect->version.proto_minor);
-    if (collect->fix.mode & POLICY_SET)
+    if (collect->set & POLICY_SET)
 	(void)fprintf(debugfp, "POLICY: watcher=%s nmea=%s raw=%d scaled=%s timing=%s, devpath=%s\n",
 		      collect->policy.watcher ? "true" : "false", 
 		      collect->policy.nmea ? "true" : "false",
@@ -565,10 +562,6 @@ int gps_unpack(char *buf, struct gps_data_t *gpsdata)
 	//libgps_debug_trace((stderr, "libgps: raw hook called on '%s'\n", buf));
 	gpsdata->raw_hook(gpsdata, buf, strlen(buf));
     }
-    if (gpsdata->thread_hook) {
-	//libgps_debug_trace((stderr, "libgps: thread hook called on '%s'\n", buf));
-	gpsdata->thread_hook(gpsdata, buf, strlen(buf));
-    }
     libgps_debug_trace((1, "final flags: (0x%04x) %s\n", gpsdata->set, gpsd_maskdump(gpsdata->set)));
     return 0;
 }
@@ -668,64 +661,6 @@ int gps_stream(struct gps_data_t *gpsdata, unsigned int flags, void *d UNUSED)
     }
     return 0;
 }
-
-#ifdef HAVE_LIBPTHREAD
-static /*@null@*/void *poll_gpsd(void *args)
-/* helper for the thread launcher */
-{
-    int oldtype, oldstate;
-    int res;
-    struct gps_data_t *gpsdata;
-
-    /* set thread parameters */
-    /*@ -compdef @*/
-    /*@ -unrecog (splint has no pthread declarations as yet) @*/
-    (void)pthread_setcancelstate(PTHREAD_CANCEL_ENABLE,&oldstate);
-    (void)pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,&oldtype); /* we want to be canceled also when blocked on gps_poll() */
-    /*@ +unrecog @*/
-    /*@ +compdef @*/
-    gpsdata = (struct gps_data_t *) args;
-    do {
-	res = gps_poll(gpsdata); /* this is not actually polling */
-    } while
-	(res == 0);
-    /* if we are here an error occured with gpsd */
-    return NULL;
-}
-
-int gps_set_callback(struct gps_data_t *gpsdata,
-		     void (*callback)(struct gps_data_t *sentence, char *buf, size_t len),
-		     pthread_t *handler)
-/* set an asynchronous callback and launch a thread for it */
-{
-    (void)gps_stream(gpsdata, WATCH_ENABLE, NULL);	/* ensure gpsd is in watcher mode, so we'll have data to read */
-    if (gpsdata->thread_hook != NULL) {
-	gpsdata->thread_hook = callback;
-	return 0;
-    }
-    gpsdata->thread_hook = callback;
-
-    /* start the thread which will read data from gpsd */
-    /*@ -unrecog (splint has no pthread declarations as yet */
-    return pthread_create(handler,NULL,poll_gpsd,(void*)gpsdata);
-    /*@ +unrecog @*/
-}
-
-int gps_del_callback(struct gps_data_t *gpsdata, pthread_t *handler)
-/* delete asynchronous callback and kill its thread */
-{
-    /*@ -nullstate @*/
-    int res;
-
-    /*@i@*/res = pthread_cancel(*handler);	/* we cancel the whole thread */
-    /*@i2@*/pthread_join(*handler, NULL);	/* wait for thread to actually terminate */
-    gpsdata->thread_hook = NULL;	/* finally we cancel the callback */
-    if (res == 0) 			/* tell gpsd to stop sending data */
-	/*@i1@*/(void)gps_stream(gpsdata, WATCH_DISABLE, NULL);	/* disable watcher mode */
-    return res;
-    /*@ +nullstate @*/
-}
-#endif /* HAVE_LIBPTHREAD */
 
 extern char /*@observer@*/ *gps_errstr(const int err)
 {
