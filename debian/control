@@ -49,6 +49,7 @@ Package: gpsd-clients
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Suggests: python-gps, gpsd
+Conflicts: gps
 Description: Global Positioning System - clients
  The gpsd service daemon can monitor one or more GPS devices connected to
  a host computer, making all data on the location and movements of the
