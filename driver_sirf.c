@@ -225,7 +225,7 @@ static bool sirf_to_nmea(int ttyfd, speed_t speed)
 
 static void sirfbin_mode(struct gps_device_t *session, int mode)
 {
-    char parity = 0;
+    char parity = '0';
     if (mode == MODE_NMEA) {
 	(void)sirf_to_nmea(session->gpsdata.gps_fd,session->gpsdata.dev.baudrate);
     } else if (mode == MODE_BINARY) {
@@ -1019,7 +1019,6 @@ gps_mask_t sirf_parse(struct gps_device_t *session, unsigned char *buf, size_t l
 	gpsd_report(LOG_PROG, "SiRF: NLMD 0x1c: %s\n",
 	    gpsd_hexdump_wrapper(buf, len, LOG_PROG));
 	return sirf_msg_nlmd(session, buf, len);
-	return 0;
 
     case 0x1d:		/* Navigation Library DGPS Data ID 29 */
 	gpsd_report(LOG_PROG, "SiRF: NLDG 0x1d: %s\n",
@@ -1113,8 +1112,6 @@ static gps_mask_t sirfbin_parse_input(struct gps_device_t *session)
 #ifdef ALLOW_RECONFIGURE
 static void sirfbin_event_hook(struct gps_device_t *session, event_t event)
 {
-    gpsd_report(LOG_PROG, "SiRF: sirfbin_event_hook(,%#x)\n", 
-    	        (unsigned int) event);
     if (event == event_identified || event == event_reactivate) {
 	if (session->packet.type == NMEA_PACKET) {
 	    gpsd_report(LOG_PROG, "SiRF: Switching chip mode to binary.\n");

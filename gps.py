@@ -3,7 +3,12 @@
 #
 # gps.py -- Python interface to GPSD.
 #
-import time, calendar, math, socket, sys, select, json
+import time, calendar, math, socket, sys, select
+
+try:
+    import json			# For Python 2.6
+except ImportError:
+    import simplejson as json	# For Python 2.4 and 2.5
 
 api_major_version = 3   # bumped on incompatible changes
 api_minor_version = 1   # bumped on compatible changes
@@ -56,10 +61,13 @@ SIGNAL_STRENGTH_UNKNOWN = NaN
 
 WATCH_DISABLE	= 0x00
 WATCH_ENABLE	= 0x01
-WATCH_RAW	= 0x02
-WATCH_SCALED	= 0x08
-WATCH_NEWSTYLE	= 0x10
-WATCH_OLDSTYLE	= 0x20
+WATCH_JSON	= 0x02
+WATCH_NMEA	= 0x04
+WATCH_RARE	= 0x08
+WATCH_RAW	= 0x10
+WATCH_SCALED	= 0x20
+WATCH_NEWSTYLE	= 0x40
+WATCH_OLDSTYLE	= 0x80
 
 GPSD_PORT = 2947
 
@@ -172,7 +180,7 @@ class gps(gpsdata):
     def __init__(self, host="127.0.0.1", port="2947", verbose=0, mode=0):
         gpsdata.__init__(self)
         self.sock = None        # in case we blow up in connect
-        self.sockfile = None
+        self.linebuffer = ""
         self.connect(host, port)
         self.verbose = verbose
         self.raw_hook = None
@@ -201,14 +209,12 @@ class gps(gpsdata):
         #if self.debuglevel > 0: print 'connect:', (host, port)
         msg = "getaddrinfo returns an empty list"
         self.sock = None
-        self.sockfile = None
         for res in socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM):
             af, socktype, proto, canonname, sa = res
             try:
                 self.sock = socket.socket(af, socktype, proto)
                 #if self.debuglevel > 0: print 'connect:', (host, port)
                 self.sock.connect(sa)
-                self.sockfile = self.sock.makefile()
             except socket.error, msg:
                 #if self.debuglevel > 0: print 'connect fail:', (host, port)
                 self.close()
@@ -221,12 +227,9 @@ class gps(gpsdata):
         self.raw_hook = hook
 
     def close(self):
-        if self.sockfile:
-            self.sockfile.close()
         if self.sock:
             self.sock.close()
         self.sock = None
-        self.sockfile = None
 
     def __del__(self):
         self.close()
@@ -428,32 +431,32 @@ class gps(gpsdata):
             self.data["c_decode"] = time.time()
             self.timings = self.data
 
+    def readline(self):
+        "Get a line of data from the socket connected to the daemon."
+        while True:
+            eol = self.linebuffer.find('\n')
+            if eol > -1:
+                eol += 1
+                line = self.linebuffer[:eol]
+                self.linebuffer = self.linebuffer[eol:]
+                return line
+            else:
+                self.linebuffer += self.sock.recv(4096)
+
     def waiting(self):
         "Return True if data is ready for the client."
-        # WARNING! When we're testing here is whether there's data
-        # left in sockfile.readline()'s read buffer before we look to
-        # see if there's input waiting at the socket level. The Python
-        # sockfile API doesn't expose a way to do this, so we have to
-        # rely on knowing that the read buffer is the _rbuf member and
-        # that it's a StringIO object. Without this test, we go back
-        # to having flaky regression errors at the end of check files,
-        # but with it the tests hang on some BSD-derived systems.  The
-        # former outcome (but not the latter) is OK for production
-        # use, because dropping some data on device close isn't
-        # actually a problem.
-        broken = ('openbsd4')
-        if sys.platform not in broken and len(self.sockfile._rbuf.getvalue()) > 0:
+        if self.linebuffer:
             return True
         (winput, woutput, wexceptions) = select.select((self.sock,), (), (), 0)
         return winput != []
 
     def poll(self):
         "Wait for and read data being streamed from gpsd."
-        self.response = self.sockfile.readline()
+        self.response = self.readline()
         # This code can go away when we remove oldstyle protocol
         if self.response.startswith("H") and "=" not in self.response:
             while True:
-                frag = self.sockfile.readline()
+                frag = self.readline()
                 self.response += frag
                 if frag.startswith("."):
                     break
@@ -503,36 +506,52 @@ class gps(gpsdata):
 
     def stream(self, flags=0):
         "Ask gpsd to stream reports at your client."
-        if (flags & (WATCH_NEWSTYLE|WATCH_OLDSTYLE)) == 0:
+        if (flags & (WATCH_JSON|WATCH_OLDSTYLE|WATCH_NMEA|WATCH_RAW)) == 0:
             # If we're looking at a daemon that speakds JSON, this
             # should have been set when we saw the initial VERSION
             # response.  Note, however, that this requires at
             # least one poll() before stream() is called
-            if self.newstyle:
-                flags |= WATCH_NEWSTYLE
+            if self.newstyle or flags & WATCH_NEWSTYLE:
+                flags |= WATCH_JSON
             else:
                 flags |= WATCH_OLDSTYLE
-        if flags & WATCH_NEWSTYLE:
-            if flags & WATCH_ENABLE:
-                arg = '?WATCH={"enable":true'
-                if self.raw_hook or (flags & WATCH_NMEA):
-                    arg += ',"nmea":true'
-            elif flags & WATCH_DISABLE:
-                arg = '?WATCH={"enable":false'
-                if self.raw_hook or (flags & WATCH_NMEA):
-                    arg += ',"nmea":false'
-            return self.send(arg + "}")
-        elif flags & WATCH_OLDSTYLE:
-            if flags & WATCH_ENABLE:
+        if flags & WATCH_OLDSTYLE:
+            if flags & WATCH_DISABLE:
+                arg = "w-"
+                if flags & WATCH_NMEA:
+                    arg += 'r-'
+                    return self.send(arg)
+            else: # flags & WATCH_ENABLE:
                 arg = 'w+'
                 if self.raw_hook or (flags & WATCH_NMEA):
                     arg += 'r+'
                     return self.send(arg)
-            elif flags & WATCH_DISABLE:
-                arg = "w-"
-                if self.raw_hook or (flags & WATCH_NMEA):
-                    arg += 'r-'
-                    return self.send(arg)
+        else: # flags & WATCH_NEWSTYLE:
+            if flags & WATCH_DISABLE:
+                arg = '?WATCH={"enable":false'
+                if flags & WATCH_JSON:
+                    arg += ',"json":false'
+                if flags & WATCH_NMEA:
+                    arg += ',"nmea":false'
+                if flags & WATCH_RARE:
+                    arg += ',"raw":1'
+                if flags & WATCH_RAW:
+                    arg += ',"raw":2'
+                if flags & WATCH_SCALED:
+                    arg += ',"scaled":false'
+            else: # flags & WATCH_ENABLE:
+                arg = '?WATCH={"enable":true'
+                if flags & WATCH_JSON:
+                    arg += ',"json":true'
+                if flags & WATCH_NMEA:
+                    arg += ',"nmea":true'
+                if flags & WATCH_RAW:
+                    arg += ',"raw":1'
+                if flags & WATCH_RARE:
+                    arg += ',"raw":0'
+                if flags & WATCH_SCALED:
+                    arg += ',"scaled":true'
+            return self.send(arg + "}")
 
 # some multipliers for interpreting GPS output
 METERS_TO_FEET  = 3.2808399

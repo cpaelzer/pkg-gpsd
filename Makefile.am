@@ -192,32 +192,32 @@ libgpsd_h_sources = \
 BUILT_SOURCES = packet_names.h gpsd.h revision.h ais_json.i maskdump.c
 
 packet_names.h: packet_states.h
-	rm -f $(srcdir)/packet_names.h && \
+	rm -f packet_names.h && \
 	sed -e '/^ *\([A-Z][A-Z0-9_]*\),/s//   "\1",/' -e '/_states/s//_names/' < `test -f 'packet_states.h' || echo '$(srcdir)/'`packet_states.h > packet_names.h && \
-	chmod a-w $(srcdir)/packet_names.h
+	chmod a-w packet_names.h
 
 gpsd.h: gpsd.h-head gpsd.h-tail gpsd_config.h
-	rm -f $(srcdir)/gpsd.h && \
+	rm -f gpsd.h && \
 	echo "/* This file is generated.  Do not hand-hack it! */" >gpsd.h && \
 	cat $(srcdir)/gpsd.h-head >>gpsd.h && \
 	cat $(srcdir)/gpsd_config.h >>gpsd.h && \
 	cat $(srcdir)/gpsd.h-tail >>gpsd.h && \
-	chmod a-w $(srcdir)/gpsd.h
+	chmod a-w gpsd.h
 
 ais_json.i: jsongen.py
-	rm -f $(srcdir)/ais_json.i && \
-	$(PYTHON) $(srcdir)/jsongen.py --ais --target=parser >ais_json.i && \
-	chmod a-w $(srcdir)/ais_json.i
+	rm -f ais_json.i && \
+	$(PYTHON) jsongen.py --ais --target=parser >ais_json.i && \
+	chmod a-w ais_json.i
 
 revision.h: Makefile
-	@rm -f $(srcdir)/revision.h && \
-	echo '#define' REVISION '"svn'`svnversion -n`'"' >$(srcdir)/revision.h && \
-	chmod a-w $(srcdir)/revision.h
+	@rm -f revision.h && \
+	echo '#define' REVISION '"svn'`svnversion -n`'"' >revision.h && \
+	chmod a-w revision.h
 
 maskdump.c: gpsd.h-tail maskaudit.py
-	rm -f $(srcdir)/maskdump.c && \
-	$(PYTHON) $(srcdir)/maskaudit.py -c >maskdump.c && \
-	chmod a-w $(srcdir)/maskdump.c
+	rm -f maskdump.c && \
+	$(PYTHON) maskaudit.py -c >maskdump.c && \
+	chmod a-w maskdump.c
 
 libgps_la_SOURCES = $(libgpsd_c_sources) $(libgpsd_h_sources) \
 				driver_rtcm2.h packet_states.h
@@ -251,14 +251,14 @@ $(PYEXTENSIONS): stamp-python-modules
 stamp-python-modules: gpspacket.c gpslib.c libgps.la setup.py
 	@rm -f '$@' '$@.tmp'
 	@echo 'timestamp for $@' > '$@.tmp'
-	cd '$(srcdir)' && \
-	env abs_builddir='$(srcdir)' \
+	(cd '$(srcdir)' && \
+	env abs_builddir='$(abs_builddir)' \
 	    MAKE='$(MAKE)' \
 		$(PYTHON) setup.py build_ext \
 			--build-lib '$(srcdir)' \
 			--build-temp '$(srcdir)/build' \
 			--include-dirs '$(srcdir):.'\
-			--mangenerator '$(MANGENERATOR)' && \
+			--mangenerator '$(MANGENERATOR)') && \
 	mv -f '$@.tmp' '$@'
 CLEANFILES += stamp-python-modules stamp-python-modules.tmp
 endif
@@ -617,11 +617,11 @@ bits-regress: test_bits
 testregress: gps-regress rtcm-regress aivdm-regress packet-regress time-regress unpack-regress json-regress
 	@echo "Regressions complete."
 
-# We would like "${MAKE} check" to run the regression tests.  automake
-# appears to have support for running programs, but not make targets.
-# Perhaps the tests should be moved into scripts, but then it's not
-# clear how to deal with $(srcdir).
-# TESTS=testregress
+# automake has support for running programs, but not make targets.
+# However, TESTS_ENVIRONMENT can be used to specify an interpreter,
+# which we use to re-invoke make.
+TESTS_ENVIRONMENT = $(MAKE)
+TESTS = gps-regress rtcm-regress aivdm-regress packet-regress time-regress unpack-regress json-regress
 
 # Productions for setting up and performing udev tests.
 #
