@@ -1,14 +1,35 @@
-gpsd (2.40~svn6614-1) experimental; urgency=low
+gpsd (2.90~svn6694-1) experimental; urgency=low
 
-  * SVN Snapshot.
+  * SVN snapshot.
   * [10b2460a] Include gps.h in Tachometer.c, needed to define UNUSED.
   * [3f75872e] Merge branch 'experimental-upstream' into experimental
   * [33831f96] Update gbp config for experimental.
   * [476e547e] Update soname in debian/control.
   * [0561c6cf] Updaing patches, dropping those which were applied
     upstream.
+  * [d721c055] Revert "Revert "Remove workarounds for broken --disable-
+    python."" This reverts commit
+    0e5c78b75ec0390b9317c4e8db3f9294ae9cf319. Conflicts:  debian/rules
+  * [151e52e5] Clean up patches which were applied by upstream.
+  * [b9bff239] Merge branch 'experimental-upstream' into experimental
+  * [981b2ce1] Ship gps.1 again as the package `gps' was RMed from
+    Debian.
+  * [9674fb87] Add a Conflicts: gps for gpsd-clients. Just in case the
+    package is still installed somewhere.
+  * [6c788d8d] Clean ../gpsd_config.h.in~ in case it was left by the
+    build.
+  * [cf72c26f] Delete packaging/gpsd.spec.in.rej, was done upstream
+    also.
+  * [5eadc03b] Dropping INSTALL-description-fix. Not necessary anymore.
+  * [c4a1d3f1] python-gps needs python2.6 or simplejson, update Depends.
+  * [5e8ed26d] Do not try to install manpages via gpsd-clients.install.
+  * [2b598581] s/dj_installman/dh_installman/
+  * [1fc3151e] Update symbols files for the new soname.
+  * [f530af1b] Install missing manpages which were forgotten before.
+  * [9a964d22] Make hotplug wrapper executable.
+  * [06b11aa2] Add python-gps.manpages to install manpages.
 
- -- Bernd Zeimetz <bzed@debian.org>  Sat, 28 Nov 2009 21:04:43 +0100
+ -- Bernd Zeimetz <bzed@debian.org>  Thu, 03 Dec 2009 21:12:54 +0100
 
 gpsd (2.39-8) unstable; urgency=low
 
