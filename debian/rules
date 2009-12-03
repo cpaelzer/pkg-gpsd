@@ -207,6 +207,7 @@ clean-patched:
 	[ ! -r Makefile ] || $(MAKE) distclean
 	rm -f *.1 *.3 *.5 *.8 .1
 	rm -rf .deps .libs
+	rm -f gpsd_config.h.in~
 	rm -f $(CURDIR)/debian/gpsd.udev
 ifneq "$(wildcard /usr/share/misc/config.sub)" ""
 	rm -f config.sub
