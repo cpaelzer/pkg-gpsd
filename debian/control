@@ -62,7 +62,8 @@ Package: python-gps
 Architecture: any
 Section: python
 Replaces: gpsd-clients (<< 2.34.dfsg-1)
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends},
+ python (>= 2.6) | python-simplejson
 Recommends: gpsd
 Provides: ${python:Provides}
 Description: Global Positioning System - Python libraries
