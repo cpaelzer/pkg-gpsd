@@ -226,7 +226,7 @@ binary-arch: build install
 	dh_testroot
 	dh_installchangelogs -s NEWS
 	dh_installdocs -s
-	dj_installman -s
+	dh_installman -s
 	dh_installmenu -s
 	dh_installdebconf -s
 	dh_installinit -s -- start 26 2 3 4 5 . stop 73 0 1 6 .
