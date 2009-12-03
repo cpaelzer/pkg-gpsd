@@ -164,24 +164,12 @@ install-gpsd: build-gpsd-stamp
 	                         usr/lib/libgps.so.$(LIB_soname)
 	dh_link -p$(PACKAGE_LIB_DEV) usr/lib/libgps.so.$(LIB_soname) \
 	                             usr/lib/libgps.so
-	#the build-system creates some really weird files here
-	#(instead of not creating a file at all)
-	rm -f $(CURDIR)/debian/tmp/usr/share/man/man1/cgps.1 \
-	      $(CURDIR)/debian/tmp/usr/share/man/man1/cgpxlogger.1 \
-	      $(CURDIR)/debian/tmp/usr/share/man/man1/gpxlogger.1 \
-	      $(CURDIR)/debian/tmp/usr/share/man/man1/gpscat.1 \
-	      $(CURDIR)/debian/tmp/usr/share/man/man1/gpsfake.1 \
-	      $(CURDIR)/debian/tmp/usr/share/man/man1/gpsprof.1
-	dh_installman -p$(PACKAGE_CLIENTS) xgps.1
-	dh_link -p$(PACKAGE_CLIENTS) usr/share/man/man1/xgps.1.gz \
-	                             usr/share/man/man1/cgps.1.gz
-	dh_link -p$(PACKAGE_CLIENTS) usr/share/man/man1/xgps.1.gz \
-	                             usr/share/man/man1/xgpsspeed.1.gz
-	dh_link -p$(PACKAGE_CLIENTS) usr/share/man/man1/xgps.1.gz \
-	                             usr/share/man/man1/cgpxlogger.1.gz
-	dh_link -p$(PACKAGE_CLIENTS) usr/share/man/man1/xgps.1.gz \
-	                             usr/share/man/man1/gpxlogger.1.gz
-	chmod 755 debian/gpsd.hotplug.wrapper
+
+	# Autofoo installs weird files as manpages sometimes. Take
+        # care of that, we'll install them later manually.
+	rm -f $(CURDIR)/debian/tmp/usr/share/man/man1/*.1 
+
+
 	install -d -m 755 debian/$(PACKAGE_CLIENTS)/etc/X11/app-defaults
 	install -m 644 xgps.ad debian/$(PACKAGE_CLIENTS)/etc/X11/app-defaults/xgps
 	install -m 644 xgpsspeed.ad debian/$(PACKAGE_CLIENTS)/etc/X11/app-defaults/xgpsspeed
@@ -237,6 +225,7 @@ binary-arch: build install
 	dh_testroot
 	dh_installchangelogs -s NEWS
 	dh_installdocs -s
+	dj_installman -s
 	dh_installmenu -s
 	dh_installdebconf -s
 	dh_installinit -s -- start 26 2 3 4 5 . stop 73 0 1 6 .
