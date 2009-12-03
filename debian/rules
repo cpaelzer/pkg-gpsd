@@ -153,6 +153,7 @@ install: install-gpsd install-python
 	dh_testdir
 	dh_testroot
 	dh_install
+	chmod 755 debian/$(PACKAGE_GPSD)/lib/udev/gpsd.hotplug.wrapper
 
 install-gpsd: build-gpsd-stamp
 	dh_testdir
@@ -238,7 +239,7 @@ binary-arch: build install
 	dh_link -s
 	dh_strip -s --dbg-package=$(PACKAGE_GPSDDBG)
 	dh_compress -s
-	dh_fixperms -s
+	dh_fixperms -s -Xgpsd.hotplug.wrapper
 	dh_makeshlibs -s -- -c4
 	dh_shlibdeps -s
 ifneq (,$(strip $(UDEV_BREAKS)))
