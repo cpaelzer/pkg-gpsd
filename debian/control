@@ -80,6 +80,7 @@ Package: libgps19
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: fso-gpsd
 Description: Global Positioning System - library
  The gpsd service daemon can monitor one or more GPS devices connected to
  a host computer, making all data on the location and movements of the
