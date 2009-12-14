@@ -1,4 +1,4 @@
-/* $Id: libgpsmm.cpp 6615 2009-11-29 04:15:51Z esr $ */
+/* $Id$ */
 /*
  * Copyright (C) 2005 Alfredo Pironti
  *
@@ -54,6 +54,10 @@ struct gps_data_t* gpsmm::poll(void) {
 	else {
 		return backup();
 	}
+}
+
+bool gpsmm::waiting(void) {
+	return gps_waiting(gps_data);
 }
 
 void gpsmm::clear_fix(void) {

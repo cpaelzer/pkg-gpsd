@@ -1,4 +1,4 @@
-/* $Id: gpsd_dbus.c 6672 2009-12-02 08:14:42Z garyemiller $ */
+/* $Id$ */
 #include <sys/types.h>
 #include <stdio.h>
 #include "gpsd_config.h"

@@ -1,4 +1,4 @@
-/* $Id: strl.c 6185 2009-09-10 18:50:49Z esr $ */
+/* $Id$ */
 #include <stdio.h>
 #ifndef S_SPLINT_S
 #include <unistd.h>

@@ -1,4 +1,4 @@
-/* $Id: drivers.c 6566 2009-11-20 03:51:06Z esr $ */
+/* $Id$ */
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
@@ -1044,6 +1044,12 @@ const struct gps_type_t mtk3301 = {
 
 
 #ifdef AIVDM_ENABLE
+/**************************************************************************
+ *
+ * AIVDM
+ *
+ **************************************************************************/
+
 static gps_mask_t aivdm_analyze(struct gps_device_t *session)
 {
     if (session->packet.type == AIVDM_PACKET) {

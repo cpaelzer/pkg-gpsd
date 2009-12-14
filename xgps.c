@@ -1,4 +1,4 @@
-/* $Id: xgps.c 6654 2009-12-01 08:52:02Z esr $ */
+/* $Id$ */
 /* $gpsd: xgps.c 3871 2006-11-13 00:40:00Z esr $ */
 
 /*
@@ -881,6 +881,7 @@ update_panel(struct gps_data_t *gpsdata, char *message,	size_t len UNUSED)
 	int newstate;
 	XmString string[MAXCHANNELS + 1];
 	char s[128], *latlon, *sp;
+	bool usedflags[MAXCHANNELS];
 
 	/* this is where we implement source-device filtering */
 	if (gpsdata->dev.path[0]!='\0' && source.device!=NULL && strcmp(source.device, gpsdata->dev.path) != 0)
@@ -894,6 +895,10 @@ update_panel(struct gps_data_t *gpsdata, char *message,	size_t len UNUSED)
 
 	/* This is for the satellite status display */
 	if (gpsdata->satellites_visible) {
+		for (i = 0; i < MAXCHANNELS; i++)
+		    usedflags[i] = false;
+		for (i = 0; i < (unsigned int)gpsdata->satellites_used; i++)
+		    usedflags[gpsdata->used[i]] = true;
 		string[0] = XmStringCreateSimple(
 		    "PRN:   Elev:  Azim:  SNR:  Used:");
 		for (i = 0; i < MAXCHANNELS; i++) {
@@ -902,7 +907,7 @@ update_panel(struct gps_data_t *gpsdata, char *message,	size_t len UNUSED)
 				    " %3d    %2d    %3d    %2.0f      %c",
 				    gpsdata->PRN[i], gpsdata->elevation[i],
 				    gpsdata->azimuth[i], gpsdata->ss[i],
-				    gpsdata->used[i] ? 'Y' : 'N');
+				    usedflags[i] ? 'Y' : 'N');
 			} else
 			    (void)strlcpy(s, "                  ", sizeof(s));
 			string[i + 1] = XmStringCreateSimple(s);
@@ -1067,7 +1072,7 @@ handle_gps(XtPointer client_data UNUSED, XtIntervalId *ignored UNUSED)
 
 		gps_set_raw_hook(gpsdata, update_panel);
 
-		mask = WATCH_ENABLE|WATCH_RAW|WATCH_NEWSTYLE;
+		mask = WATCH_ENABLE|WATCH_RARE|WATCH_NEWSTYLE;
 		(void)gps_stream(gpsdata, mask, NULL);
 
 		gps_input = XtAppAddInput(app, gpsdata->gps_fd,
@@ -1219,13 +1224,13 @@ speedunits_ok:
 
 altunits_ok:
 
-	while ((option = getopt(argc, argv, "Vd:hl:")) != -1) {
+	while ((option = getopt(argc, argv, "VD:hl:")) != -1) {
 		switch (option) {
 		case 'V':
 		    (void)fprintf(stderr, "xgps: %s (revision %s)\n", 
 				  VERSION, REVISION);
 		    exit(0);
-		case 'd':
+		case 'D':
 		    debug = atoi(optarg);
 #ifdef CLIENTDEBUG_ENABLE
 		    gps_enable_debug(debug, stderr);

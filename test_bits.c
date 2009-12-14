@@ -1,4 +1,4 @@
-/* $Id: test_bits.c 6401 2009-10-26 10:08:50Z esr $ */
+/* $Id$ */
 /* test harness for bits.h */
 
 #include <stdio.h>

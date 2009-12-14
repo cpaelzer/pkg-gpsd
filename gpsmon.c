@@ -1,4 +1,4 @@
-/* $Id: gpsmon.c 6674 2009-12-02 12:05:56Z esr $ */
+/* $Id$ */
 /*
  * The generic GPS packet monitor.
  */

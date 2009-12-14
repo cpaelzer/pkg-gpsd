@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: gpsd.hotplug.wrapper 6534 2009-11-18 16:38:57Z bzed $
+# $Id$
 
 if [ -r /etc/default/gpsd ]; then
   . /etc/default/gpsd

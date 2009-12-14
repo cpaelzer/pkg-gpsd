@@ -1,23 +1,15 @@
-'\" t
 .\"     Title: 3
-.\"    Author: [see the "AUTHOR" section]
-.\" Generator: DocBook XSL Stylesheets v1.75.1 <http://docbook.sf.net/>
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
 .\"      Date: 14 Aug 2004
 .\"    Manual: Linux
 .\"    Source: Linux
-.\"  Language: English
 .\"
 .TH "3" "3" "14 Aug 2004" "Linux" "Linux"
-.\" -----------------------------------------------------------------
-.\" * set default formatting
-.\" -----------------------------------------------------------------
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
-.\" -----------------------------------------------------------------
-.\" * MAIN CONTENT STARTS HERE *
-.\" -----------------------------------------------------------------
 .SH "NAME"
 libgpsd \- service library for GPS applications
 .SH "SYNOPSIS"
@@ -30,19 +22,19 @@ C:
 
 .fi
 .ft
-.HP \w'int\ gpsd_open_dgps('u
+.HP 19
 .BI "int gpsd_open_dgps(char\ *\ " "dgpsserver" ");"
-.HP \w'void\ gpsd_init('u
+.HP 15
 .BI "void gpsd_init(struct\ gps_device_t\ *" "session" ", struct\ *\ " "gps_context_t\ *" ", char\ *\ " "device" ");"
-.HP \w'int\ gpsd_activate('u
-.BI "int gpsd_activate(struct\ gps_device_t\ *" "session" ");"
-.HP \w'void\ gpsd_deactivate('u
+.HP 18
+.BI "int gpsd_activate(struct\ gps_device_t\ *" "session" ", bool\ " "reconfigurable" ");"
+.HP 21
 .BI "void gpsd_deactivate(struct\ gps_device_t\ *\ " "session" ");"
-.HP \w'gps_mask_t\ gpsd_poll('u
+.HP 21
 .BI "gps_mask_t gpsd_poll(struct\ gps_device_t\ *\ " "session" ");"
-.HP \w'void\ gpsd_wrap('u
+.HP 15
 .BI "void gpsd_wrap(struct\ gps_device_t\ *\ " "session" ");"
-.HP \w'void\ gpsd_report('u
+.HP 17
 .BI "void gpsd_report(int\ " "d" ", const\ char\ *\ " "fmt" ", " "\&.\&.\&." ");"
 .SH "DESCRIPTION"
 .PP
@@ -75,7 +67,7 @@ Communication speed in bits per second\&. For NMEA or SiRF devices, the library 
 .PP
 \fIraw_hook\fR
 .RS 4
-A hook function to be executed on each NMEA sentence or as it is read from the GPS\&. The data from non\-NMEA GPSes like the EarthMate will be translated to an NMEA sentence before being passed to the hook\&. Parameters are a pointer to a gps_data structure full of parsed data, the sentence, and the length of the sentene\&.\&.
+A hook function to be executed on each NMEA sentence or as it is read from the GPS\&. The data from non\-NMEA GPSes like the EarthMate will be translated to an NMEA sentence before being passed to the hook\&. Parameters are a pointer to a gps_data structure full of parsed data, the sentence, the length of the sentence, and a rawness level\&.
 .RE
 .PP
 \fBgpsd_activate()\fR

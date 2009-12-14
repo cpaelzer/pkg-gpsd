@@ -1,4 +1,4 @@
-/* $Id: xgpsspeed.c 6593 2009-11-24 18:20:49Z esr $ */
+/* $Id$ */
 /* GPS speedometer as a wrapper around an Athena widget Tachometer
  * - Derrick J Brashear <shadow@dementia.org>
  */
@@ -107,9 +107,9 @@ int main(int argc, char **argv)
     else if (strcmp(speedunits, "knots")==0)
 	speedfactor = MPS_TO_KNOTS;
 
-    while ((option = getopt(argc, argv, "d:hV")) != -1) {
+    while ((option = getopt(argc, argv, "D:hV")) != -1) {
 	switch (option) {
-	case 'd':
+	case 'D':
 	    debug = atoi(optarg);
 #ifdef CLIENTDEBUG_ENABLE
 	    gps_enable_debug(debug, stderr);

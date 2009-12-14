@@ -1,4 +1,4 @@
-/* $Id: driver_rtcm2.c 6566 2009-11-20 03:51:06Z esr $ */
+/* $Id$ */
 /*****************************************************************************
 
 This is a decoder for RTCM-104 2.x, an obscure and complicated serial

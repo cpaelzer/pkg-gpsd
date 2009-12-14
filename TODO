@@ -1,4 +1,4 @@
-$Id: TODO 6705 2009-12-04 12:59:50Z esr $
+$Id$
 
 This is the gpsd to-do list.  If you're viewing it with Emacs, try
 doing Ctl-C Ctl-t and browsing through the outline headers.  Ctl-C Ctl-a 
@@ -28,21 +28,38 @@ to reverse his refusal to send us an eval unit.
 
 **** bu303-nofix.log.ck: 
 
-Test returns a bogus altitude (large and negative) on NetBSD 5.0
-i386, but not on Intel 64. This is probably a 32-vs.64-bit port problem.
+The expected-correct output has an altitude of -6378137m, about earth
+radius, with lat/lon of 180,0.  On NetBSD 5.0/i386, the altitude is
+-6378253m, on NetBSD 5.0/amd64 it is -6378253m, and on NetBSD
+5.0/sparc64 it is -6378171m.  On Linux/i386, it is -6378143m.
+
+Thus, it seems there is an unstable calculation sensitive to rounding
+mode or other FP details.  Note that bu303 logs with valid fixes have
+not been problematic.  It is not clear that anyone has hand-validated
+the expected output.
+
+(amd64 is what NetBSD labels all implementations of AMD's 64-bit
+architecture; the machine in question above is an Intel CPU under
+Xen.)
 
 **** navcom.chk:
 
-This testfile triggers a numeric instability in the sin() and cos() 
-functions inside earth_distance().  The result is that epd is unstable.
+This testfile triggers a numeric instability in the earth_distance()
+function.  The result is that epd is unstable.  What we should do is
+use the official US Government function for
+calculating earth distances: INVERSE.  See
+http://www.ngs.noaa.gov/TOOLS/Inv_Fwd/Inv_Fwd.html =>
+http://www.ngs.noaa.gov/PC_PROD/Inv_Fwd/source/
+
+Useful tool for the purpose: http://www.netlib.org/f2c/
+
+**** superstar2.chk:
+
+Packet detection appears to fail completely on big-endian machines.
+Greg Troxel reports this from netbsd-5/sparc64.  output at
+<http://www.lexort.com/gpsd/>.
 
 ** To do:
-
-*** Ship a DEVICE notification on every driver change
-
-There's a race condition where if you start cgps at just the right
-time while an NMEA device is being probed, it may switch to a binary
-type but never update the type display.
 
 *** Complete and test the speed/parity/stopbit methods in the drivers
 

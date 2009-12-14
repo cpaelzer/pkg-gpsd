@@ -1,0 +1,365 @@
+#!/usr/bin/env python
+'''
+xgps2 -- test client for gpsd
+
+usage: xgps2 [-DhlV?] [server[:port[:device]]]
+
+'''
+
+gui_about = '''\
+This is xgps2, a test client for the gpsd daemon.
+
+By Eric S. Raymond for the GPSD project, December 2009
+'''
+
+import sys, os, re, math, time, exceptions, getopt
+
+import gobject, pygtk
+pygtk.require('2.0')
+import gtk
+
+# We can't ship this until we fugure out how to merge the gpslib C extensions
+# into the gps export module.
+import gps, gpslib
+
+class unit_adjustments:
+    "Encapsulate adjustments for unit systems."
+    def __init__(self):
+        self.altfactor = gps.METERS_TO_FEET
+        self.altunits = "ft"
+        self.speedfactor = gps.MPS_TO_MPH
+        self.speedunits = "mph"
+        units = gpslib.gpsd_units()
+        if units in (gpslib.unspecified, gpslib.imperial):
+            pass
+        elif units == gpslib.nautical:
+            self.altfactor = gps.METERS_TO_FEET
+            self.altunits = "ft"
+            self.speedfactor = gps.MPS_TO_KNOTS
+            self.speedunits = "knots"
+        elif units == gpslib.metric:
+            self.altfactor = 1
+            self.altunits = "m"
+            self.speedfactor = gps.MPS_TO_KPH
+            self.speedunits = "kph"
+        else:
+            raise ValueError	# Should never happen
+
+class SkyView(gtk.DrawingArea):
+    "Satellite skyview, encapsulates pygtk's draw-on-expose behavior."
+    # See <http://faq.pygtk.org/index.py?req=show&file=faq18.008.htp>
+    def __init__(self):
+        gtk.DrawingArea.__init__(self)
+        self.set_size_request(400, 400)
+        self.gc = None  # initialized in realize-event handler
+        self.width  = 0 # updated in size-allocate handler
+        self.height = 0 # updated in size-allocate handler
+        self.connect('size-allocate', self.on_size_allocate)
+        self.connect('expose-event',  self.on_expose_event)
+        self.connect('realize',       self.on_realize)
+
+    def on_realize(self, widget):
+        self.gc = widget.window.new_gc()
+        self.gc.set_line_attributes(1, gtk.gdk.LINE_SOLID,
+                                    gtk.gdk.CAP_ROUND, gtk.gdk.JOIN_ROUND)
+
+    def on_size_allocate(self, widget, allocation):
+        self.width = allocation.width
+        self.height = allocation.height
+
+    def on_expose_event(self, widget, event):
+        widget.window.draw_rectangle(self.gc, False,
+                                     1, 1, self.width - 2, self.height - 2)
+        widget.window.draw_line(self.gc,
+                                0, 0, self.width - 1, self.height - 1)
+        widget.window.draw_line(self.gc,
+                                self.width - 1, 0, 0, self.height - 1)
+
+class Base:
+    gpsfields = (
+        # First column
+        ("Time", lambda s, r: gps.isotime(r.time)),
+        ("Latitude", lambda s, r: s.update_latitude(r)),
+        ("Longitude", lambda s, r: s.update_longitude(r)),
+        ("Altitude", lambda s, r: s.update_altitude(r)),
+        ("Speed", lambda s, r: s.update_speed(r)),
+        ("Climb", lambda s, r: s.update_climb(r)),
+        ("Track", lambda s, r: s.update_track(r)),
+        # Second column
+        ("Status", lambda s, r: s.update_status(r)),
+        ("EPX", lambda s, r: s.update_err(r, "epx")),
+        ("EPY", lambda s, r: s.update_err(r, "epy")),
+        ("EPV", lambda s, r: s.update_err(r, "epv")),
+        ("EPS", lambda s, r: s.update_err(r, "eps")),
+        ("EPC", lambda s, r: s.update_err(r, "epc")),
+        ("EPD", lambda s, r: s.update_err(r, "epd")),
+        )
+    def __init__(self, deg_type):
+        self.deg_type = deg_type
+        self.conversions = unit_adjustments()
+        self.saved_mode = -1
+  
+        self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        self.window.set_title("xgps2")
+        self.window.connect("delete_event", self.delete_event)
+        #self.window.set_size_request(800, 600)
+
+        vbox = gtk.VBox(False, 0)
+        self.window.add(vbox)
+        vbox.show()
+
+        self.window.connect("destroy", lambda w: gtk.main_quit())
+
+        #self.tooltips = gtk.Tooltips()
+
+        # Set up toolbar style
+        toolbar = gtk.Toolbar()
+        toolbar.set_orientation(gtk.ORIENTATION_HORIZONTAL)
+        toolbar.set_style(gtk.TOOLBAR_BOTH)
+        toolbar.set_border_width(1)
+        vbox.pack_start(toolbar, expand = False)
+        toolbar.show()
+
+        quit = gtk.ToolButton(gtk.STOCK_QUIT)
+        toolbar.insert(quit, -1)
+        quit.set_tooltip_text("Leave this program.")
+        quit.connect("clicked", lambda w: gtk.main_quit())
+        quit.show()
+
+        properties = gtk.ToolButton(gtk.STOCK_PROPERTIES)
+        toolbar.insert(properties, -1)
+        properties.set_tooltip_text("Preferences.")
+        #properties.connect("clicked", self.properties_handler)
+        properties.show()
+
+        hbox = gtk.HBox(False, 0)
+        vbox.add(hbox)
+        hbox.show()
+
+        skyframe = gtk.Frame(label="Satellite List")
+        skyframe.show()
+        hbox.add(skyframe)
+
+        self.satlist = gtk.ListStore(str,str,str,str,str)
+        view = gtk.TreeView(model=self.satlist)
+
+        for (i, label) in enumerate(('PRN:','Elev:','Azim:','SNR:','Used:')):
+            column = gtk.TreeViewColumn(label)
+            renderer = gtk.CellRendererText()
+            column.pack_start(renderer)
+            column.add_attribute(renderer, 'text', i)
+            view.append_column(column)
+
+        self.row_iters = []
+        for i in range(gps.MAXCHANNELS):
+            self.satlist.append(["", "", "", "", ""])
+            self.row_iters.append(self.satlist.get_iter(i))
+
+        view.show()
+        skyframe.add(view)
+
+        viewframe = gtk.Frame(label="Skyview")
+        viewframe.show()
+        hbox.add(viewframe)
+        self.skyview = SkyView()
+        self.skyview.show()
+        viewframe.add(self.skyview)
+
+        self.rawdisplay = gtk.Entry()
+        self.rawdisplay.set_editable(False)
+        self.rawdisplay.show()
+        vbox.add(self.rawdisplay)
+
+        dataframe = gtk.Frame(label="GPS data")
+        datatable = gtk.Table(7, 4, False)
+        dataframe.add(datatable)
+        gpswidgets = []
+        for i in range(len(Base.gpsfields)):
+            if i < len(Base.gpsfields) / 2:
+                colbase = 0
+            else:
+                colbase = 2
+            label = gtk.Label(Base.gpsfields[i][0])
+            # FIXME: Right-justification isn't working
+            label.set_justify(gtk.JUSTIFY_RIGHT)
+            datatable.attach(label, colbase, colbase+1, i % 7, i % 7 + 1)
+            entry = gtk.Entry()
+            datatable.attach(entry, colbase+1, colbase+2, i % 7, i % 7 + 1)
+            gpswidgets.append(entry)
+        dataframe.show_all()
+        vbox.add(dataframe)
+
+        self.window.show()
+
+        # Discard field labels and associate data hooks with their widgets
+        Base.gpsfields = map(lambda ((label, hook), widget): (hook, widget),
+                             zip(Base.gpsfields, gpswidgets))
+
+    def set_satlist_field(self, row, column, value):
+        "Set a specified field in the satellite list."
+        self.satlist.set_value(self.row_iters[row], column, value)
+
+    def delete_event(self, widget, event, data=None):
+        gtk.main_quit()
+        return False
+
+    # State updates
+
+    def update_latitude(self, data):
+        if data.mode >= gps.MODE_2D:
+            lat = gpslib.deg_to_str(self.deg_type, abs(data.lat))
+            if data.lat < 0:
+                ns = 'S'
+            else:
+                ns = 'N'
+            return "%s %s" % (lat, ns)
+        else:
+            return "n/a"
+
+    def update_longitude(self, data):
+        if data.mode >= gps.MODE_2D:
+            lon = gpslib.deg_to_str(self.deg_type, abs(data.lon))
+            if data.lon < 0:
+                ew = 'W'
+            else:
+                ew = 'E'
+            return "%s %s" % (lon, ew)
+        else:
+            return "n/a"
+
+    def update_altitude(self, data):
+        if data.mode >= gps.MODE_3D:
+            return "%.3f %s" % (
+                data.alt * self.conversions.altfactor,
+                self.conversions.altunits)
+        else:
+            return "n/a"
+
+    def update_speed(self, data):
+        if hasattr(data, "speed"):
+            return "%.3f %s" % (
+                data.speed * self.conversions.speedfactor,
+                self.conversions.speedunits)
+        else:
+            return "n/a"
+
+    def update_climb(self, data):
+        if hasattr(data, "climb"):
+            return "%.3f %s" % (
+                data.climb * self.conversions.speedfactor,
+                self.conversions.speedunits)
+        else:
+            return "n/a"
+
+    def update_track(self, data):
+        if hasattr(data, "track"):
+            return gpslib.deg_to_str(self.deg_type, abs(data.track))
+        else:
+            return "n/a"
+
+    def update_err(self, data, errtype):
+        if hasattr(data, errtype):
+            return "%.3f %s" % (
+                getattr(data, errtype) * self.conversions.altfactor,
+                self.conversions.altunits)
+        else:
+            return "n/a"
+
+    def update_status(self, data):
+        if data.mode == gps.MODE_2D:
+            status = "2D FIX"
+        elif data.mode == gps.MODE_3D:
+            status = "3D FIX"
+        else:
+            status = "NO FIX"
+        if data.mode != self.saved_mode:
+            self.last_transition = time.time()
+            self.saved_mode = data.mode
+        return status + " (%d secs)" % (time.time() - self.last_transition)
+
+    def update_gpsdata(self, tpv):
+        "Update the GPS data fields."
+        for (hook, widget) in Base.gpsfields:
+            if hook:	# Remove this guard when we have all hooks 
+                widget.set_text(hook(self, tpv))
+
+    def update_skyview(self, satellites):
+        "Update the satellite list and skyview."
+        for (i, satellite) in enumerate(satellites): 
+            self.set_satlist_field(i, 0, satellite.PRN)
+            self.set_satlist_field(i, 1, satellite.elevation)
+            self.set_satlist_field(i, 2, satellite.azimuth)
+            self.set_satlist_field(i, 3, satellite.ss)
+            yesno = 'N'
+            if satellite.used:
+                yesno = 'Y'
+            self.set_satlist_field(i, 4, yesno)
+        for i in range(len(satellites), gps.MAXCHANNELS):
+            for j in range(0, 5):
+                self.set_satlist_field(i, j, "")
+
+    # I/O monitoring and gtk housekeeping
+
+    def watch(self, daemon):
+        "Set up monitoring of a daemon instance."
+        self.daemon = daemon
+        gobject.io_add_watch(daemon.sock, gobject.IO_IN, self.handle_response)
+        gobject.io_add_watch(daemon.sock, gobject.IO_ERR, self.handle_error)
+        gobject.io_add_watch(daemon.sock, gobject.IO_HUP, self.handle_hangup)
+
+    def handle_response(self, source, condition):
+        "Handle ordinary I/O ready condition from the daemon."
+        self.daemon.poll()
+        if self.daemon.valid & gps.PACKET_SET:
+            self.rawdisplay.set_text(self.daemon.response.strip())
+            if self.daemon.data["class"] == "SKY":
+                self.update_skyview(self.daemon.satellites)
+            elif self.daemon.data["class"] == "TPV":
+                self.update_gpsdata(self.daemon.data)
+                    
+        return True
+
+    def handle_error(self, source, condition):
+        "Handle error condition from the daemon."
+        # FIXME: Pop up a notification...
+        return True
+
+    def handle_hangup(self, source, condition):
+        "Handle hangup condition from the daemon."
+        # FIXME: Pop up a notification...
+        return True
+
+    def main(self):
+        gtk.main()
+
+if __name__ == "__main__":
+    (options, arguments) = getopt.getopt(sys.argv[1:], "D:hl:V?",
+                                         ['speedunits=','altunits=','verbose'])
+    debug = 0
+    degreefmt = 'd'
+    speedunits = 'mph'
+    altunits = 'feet'
+    for (opt, val) in options:
+        if opt in '-D':
+            debug = int(val)
+        elif opt == '-l':
+            degreeformat = val
+        elif opt == '--speedunits':	# FIXME: Not yet honored
+            speedunits = val
+        elif opt == '--altunits':	# FIXME: Not yet honored
+            altunits = val
+        elif opt in ('-?', '-h', '--help'):
+            print __doc__
+            sys.exit(0)
+        elif opt == 'V':
+            sys.stderr.write("xgps 0.1\n")
+	    sys.exit(0)
+
+    degreefmt = {'d':gpslib.deg_dd,
+                 'm':gpslib.deg_ddmm,
+                 's':gpslib.deg_ddmmss}[degreefmt]
+
+    base = Base(deg_type=degreefmt)
+    daemon = gps.gps(mode=gps.WATCH_ENABLE|gps.WATCH_JSON,verbose=debug>0)
+    base.watch(daemon)
+    base.main()

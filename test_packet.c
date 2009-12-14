@@ -1,4 +1,4 @@
-/* $Id: test_packet.c 6566 2009-11-20 03:51:06Z esr $ */
+/* $Id$ */
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -287,7 +287,7 @@ int main(int argc, char *argv[])
 	    verbose = atoi(optarg); 
 	    break;
 	case 'V':
-	    (void)fprintf(stderr, "SVN ID: $Id: test_packet.c 6566 2009-11-20 03:51:06Z esr $ \n");
+	    (void)fprintf(stderr, "SVN ID: $Id$ \n");
 	    exit(0);
 	}
     }

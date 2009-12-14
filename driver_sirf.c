@@ -1,4 +1,4 @@
-/* $Id: driver_sirf.c 6688 2009-12-03 08:41:20Z esr $ */
+/* $Id$ */
 /*
  * This is the gpsd driver for SiRF GPSes operating in binary mode.
  * It also handles uBlox, a SiRF derivative.
@@ -39,6 +39,7 @@
 
 #include "gpsd.h"
 #include "bits.h"
+#include "timebase.h"
 #if defined(SIRF_ENABLE) && defined(BINARY_ENABLE)
 
 #define HI(n)		((n) >> 8)
@@ -893,7 +894,14 @@ static gps_mask_t sirf_msg_ppstime(struct gps_device_t *session, unsigned char *
 	    (double)mkgmtime(&unpacked_date);
 	/*@ +compdef */
 	session->context->leap_seconds = (int)getbeuw(buf, 8);
-	session->context->valid |= LEAP_SECOND_VALID;
+	if ( LEAP_SECONDS > session->context->leap_seconds ) {
+	    /* something wrong */
+	    gpsd_report(LOG_ERROR, "SiRF: Invalid leap_seconds: %d\n",
+		session->context->leap_seconds);
+	    session->context->leap_seconds = LEAP_SECONDS;
+	} else {
+	    session->context->valid |= LEAP_SECOND_VALID;
+	}
 #ifdef NTPSHM_ENABLE
 	if ( 0 == (session->driver.sirf.time_seen & TIME_SEEN_UTC_2)) {
 	    gpsd_report(LOG_RAW, "SiRF: NTPD just SEEN_UTC_2\n");

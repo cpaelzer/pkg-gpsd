@@ -1,4 +1,4 @@
-/* $Id: driver_nmea.c 6703 2009-12-04 12:42:36Z esr $ */
+/* $Id$ */
 #include <sys/types.h>
 #include <stdio.h>
 #ifndef S_SPLINT_S

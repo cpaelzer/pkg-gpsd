@@ -1,4 +1,4 @@
-/* $Id: net_dgpsip.c 6566 2009-11-20 03:51:06Z esr $ */
+/* $Id$ */
 /* net_dgpsip.c -- gather and dispatch DGPS data from DGPSIP servers */
 #include <sys/types.h>
 #ifndef S_SPLINT_S

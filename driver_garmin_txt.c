@@ -1,4 +1,4 @@
-/* $Id: driver_garmin_txt.c 6381 2009-10-02 15:56:08Z esr $ */
+/* $Id$ */
 /*
  * Handle the Garmin simple text format supported by some Garmins.
  * Tested with the 'Garmin eTrex Legend' device working in 'Text Out' mode.

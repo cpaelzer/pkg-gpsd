@@ -1,5 +1,5 @@
 """
-$Id: gpsfake.py 6314 2009-09-24 05:28:25Z esr $
+$Id$
 
 gpsfake.py -- classes for creating a controlled test environment around gpsd.
 
@@ -101,7 +101,9 @@ class TestLoad:
             elif ptype == gpspacket.BAD_PACKET:
                 break
             elif ptype == gpspacket.COMMENT_PACKET:
+                # Some comments are magic
                 if "Serial:" in packet:
+                    # Change serial parameters
                     packet = packet[1:].strip()
                     try:
                         (xx, baud, params) = packet.split()
@@ -123,6 +125,9 @@ class TestLoad:
                                             logfp.name)
                     
                     self.serial = (baud, databits, parity, stopbits)
+                elif "%" in packet:
+                    # Pass through for later interpretation 
+                    self.sentences.append(packet)
             else:
                 if type_latch is None:
                     type_latch = ptype
@@ -221,6 +226,10 @@ class FakeGPS:
     def feed(self):
         "Feed a line from the contents of the GPS log to the daemon."
         line = self.testload.sentences[self.index % len(self.testload.sentences)]
+        if "%Delay:" in line:
+            # Delay specified number of seconds
+            delay = line.split()[1]
+            time.sleep(int(delay))
         os.write(self.master_fd, line)
         if self.progress:
             self.progress("gpsfake: %s feeds %d=%s\n" % (self.name, len(line), `line`))
@@ -400,15 +409,6 @@ class TestSession:
         if commands:
             self.initialize(newclient, commands) 
         return self.client_id
-    def client_query(self, id, commands):
-        "Ship a command to a client channel, get a response (threaded mode only)."
-        self.progress("gpsfake: client_query(%d, %s)\n" % (id, `commands`))
-        for obj in self.runqueue:
-            if isinstance(obj, gps.gps) and obj.id == id:
-                obj.send(commands)
-                obj.poll()
-                return obj.response
-        return None
     def client_remove(self, cid):
         "Terminate a client session."
         self.progress("gpsfake: client_remove(%d)\n" % cid)
@@ -467,7 +467,8 @@ class TestSession:
                         chosen.enqueued = ""
                     while chosen.waiting():
                         chosen.poll()
-                        self.reporter(chosen.response)
+                        if chosen.valid & gps.PACKET_SET:
+                            self.reporter(chosen.response)
                         had_output = True
                 else:
                     raise TestSessionError("test object of unknown type")

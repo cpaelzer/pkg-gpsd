@@ -1,4 +1,4 @@
-/* $Id: bsd-base64.c 5052 2009-01-21 10:42:24Z esr $ */
+/* $Id$ */
 /*	$OpenBSD: base64.c,v 1.3 1997/11/08 20:46:55 deraadt Exp $	*/
 
 /*

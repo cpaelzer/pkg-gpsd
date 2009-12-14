@@ -1,4 +1,4 @@
-/* $Id: driver_garmin.c 6688 2009-12-03 08:41:20Z esr $ */
+/* $Id$ */
 /*
  * This file contains two drivers for Garmin receivers and some code
  * shared by both drivers.

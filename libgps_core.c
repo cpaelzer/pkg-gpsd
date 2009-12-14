@@ -1,19 +1,31 @@
-/* $Id: libgps_core.c 6692 2009-12-03 15:01:37Z esr $ */
+/* $Id$ */
 /* libgps.c -- client interface library for the gpsd daemon */
 #include <sys/time.h>
 #include <stdio.h>
 #ifndef S_SPLINT_S
 #include <unistd.h>
 #endif /* S_SPLINT_S */
+#include <sys/types.h>
 #include <stdlib.h>
+#include <fcntl.h>
 #include <string.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <math.h>
 #include <locale.h>
+#include <assert.h>
 
 #include "gpsd.h"
 #include "gps_json.h"
+
+#ifndef S_SPLINT_S
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+#endif
+#if defined (HAVE_SYS_SELECT_H)
+#include <sys/select.h>
+#endif
 
 #ifdef S_SPLINT_S
 extern char *strtok_r(char *, const char *, char **);
@@ -23,8 +35,16 @@ extern char *strtok_r(char *, const char *, char **);
 #define LIBGPS_DEBUG
 #endif /* defined(TESTMAIN) || defined(CLIENTDEBUG_ENABLE) */
 
+struct privdata_t {
+    bool newstyle;
+    ssize_t waiting;
+    char buffer[BUFSIZ];
+};
+#define PRIVATE(gpsdata) ((struct privdata_t *)gpsdata->privdata)
+
 #ifdef LIBGPS_DEBUG
 static int debuglevel = 0; 
+static int waitcount = 0;
 static FILE *debugfp;
 
 void gps_enable_debug(int level, FILE *fp)
@@ -56,6 +76,7 @@ static void gps_trace(int errlevel, const char *fmt, ... )
 # define libgps_debug_trace(args) /*@i1@*/do { } while (0)
 #endif /* LIBGPS_DEBUG */
 
+/*@-nullderef@*/
 int gps_open_r(const char *host, const char *port, 
 	       /*@out@*/struct gps_data_t *gpsdata)
 {
@@ -76,7 +97,15 @@ int gps_open_r(const char *host, const char *port,
     gpsdata->set = 0;
     gpsdata->status = STATUS_NO_FIX;
     gps_clear_fix(&gpsdata->fix);
-    gpsdata->privdata = (void *)0;
+
+    /* set up for line-buffered I/O over the daemon socket */
+    gpsdata->privdata = (void *)malloc(sizeof(struct privdata_t));
+    if (gpsdata->privdata == NULL)
+	return -1;
+    PRIVATE(gpsdata)->newstyle = false;
+    PRIVATE(gpsdata)->waiting = 0;
+    /*@i2@*/PRIVATE(gpsdata)->buffer[0] = '\0';
+
     return 0;
     /*@ +branchstate @*/
 }
@@ -93,14 +122,17 @@ struct gps_data_t *gps_open(const char *host, const char *port)
 }
 /*@+compmempass +immediatetrans@*/
 
+/*@-compdef -usereleased@*/
 int gps_close(struct gps_data_t *gpsdata)
 /* close a gpsd connection */
 {
-    int retval = close(gpsdata->gps_fd);
     libgps_debug_trace((1, "gps_close()\n"));
+    free(PRIVATE(gpsdata));
     gpsdata->gps_fd = -1;
-    return retval;
+    
+    return 0;
 }
+/*@+compdef +usereleased@*/
 
 void gps_set_raw_hook(struct gps_data_t *gpsdata,
 		      void (*hook)(struct gps_data_t *, char *, size_t len))
@@ -211,12 +243,8 @@ int gps_unpack(char *buf, struct gps_data_t *gpsdata)
 
 	}
 #ifdef OLDSTYLE_ENABLE
-	/*
-	 * At the moment this member is only being used as a flag.
-	 * It has void pointer type because someday we might want
-	 * to point to a library state structure.
-	 */
-	/*@i1*/gpsdata->privdata = (void *)1;
+	if (PRIVATE(gpsdata) != NULL)
+	    PRIVATE(gpsdata)->newstyle = true;
 #endif /* OLDSTYLE_ENABLE */
     }
 #ifdef OLDSTYLE_ENABLE
@@ -573,34 +601,70 @@ int gps_unpack(char *buf, struct gps_data_t *gpsdata)
 /*@ +compdef @*/
 /*@ -branchstate +usereleased +mustfreefresh +nullstate +usedef @*/
 
-/*
- * return: 0, success
- *        -1, read error
- */
+bool gps_waiting(struct gps_data_t *gpsdata)
+/* is there input waiting from the GPS? */
+{
+    fd_set rfds;
+    struct timeval tv;
+
+    libgps_debug_trace((1, "gps_waiting(): %d\n", waitcount++));
+    if (PRIVATE(gpsdata)->waiting > 0)
+	return true;
+
+    FD_ZERO(&rfds);
+    FD_SET(gpsdata->gps_fd, &rfds);
+    tv.tv_sec = 0; tv.tv_usec = 1;
+    /* all error conditions return "not waiting" -- crude but effective */
+    return (select(gpsdata->gps_fd+1, &rfds, NULL, NULL, &tv) == 1);
+}
 
 int gps_poll(struct gps_data_t *gpsdata)
 /* wait for and read data being streamed from the daemon */
 {
-    char	buf[BUFSIZ];
-    ssize_t	n;
+    char *eol;
     double received = 0;
-    int status;
+    ssize_t response_length;
+    int status = -1;
+    struct privdata_t *priv = PRIVATE(gpsdata);
 
-    /* the daemon makes sure that every read is NUL-terminated */
-    n = read(gpsdata->gps_fd, buf, sizeof(buf)-1);
-    if (n <= 0) {
-	 /* error or nothing read */
-	return -1;
+    gpsdata->set &=~ PACKET_SET;
+    eol = strchr(priv->buffer, '\n');
+    if (eol == NULL) {
+	/* read data: return -1 if no data waiting or buffered, 0 otherwise */
+	status = (int)recv(gpsdata->gps_fd,
+			   priv->buffer + priv->waiting,
+			   sizeof(priv->buffer)-priv->waiting,
+			   0);
+	if (status > -1)
+	    priv->waiting += status;
+	else if (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK)
+	    return 0;
+	else if (priv->waiting == 0)
+	    return status;
+	eol = strchr(priv->buffer, '\n');
+	if (eol == NULL)
+	    return 0;
     }
-    buf[n] = '\0';
 
+    assert(eol != NULL);
+    // FIXME: Make the JSON parser stop on \n so this isn't needed
+    *eol = '\0';
+    response_length = eol - priv->buffer + 1;
     received = gpsdata->online = timestamp();
-    status = gps_unpack(buf, gpsdata);
-    return status;
+    status = gps_unpack(priv->buffer, gpsdata);
+    /*@+matchanyintegral@*/
+    memmove(priv->buffer, 
+	    priv->buffer + response_length, 
+	    priv->waiting - response_length);
+    /*@-matchanyintegral@*/
+    priv->waiting -= response_length;
+    gpsdata->set |= PACKET_SET;
+
+    return 0;
 }
 
 int gps_send(struct gps_data_t *gpsdata, const char *fmt, ... )
-/* query a gpsd instance for new data */
+/* send a command to the gpsd instance */
 {
     char buf[BUFSIZ];
     va_list ap;
@@ -616,17 +680,21 @@ int gps_send(struct gps_data_t *gpsdata, const char *fmt, ... )
 	return -1;
 }
 
-int gps_stream(struct gps_data_t *gpsdata, unsigned int flags, void *d UNUSED)
+int gps_stream(struct gps_data_t *gpsdata, 
+	       unsigned int flags, 
+	       /*@null@*/void *d)
 /* ask gpsd to stream reports at you, hiding the command details */
 {
     char buf[GPS_JSON_COMMAND_MAX];
 
     if ((flags & (WATCH_JSON|WATCH_OLDSTYLE|WATCH_NMEA|WATCH_RAW))== 0) {
-	if (gpsdata->privdata != (void *)0 || (flags & WATCH_NEWSTYLE)!=0)
+	if (PRIVATE(gpsdata)->newstyle || (flags & WATCH_NEWSTYLE)!=0)
 	    flags |= WATCH_JSON;
         else
 	    flags |= WATCH_OLDSTYLE;
     }
+    if (flags & POLL_NONBLOCK)
+	(void)fcntl(gpsdata->gps_fd, F_SETFL, O_NONBLOCK); 
     if ((flags & WATCH_DISABLE) != 0) {
 	if ((flags & WATCH_OLDSTYLE) != 0) {
 	    (void)strlcpy(buf, "w-", sizeof(buf));
@@ -648,6 +716,7 @@ int gps_stream(struct gps_data_t *gpsdata, unsigned int flags, void *d UNUSED)
 		buf[strlen(buf)-1] = '\0';
 	    (void)strlcat(buf, "};", sizeof(buf));
 	}
+	libgps_debug_trace((1, "gps_stream() disable command: %s\n", buf));
 	return gps_send(gpsdata, buf);
     } else /* if ((flags & WATCH_ENABLE) != 0) */{
 	if ((flags & WATCH_OLDSTYLE) != 0) {
@@ -666,10 +735,16 @@ int gps_stream(struct gps_data_t *gpsdata, unsigned int flags, void *d UNUSED)
 		(void)strlcat(buf, "\"raw\":2,", sizeof(buf));
 	    if (flags & WATCH_SCALED)
 		(void)strlcat(buf, "\"scaled\":true,", sizeof(buf));
+	    /*@-nullpass@*//* shouldn't be needed, splint has a bug */
+	    if (flags & WATCH_DEVICE)
+		(void)snprintf(buf+strlen(buf), sizeof(buf)-strlen(buf),
+			       "\"device\":%s,", (char*)d);
+	    /*@+nullpass@*/
 	    if (buf[strlen(buf)-1] == ',')
 		buf[strlen(buf)-1] = '\0';
 	    (void)strlcat(buf, "};", sizeof(buf));
 	}
+	libgps_debug_trace((1, "gps_stream() enable command: %s\n", buf));
 	return gps_send(gpsdata, buf);
     }
 }
@@ -727,7 +802,8 @@ int main(int argc, char *argv[])
 	    batchmode = true;
 	    break;
 	case 's':
-	    (void)printf("Sizes: rtcm2=%zd rtcm3=%zd ais=%zd compass=%zd raw=%zd devices=%zd policy=%zd version=%zd\n",
+	    (void)printf("Sizes: gpsdata=%zd rtcm2=%zd rtcm3=%zd ais=%zd compass=%zd raw=%zd devices=%zd policy=%zd version=%zd\n",
+			 sizeof(struct gps_data_t),
 			 sizeof(struct rtcm2_t),
 			 sizeof(struct rtcm3_t),
 			 sizeof(struct ais_t),
@@ -791,6 +867,7 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+/*@-nullderef@*/
 
 #endif /* TESTMAIN */
 

@@ -1,23 +1,15 @@
-'\" t
 .\"     Title: libgpsmm
-.\"    Author: [see the "AUTHOR" section]
-.\" Generator: DocBook XSL Stylesheets v1.75.1 <http://docbook.sf.net/>
+.\"    Author: 
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
 .\"      Date: 13 May 2005
 .\"    Manual: Linux
 .\"    Source: Linux
-.\"  Language: English
 .\"
 .TH "LIBGPSMM" "3" "13 May 2005" "Linux" "Linux"
-.\" -----------------------------------------------------------------
-.\" * set default formatting
-.\" -----------------------------------------------------------------
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
-.\" -----------------------------------------------------------------
-.\" * MAIN CONTENT STARTS HERE *
-.\" -----------------------------------------------------------------
 .SH "NAME"
 libgpsmm \- C++ class wrapper for the GPS daemon
 .SH "SYNOPSIS"
@@ -31,20 +23,18 @@ C++:
 
 .fi
 .ft
-.HP \w'struct\ gps_data_t\ *open('u
+.HP 24
 .BI "struct gps_data_t *open(char\ *" "host" ", char\ *" "port" ");"
-.HP \w'struct\ gps_data_t\ *open('u
+.HP 24
 .BI "struct gps_data_t *open(void);"
-.HP \w'struct\ gps_data_t\ *query('u
+.HP 25
 .BI "struct gps_data_t *query(char\ *" "request" ");"
-.HP \w'struct\ gps_data_t\ *poll('u
+.HP 24
 .BI "struct gps_data_t *poll(void);"
-.HP \w'int\ set_callback('u
+.HP 17
 .BI "int set_callback(void\ (*" "hook" ")(struct\ gps_data_t\ *sentence,\ char\ *buf));"
-.HP \w'int\ del_callback('u
+.HP 17
 .BI "int del_callback(void);"
-.HP \w'struct\ gps_data_t\ *stream('u
-.BI "struct gps_data_t *stream(unsigned\ int" "flags" ");"
 .SH "DESCRIPTION"
 .PP
 \fBlibgpsmm\fR

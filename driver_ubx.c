@@ -1,4 +1,4 @@
-/* $Id: driver_ubx.c 6698 2009-12-04 02:10:11Z esr $
+/* $Id$
  *
  * UBX driver
  */

@@ -70,7 +70,7 @@ char *json_stringify(/*@out@*/char *to, size_t len, /*@in@*/const char *from)
 		tp += strlen(tp);
 	    }
 	} else {
-	    if (*sp == '"')
+	    if (*sp == '"' || *sp == '\\')
 		*tp++ = '\\';
 	    *tp++ = *sp;
 	}
@@ -297,17 +297,19 @@ void json_device_dump(const struct gps_device_t *device,
 	    (void)strlcat(reply, "\",", replylen);
 	}
 	/*@+mustfreefresh@*/
-	(void)snprintf(reply+strlen(reply), replylen-strlen(reply),
-		       "\"native\":%d,\"bps\":%d,\"parity\":\"%c\",\"stopbits\":%u,\"cycle\":%2.2f",
-		       device->gpsdata.dev.driver_mode,
-		       (int)gpsd_get_speed(&device->ttyset),
-		       device->gpsdata.dev.parity,
-		       device->gpsdata.dev.stopbits,
-		       device->gpsdata.dev.cycle);
-	if (device->device_type != NULL && device->device_type->rate_switcher != NULL)
+	if (device->is_serial) {
 	    (void)snprintf(reply+strlen(reply), replylen-strlen(reply),
-			   ",\"mincycle\":%2.2f",
-			   device->device_type->min_cycle);
+			   "\"native\":%d,\"bps\":%d,\"parity\":\"%c\",\"stopbits\":%u,\"cycle\":%2.2f",
+			   device->gpsdata.dev.driver_mode,
+			   (int)gpsd_get_speed(&device->ttyset),
+			   device->gpsdata.dev.parity,
+			   device->gpsdata.dev.stopbits,
+			   device->gpsdata.dev.cycle);
+	    if (device->device_type != NULL && device->device_type->rate_switcher != NULL)
+		(void)snprintf(reply+strlen(reply), replylen-strlen(reply),
+			       ",\"mincycle\":%2.2f",
+			       device->device_type->min_cycle);
+	}
     }
     if (reply[strlen(reply)-1] == ',')
 	reply[strlen(reply)-1] = '\0';	/* trim trailing comma */
@@ -927,7 +929,7 @@ void aivdm_json_dump(const struct ais_t *ais, bool scaled, /*@out@*/char *buf, s
 	break;
     case 15:	/* Interrogation */
 	(void)snprintf(buf+strlen(buf), buflen-strlen(buf),
-		       "mmsi1:%u,\"type1_1\":%u,\"offset1_1\":%u,"
+		       "\"mmsi1\":%u,\"type1_1\":%u,\"offset1_1\":%u,"
 		       "\"type1_2\":%u,\"offset1_2\":%u,\"mmsi2\":%u,"
 		       "\"type2_1\":%u,\"offset2_1\":%u}\r\n",
 		      ais->type15.mmsi1,
@@ -1107,7 +1109,7 @@ void aivdm_json_dump(const struct ais_t *ais, bool scaled, /*@out@*/char *buf, s
     case 21: /* Aid to Navigation */
 	if (scaled) {
 	    (void)snprintf(buf+strlen(buf), buflen-strlen(buf),
-			   "\"type\":%s,\"name\":\"%s\",\"lon\":%.4f,"
+			   "\"aid_type\":%s,\"name\":\"%s\",\"lon\":%.4f,"
 			   "\"lat\":%.4f,\"accuracy\":%s,\"to_bow\":%u,"
 			   "\"to_stern\":%u,\"to_port\":%u,"
 			   "\"to_starboard\":%u,\"epfd\":\"%s\","
@@ -1131,7 +1133,7 @@ void aivdm_json_dump(const struct ais_t *ais, bool scaled, /*@out@*/char *buf, s
 			   JSON_BOOL(ais->type21.virtual_aid));
 	} else {
 	    (void)snprintf(buf+strlen(buf), buflen-strlen(buf),
-			   "\"type\":%u,\"name\":\"%s\",\"accuracy\":%s,"
+			   "\"aid_type\":%u,\"name\":\"%s\",\"accuracy\":%s,"
 			   "\"lon\":%d,\"lat\":%d,\"to_bow\":%u,"
 			   "\"to_stern\":%u,\"to_port\":%u,\"to_starboard\":%u,"
 			   "\"epfd\":%u,\"second\":%u,\"regional\":%u,"
@@ -1162,7 +1164,7 @@ void aivdm_json_dump(const struct ais_t *ais, bool scaled, /*@out@*/char *buf, s
 			   "\"ne_lon\":\"%f\",\"ne_lat\":\"%f\","
 			   "\"sw_lon\":\"%f\",\"sw_lat\":\"%f\","
 			   "\"addressed\":%s,\"band_a\":%s,"
-			   "\"band_b\":%s,\"zonesize\":\":%u}\r\n",
+			   "\"band_b\":%s,\"zonesize\":%u}\r\n",
 			   ais->type22.channel_a,
 			   ais->type22.channel_b,
 			   ais->type22.txrx,
@@ -1182,7 +1184,7 @@ void aivdm_json_dump(const struct ais_t *ais, bool scaled, /*@out@*/char *buf, s
 			   "\"ne_lon\":%d,\"ne_lat\":%d,"
 			   "\"sw_lon\":%d,\"sw_lat\":%d,"
 			   "\"addressed\":%s,\"band_a\":%s,"
-			   "\"band_b\":%s,\"zonesize\":\":%u}\r\n",
+			   "\"band_b\":%s,\"zonesize\":%u}\r\n",
 			   ais->type22.channel_a,
 			   ais->type22.channel_b,
 			   ais->type22.txrx,
@@ -1203,7 +1205,7 @@ void aivdm_json_dump(const struct ais_t *ais, bool scaled, /*@out@*/char *buf, s
 			   "\"ne_lon\":\"%f\",\"ne_lat\":\"%f\","
 			   "\"sw_lon\":\"%f\",\"sw_lat\":\"%f\","
 			   "\"stationtype\":%s,\"shiptype\":%s,"
-			   "\"interval\":%u,\"quiet\":%u\r\n",
+			   "\"interval\":%u,\"quiet\":%u}\r\n",
 			   ais->type23.ne_lon / AIS_CHANNEL_LATLON_SCALE,
 			   ais->type23.ne_lat / AIS_CHANNEL_LATLON_SCALE,
 			   ais->type23.sw_lon / AIS_CHANNEL_LATLON_SCALE,
@@ -1217,7 +1219,7 @@ void aivdm_json_dump(const struct ais_t *ais, bool scaled, /*@out@*/char *buf, s
 			   "\"ne_lon\":%d,\"ne_lat\":%d,"
 			   "\"sw_lon\":%d,\"sw_lat\":%d,"
 			   "\"stationtype\":%u,\"shiptype\":%u,"
-			   "\"interval\":%u,\"quiet\":%u\r\n",
+			   "\"interval\":%u,\"quiet\":%u}\r\n",
 			   ais->type23.ne_lon,
 			   ais->type23.ne_lat,
 			   ais->type23.sw_lon,
@@ -1260,7 +1262,9 @@ void aivdm_json_dump(const struct ais_t *ais, bool scaled, /*@out@*/char *buf, s
 	}
 	break;
     default:
-	    (void) strlcat(buf, "}\r\n", buflen);
+	if (buf[strlen(buf)-1] == ',')
+	    buf[strlen(buf)-1] = '\0';
+	(void) strlcat(buf, "}\r\n", buflen);
 	break;
     }
     /*@ +formatcode +mustfreefresh @*/

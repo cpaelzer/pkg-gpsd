@@ -1,8 +1,13 @@
-/* $Id: gpsd_report.c 6566 2009-11-20 03:51:06Z esr $ */
+/* $Id$ */
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include "gpsd.h"
+
+
+# if __GNUC__ >= 3 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 7)
+void gpsd_report(int errlevel UNUSED, const char *fmt, ... ) __attribute__ ((weak));
+#endif
 
 void gpsd_report(int errlevel UNUSED, const char *fmt, ... )
 /* stub logger for clients that don't supply one */
@@ -13,4 +18,3 @@ void gpsd_report(int errlevel UNUSED, const char *fmt, ... )
     (void)vfprintf(stderr, fmt, ap);
     va_end(ap);
 }
-

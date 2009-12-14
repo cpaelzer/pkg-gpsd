@@ -1,4 +1,4 @@
-/* $Id: gpsd.c 6708 2009-12-04 20:26:49Z esr $ */
+/* $Id$ */
 #include <sys/types.h>
 #ifndef S_SPLINT_S
 #include <unistd.h>
@@ -610,16 +610,6 @@ static bool open_device(char *device_name)
 {
     struct gps_device_t *devp;
 
-    /* special case: source may be a URI to a remote GNSS or DGPS service */
-    if (netgnss_uri_check(device_name)) {
-	int dsock = netgnss_uri_open(&context, device_name);
-	if (dsock >= 0) {
-	    FD_SET(dsock, &all_fds);
-	    adjust_max_fd(dsock, true);
-	}
-    }
-
-    /* normal case: set up GPS/RTCM/AIS service */
     for (devp = devices; devp < devices + MAXDEVICES; devp++)
 	if (!allocated_device(devp) || (strcmp(devp->gpsdata.dev.path, device_name)==0 && !initialized_device(devp))) {
 	    goto found;
@@ -1219,7 +1209,7 @@ static bool handle_oldstyle(struct subscriber_t *sub, char *buf,
 	* fighting with Dragorn.  We'll just disable it.  The client
 	* library could never parse the response anyway, so the only
 	* people who lose are the ones opening a socket direct to the
-	* daemon and doing depreacated single-shot queries.
+	* daemon and doing deprecated single-shot queries.
 	*/
 	case 'L':
 	    (void)snprintf(phrase, sizeof(phrase), ",L=%d %d %s abcdefgijklmnopqrstuvwxyz", GPSD_API_MAJOR_VERSION, GPSD_API_MINOR_VERSION, VERSION);	//h
@@ -1827,7 +1817,9 @@ int main(int argc, char *argv[])
 	case 'D':
 	    debuglevel = (int) strtol(optarg, 0, 0);
 	    gpsd_hexdump_level = debuglevel;
+#ifdef CLIENTDEBUG_ENABLE
 	    gps_enable_debug(debuglevel, stderr);
+#endif /* CLIENTDEBUG_ENABLE */
 	    break;
 	case 'F':
 	    control_socket = optarg;
@@ -2416,7 +2408,7 @@ int main(int argc, char *argv[])
 #endif /* TIMING_ENABLE */
 			}
 		    }
-		    gpsd_report(LOG_PROG, "reporting finished\n");
+		    //gpsd_report(LOG_PROG, "reporting finished\n");
 		}
 		/*@-nullderef@*/
 	    }

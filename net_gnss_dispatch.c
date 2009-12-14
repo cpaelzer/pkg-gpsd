@@ -1,4 +1,4 @@
-/* $Id: net_gnss_dispatch.c 6566 2009-11-20 03:51:06Z esr $ */
+/* $Id$ */
 /* net_gnss_dispatch.c -- common interface to a number of Network GNSS services */
 
 #include <sys/types.h>

@@ -1,4 +1,4 @@
-/* $Id: bits.h 6396 2009-10-12 00:15:01Z esr $ */
+/* $Id$ */
 #ifndef _GPSD_BITS_H_
 #define _GPSD_BITS_H_
 
