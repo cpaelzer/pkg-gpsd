@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: gpsdclient.h 6175 2009-09-09 23:01:13Z esr $ */
 /* gpsdclient.h -- common functions for GPSD clients */
 
 #ifndef _GPSD_GPSDCLIENT_H_

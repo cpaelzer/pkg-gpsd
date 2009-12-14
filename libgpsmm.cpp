@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: libgpsmm.cpp 6615 2009-11-29 04:15:51Z esr $ */
 /*
  * Copyright (C) 2005 Alfredo Pironti
  *

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: test_float.c 6516 2009-11-17 19:23:00Z esr $ */
 #include <stdio.h>
 
 /*

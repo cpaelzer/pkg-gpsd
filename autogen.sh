@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id$
+# $Id: autogen.sh 5510 2009-03-24 15:36:51Z esr $
 
 # Automakeversion
 AM_1=1

@@ -1,30 +1,38 @@
+'\" t
 .\"     Title: gps
-.\"    Author: 
-.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 03/18/2009
-.\"    Manual: 9 Aug 2004
-.\"    Source: 9 Aug 2004
+.\"    Author: [see the "AUTHORS" section]
+.\" Generator: DocBook XSL Stylesheets v1.75.1 <http://docbook.sf.net/>
+.\"      Date: 12/04/2009
+.\"    Manual: [FIXME: manual]
+.\"    Source: [FIXME: source]
+.\"  Language: English
 .\"
-.TH "GPS" "1" "03/18/2009" "9 Aug 2004" "9 Aug 2004"
+.TH "GPS" "1" "12/04/2009" "[FIXME: source]" "[FIXME: manual]"
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
 .SH "NAME"
 gps, xgps, xgpsspeed, cgps, lcdgps, cgpxlogger \- test clients for gpsd
 .SH "SYNOPSIS"
-.HP 5
-\fBxgps\fR [\fIX\-options\fR] [\-h] [\-V] [\-j] [\-speedunits\ {[mph]\ |\ [kph]\ |\ [knots]}] [\-altunits\ {[feet]\ |\ [meters]}] [\-l\ [[d]\ |\ [m]\ |\ [s]]] [\fIserver\fR [\fI:port\fR [\fI:device\fR]]]
-.HP 10
-\fBxgpsspeed\fR [\-rv] [\fIX\-options\fR] [\-h] [\-V] [\-nc\ \fIX\-color\fR] [\-speedunits\ {[mph]\ |\ [kph]\ |\ [knots]}] [\fIserver\fR [\fI:port\fR [\fI:device\fR]]]
-.HP 5
-\fBcgps\fR [\-h] [\-V] [\-j] [\-speedunits\ {[mph]\ |\ [kph]\ |\ [knots]}] [\-altunits\ {[feet]\ |\ [meters]}] [\-l\ [[d]\ |\ [m]\ |\ [s]]] [\-m] [\-s] [\fIserver\fR [\fI:port\fR [\fI:device\fR]]]
-.HP 7
-\fBlcdgps\fR [\-h] [\-V] [\-j] [\-l\ [[d]\ |\ [m]\ |\ [s]]] [\-u\ [[i]\ |\ [n]\ |\ [m]]] [\fIserver\fR [\fI:port\fR [\fI:device\fR]]]
-.HP 10
+.HP \w'\fBxgps\fR\ 'u
+\fBxgps\fR [\fIX\-options\fR] [\-d\ \fIdebug\-level\fR] [\-h] [\-V] [\-speedunits\ {[mph]\ |\ [kph]\ |\ [knots]}] [\-altunits\ {[feet]\ |\ [meters]}] [\-l\ [[d]\ |\ [m]\ |\ [s]]] [\fIserver\fR [\fI:port\fR [\fI:device\fR]]]
+.HP \w'\fBxgpsspeed\fR\ 'u
+\fBxgpsspeed\fR [\-rv] [\fIX\-options\fR] [\-d\ \fIdebug\-level\fR] [\-h] [\-V] [\-nc\ \fIX\-color\fR] [\-speedunits\ {[mph]\ |\ [kph]\ |\ [knots]}] [\fIserver\fR [\fI:port\fR [\fI:device\fR]]]
+.HP \w'\fBcgps\fR\ 'u
+\fBcgps\fR [\fIX\-options\fR] [\-d\ \fIdebug\-level\fR] [\-h] [\-V] [\-speedunits\ {[mph]\ |\ [kph]\ |\ [knots]}] [\-altunits\ {[feet]\ |\ [meters]}] [\-l\ [[d]\ |\ [m]\ |\ [s]]] [\-m] [\-s] [\fIserver\fR [\fI:port\fR [\fI:device\fR]]]
+.HP \w'\fBlcdgps\fR\ 'u
+\fBlcdgps\fR [\-h] [\-V] [\-l\ [[d]\ |\ [m]\ |\ [s]]] [\-u\ [[i]\ |\ [n]\ |\ [m]]] [\fIserver\fR [\fI:port\fR [\fI:device\fR]]]
+.HP \w'\fBgpxlogger\fR\ 'u
 \fBgpxlogger\fR
-.HP 10
-\fBgpxlogger\fR [\-h] [\-V] [\-j] [\-i\ \fItrack\ timeout\fR] [\fIserver\fR [\fI:port\fR [\fI:device\fR]]]
+.HP \w'\fBgpxlogger\fR\ 'u
+\fBgpxlogger\fR [\-h] [\-V] [\-i\ \fItrack\ timeout\fR] [\fIserver\fR [\fI:port\fR [\fI:device\fR]]]
 .SH "DESCRIPTION"
 .PP
 These are the demonstration clients shipped with
@@ -39,13 +47,12 @@ The
 option causes each client to dump the package version and exit\&.
 .PP
 The
-\fB\-j\fR
-option, where present, tells the daemon to hold fix data across cycles, eliminating jitter from NMEA devices that emit several partial reports\&. The downside is that with this switch on the client will occasionally report stale or invalid data held over from a previous cycle\&. This option is ineffective, and not needed, on SiRFs and most other non\-NMEA GPSes\&. See also the discussion of the J command in
-\fBgpsd\fR(8)\&.
-.PP
-The
 \fB\-l\fR
 option, when present, sets the format of latitude and longitude reports\&. The value \'d\' produces decimal degrees and is the default\&. The value \'m\' produces degrees and decimal minutes\&. The value \'s\' produces degrees, minutes, and decimal seconds\&.
+.PP
+The
+\fB\-d\fR
+option, when present, sets a debug level; it is primarily for usee by GPSD developers\&. It enables various progress messages to standard error\&.
 .PP
 An optional argument to any client may specify a server to get data from; a colon\-separated suffix is taken as a port number\&. If there is a second colon\-separated suffix, that is taken as a device name to be handed to the daemon in an F= command (or equivalent)\&.
 .PP
@@ -99,7 +106,9 @@ Rather than use X resources to determine which units to use,
 cgps
 looks at variables in its environment\&. Here are the variables and values it checks:
 .sp
+.if n \{\
 .RS 4
+.\}
 .nf
     GPSD_UNITS one of: 
               imperial   = miles/feet
@@ -116,7 +125,9 @@ looks at variables in its environment\&. Here are the variables and values it ch
               POSIX      = miles/feet
               [other]    = km/meters
 .fi
+.if n \{\
 .RE
+.\}
 .PP
 cgps
 terminates when you send it a SIGHUP or SIGINT; given default terminal settings this will happen when you type Ctl\-C at it\&. It will also terminate on \'q\'
@@ -166,18 +177,18 @@ option is only meaningful in socket mode and when collecting fixes from an NMEA 
 .SH "AUTHORS"
 .PP
 Remco Treffcorn, Derrick Brashear, Russ Nelson & Eric S\&. Raymond, Jeff Francis (cgps)\&. Amaury Jacquot
-<sxpert@sxpert\&.org>
+sxpert@sxpert\&.org
 & Petter Reinholdtsen
-<pere@hungry\&.com>
+pere@hungry\&.com
 (gpxlogger)\&. Chris Kuethe
-<chris\&.kuethe@gmail\&.com>
+chris\&.kuethe@gmail\&.com
 (cgpxlogger)\&.
 .PP
 This manual page by Eric S\&. Raymond
-<esr@thyrsus\&.com>\&. There is a project page, with
+esr@thyrsus\&.com\&. There is a project page, with
 xgps
 screenshots, at
-\fIberlios\&.de\fR\&[1]\&.
+\m[blue]\fBberlios\&.de\fR\m[]\&\s-2\u[1]\d\s+2\&.
 .SH "NOTES"
 .IP " 1." 4
 berlios.de

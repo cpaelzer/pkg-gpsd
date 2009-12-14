@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: crc24q.c 4794 2008-08-03 16:42:57Z ckuethe $ */
 /*
  * This is an implementation of the CRC-24Q cyclic redundancy checksum
  * used by Qualcomm, RTCM104V3, and PGP 6.5.1. According to the RTCM104V3

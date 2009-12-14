@@ -1,3 +1,22 @@
+gpsd (2.90-2) unstable; urgency=low
+
+  * Upload to unstable.
+    This will also fix the following issues:
+    - gpsd doesn't support pipelining (Closes: #488913)
+    - FTBFS with binutils-gold (Closes: #554739) 
+
+ -- Bernd Zeimetz <bzed@debian.org>  Tue, 08 Dec 2009 13:51:27 +0100
+
+gpsd (2.90-1) experimental; urgency=low
+
+  * New upstream release.
+  * [bb9c3eb5] Add Conflicts: fso-gpsd to libgps19. fso-gpsd is a mess
+    and not supported.
+  * [4b2d3b57] Merge commit 'upstream/2.90'
+  * [fdad4622] Work around --disable-python not being available anymore.
+
+ -- Bernd Zeimetz <bzed@debian.org>  Mon, 07 Dec 2009 11:13:14 +0100
+
 gpsd (2.90~svn6694-1) experimental; urgency=low
 
   * SVN snapshot.

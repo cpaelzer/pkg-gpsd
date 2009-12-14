@@ -1,30 +1,41 @@
+'\" t
 .\"     Title: gpsmon
-.\"    Author: 
-.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 03/14/2009
-.\"    Manual: 17 Feb 2009
-.\"    Source: 17 Feb 2009
+.\"    Author: [see the "AUTHOR" section]
+.\" Generator: DocBook XSL Stylesheets v1.75.1 <http://docbook.sf.net/>
+.\"      Date: 12/04/2009
+.\"    Manual: [FIXME: manual]
+.\"    Source: [FIXME: source]
+.\"  Language: English
 .\"
-.TH "GPSMON" "1" "03/14/2009" "17 Feb 2009" "17 Feb 2009"
+.TH "GPSMON" "1" "12/04/2009" "[FIXME: source]" "[FIXME: manual]"
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
 .SH "NAME"
-gpsmon \- real-time GPS packet monitor and control utility
+gpsmon \- real\-time GPS packet monitor and control utility
 .SH "SYNOPSIS"
-.HP 7
+.HP \w'\fBgpsmon\fR\ 'u
 \fBgpsmon\fR [\-h] [\-V] [\-F\ \fIcontrol\-socket\fR] [[\ \fIserver\fR\ [\fI:port\fR\ [\fI:device\fR]]\ |\ \fIdevice\fR]] [\-l] [\-D\ \fIdebuglevel\fR]
 .SH "DESCRIPTION"
 .PP
 gpsmon
 is a monitor that watches packets coming from a GPS and displays them along with diagnostic information\&. It supports commands that can be used to tweak GPS settings in various ways; some are device\-independent, some vary with the GPS chipset type\&.
 .PP
+This tool used to be called \'sirfmon\', and worked only on SiRF devices (and the command set has changed to resemble the command switches of
+gpsctl)\&. It now has support for a range of NMEA devices as well; support for other (binary\-protocol) device types is planned\&. It will behave sanely, just dumping packets, when connected to a GPS type it knows nothing about\&.
+.PP
 gpsmon
 differs from a navigation client in that it mostly dumps raw data from the GPS, with only enough data\-massaging to allow checks against expected output\&. In particular, this tool does not do any interpolation or modeling to derive climb/sink or error estimates\&. Nor does it discard altitude reports when the fix quality is too low\&.
 .PP
 gpsmon
-is a designed to run in a terminal emulator with a minimum 25x80 size; the non\-GUI interface is a design choice made to accomodate users operating in constrained environments and over telnet or ssh connections\&. If run in a larger window, the size of the packrty\-log window will be increased to fit\&.
+is a designed to run in a terminal emulator with a minimum 25x80 size; the non\-GUI interface is a design choice made to accomodate users operating in constrained environments and over telnet or ssh connections\&. If run in a larger window, the size of the packet\-log window will be increased to fit\&.
 .PP
 gpsmon
 accepts an \-h option that displays a usage message, or a \-V option to dump the package version and exit\&.
@@ -162,14 +173,19 @@ To interpret what you see, you will need a copy of the
 SiRF Binary Protocol Reference Manual\&.
 .SH "FILES"
 .PP
-\fI/var/run/gpsd\&.sock\fR
+/var/run/gpsd\&.sock
 .RS 4
 The default location of the control socket\&.
 .RE
 .SH "BUGS AND LIMITATIONS"
 .PP
-This tool used to be called \'sirfmon\', and worked only on SiRF devices (and the command set has changed to resemble the command switches of
-gpsctl)\&. It now has support for a range of NMEA devices as well; support for other (binary\-protocol) device types is planned\&. It will behave sanely, just dumping packets, when connected to a GPS type it knows nothing about\&.
+If you run
+gpsmon
+in client mode, and kill the daemon while
+gpsmon
+is still running,
+gpsmon
+will hang\&. Don\'t do that\&.\&.\&.
 .SH "SEE ALSO"
 .PP
 
@@ -185,9 +201,9 @@ gpsctl)\&. It now has support for a range of NMEA devices as well; support for o
 .SH "AUTHOR"
 .PP
 Eric S\&. Raymond
-<esr@thyrsus\&.com>\&. This code is part of the gpsd toolset; there is a project page for
+esr@thyrsus\&.com\&. This code is part of the gpsd toolset; there is a project page for
 gpsd
-\fIhere\fR\&[1]\&.
+\m[blue]\fBhere\fR\m[]\&\s-2\u[1]\d\s+2\&.
 .SH "NOTES"
 .IP " 1." 4
 here

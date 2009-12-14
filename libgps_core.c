@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: libgps_core.c 6692 2009-12-03 15:01:37Z esr $ */
 /* libgps.c -- client interface library for the gpsd daemon */
 #include <sys/time.h>
 #include <stdio.h>

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: driver_sirf.c 6688 2009-12-03 08:41:20Z esr $ */
 /*
  * This is the gpsd driver for SiRF GPSes operating in binary mode.
  * It also handles uBlox, a SiRF derivative.

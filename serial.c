@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: serial.c 6660 2009-12-01 20:18:56Z garyemiller $ */
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifndef S_SPLINT_S

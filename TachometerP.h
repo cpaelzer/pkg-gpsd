@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: TachometerP.h 4794 2008-08-03 16:42:57Z ckuethe $ */
 #ifndef _GPSD_TACHOMETERP_H_
 #define _GPSD_TACHOMETERP_H_
 

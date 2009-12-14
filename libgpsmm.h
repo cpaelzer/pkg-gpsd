@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: libgpsmm.h 6615 2009-11-29 04:15:51Z esr $ */
 #ifndef _GPSD_GPSMM_H_
 #define _GPSD_GPSMM_H_
 

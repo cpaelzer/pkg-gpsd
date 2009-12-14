@@ -1,19 +1,27 @@
+'\" t
 .\"     Title: gpsctl
-.\"    Author: 
-.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 03/14/2009
-.\"    Manual: 29 Oct 2006
-.\"    Source: 29 Oct 2006
+.\"    Author: [see the "AUTHOR" section]
+.\" Generator: DocBook XSL Stylesheets v1.75.1 <http://docbook.sf.net/>
+.\"      Date: 12/04/2009
+.\"    Manual: [FIXME: manual]
+.\"    Source: [FIXME: source]
+.\"  Language: English
 .\"
-.TH "GPSCTL" "1" "03/14/2009" "29 Oct 2006" "29 Oct 2006"
+.TH "GPSCTL" "1" "12/04/2009" "[FIXME: source]" "[FIXME: manual]"
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
 .SH "NAME"
 gpsctl \- control the modes of a GPS
 .SH "SYNOPSIS"
-.HP 7
+.HP \w'\fBgpsctl\fR\ 'u
 \fBgpsctl\fR [\-h] [\-b | \-n] [\-x\ \fIcontrol\fR] [\-e] [\-f] [\-l] [\-s\ \fIspeed\fR] [\-t\ \fIdevicetype\fR] [\-D\ \fIdebuglevel\fR] [\-V] [\fIserial\-port\fR]
 .SH "DESCRIPTION"
 .PP
@@ -38,7 +46,7 @@ Put the GPS into binary mode\&. After the GPS resets itself, autobaud to the new
 .PP
 \-c
 .RS 4
-Change the GPS\'s cycle time\&. Units are seconds\&. Note, most GPses have a fixeed cycle time of 1 second\&.
+Change the GPS\'s cycle time\&. Units are seconds\&. Note, most GPSes have a fixed cycle time of 1 second\&.
 .RE
 .PP
 \-e
@@ -144,9 +152,9 @@ SiRF GPSes can only be identified by the success of an attempt to flip them into
 .SH "AUTHOR"
 .PP
 Eric S\&. Raymond
-<esr@thyrsus\&.com>\&. There is a project page for
+esr@thyrsus\&.com\&. There is a project page for
 gpsd
-\fIhere\fR\&[1]\&.
+\m[blue]\fBhere\fR\m[]\&\s-2\u[1]\d\s+2\&.
 .SH "NOTES"
 .IP " 1." 4
 here

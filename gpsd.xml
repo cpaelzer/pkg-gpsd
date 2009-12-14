@@ -1215,7 +1215,7 @@ will assert the VERSION_SET bit in the top-level set member.</para>
 <para>Here's an example:</para>
 
 <programlisting>
-{"class":"VERSION","version":"2.40dev","rev":$Id$,"proto_major":3,"proto_minor":1}
+{"class":"VERSION","version":"2.40dev","rev":$Id: gpsd.xml 6686 2009-12-03 07:43:49Z esr $,"proto_major":3,"proto_minor":1}
 </programlisting>
 
 

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: gpslib.c 4946 2009-01-08 04:10:23Z ckuethe $ */
 /*
  * Python binding for selected libgps library functions
  */

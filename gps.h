@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: gps.h 6692 2009-12-03 15:01:37Z esr $ */
 #ifndef _GPSD_GPS_H_
 #define _GPSD_GPS_H_
 

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: bsd-base64.h 4794 2008-08-03 16:42:57Z ckuethe $ */
 #ifndef _BSD_BASE64_H
 #define _BSD_BASE64_H
 

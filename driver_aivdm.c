@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: driver_aivdm.c 6627 2009-11-30 14:06:17Z esr $ */
 /*
  * Driver for AIS/AIVDM messages.
  *

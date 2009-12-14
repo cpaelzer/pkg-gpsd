@@ -1,5 +1,5 @@
 # Automake description for gpsd
-# $Id$
+# $Id: Makefile.am 6709 2009-12-04 20:41:03Z esr $
 
 CLEANFILES =
 
@@ -375,7 +375,8 @@ endif
 
 noinst_HEADERS = gpsd_config.h \
 	driver_italk.h driver_rtcm2.h driver_superstar2.h \
-	driver_ubx.h gpsmon.h gpsdclient.h json.h gps_json.h
+	driver_ubx.h gpsmon.h gpsdclient.h json.h gps_json.h \
+	revision.h
 
 nodist_include_HEADERS = gpsd.h
 
@@ -485,7 +486,7 @@ splint: gpsd.h packet_names.h
 	@echo "Running splint on test_json test harness..."
 	-splint $(SPLINTOPTS) $(test_json_SOURCES)
 
-# Re-indenting to a uniform style would be nice, and we leave this hear
+# Re-indenting to a uniform style would be nice, and we leave this here
 # as a rough guide to the project style, but it turns out that indent is
 # an excessively blunt instrument.  As of 2.2.10 it doesn't honor -nfca
 # and produces loads of spurious changes to splint directives.  Nor does

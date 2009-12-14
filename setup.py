@@ -1,4 +1,4 @@
-# $Id$
+# $Id: setup.py 6429 2009-11-10 03:13:13Z ckuethe $
 # Creates build/lib.linux-${arch}-${pyvers}/gpspacket.so,
 # where ${arch} is an architecture and ${pyvers} is a Python version.
 

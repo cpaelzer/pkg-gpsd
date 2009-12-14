@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: libgpsd_core.c 6704 2009-12-04 12:56:36Z esr $ */
 /* libgpsd_core.c -- direct access to GPSes on serial or USB devices. */
 #include <sys/time.h>
 #include <sys/ioctl.h>
@@ -41,7 +41,9 @@ int gpsd_switch_driver(struct gps_device_t *session, char* type_name)
 	    gpsd_report(LOG_PROG, "selecting %s driver...\n", (*dp)->type_name);
 	    gpsd_assert_sync(session);
 	    /*@i@*/session->device_type = *dp;
+#ifdef ALLOW_RECONFIGURE
 	    session->gpsdata.dev.mincycle = session->device_type->min_cycle;
+#endif /* ALLOW_RECONFIGURE */
 	    /* reconfiguration might be required */
 	    if (identified && session->device_type->event_hook != NULL)
 		session->device_type->event_hook(session, event_driver_switch);
@@ -654,6 +656,19 @@ gps_mask_t gpsd_poll(struct gps_device_t *session)
 #ifdef TIMING_ENABLE
 	session->d_decode_time = timestamp();
 #endif /* TIMING_ENABLE */
+
+	/*
+	 * Sanity check.  This catches a surprising number of port and
+	 * driver errors, including 32-vs.-64-bit problems.
+	 */
+	/*@+relaxtypes +longunsignedintegral@*/
+	if ((session->gpsdata.set & TIME_SET)!=0) {
+	    if (session->gpsdata.fix.time > time(NULL) + (60 * 60 * 24 * 365))
+		gpsd_report(LOG_ERROR,"date more than a year in the future!\n");
+	    else if (session->gpsdata.fix.time < 0)
+		gpsd_report(LOG_ERROR,"date is negative!\n");
+	}
+	/*@-relaxtypes -longunsignedintegral@*/
 
 	return session->gpsdata.set;
     }

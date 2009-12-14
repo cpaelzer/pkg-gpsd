@@ -1,24 +1,82 @@
+'\" t
 .\"     Title: gpsd
-.\"    Author: 
-.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 03/14/2009
-.\"    Manual: 9 Aug 2004
-.\"    Source: 9 Aug 2004
+.\"    Author: [see the "AUTHORS" section]
+.\" Generator: DocBook XSL Stylesheets v1.75.1 <http://docbook.sf.net/>
+.\"      Date: 12/04/2009
+.\"    Manual: [FIXME: manual]
+.\"    Source: [FIXME: source]
+.\"  Language: English
 .\"
-.TH "GPSD" "8" "03/14/2009" "9 Aug 2004" "9 Aug 2004"
+.TH "GPSD" "8" "12/04/2009" "[FIXME: source]" "[FIXME: manual]"
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
 .SH "NAME"
 gpsd \- interface daemon for GPS receivers
 .SH "SYNOPSIS"
-.HP 5
+.HP \w'\fBgpsd\fR\ 'u
 \fBgpsd\fR [\-F\ \fIcontrol\-socket\fR] [\-S\ \fIlistener\-port\fR] [\-b] [\-l] [\-G] [\-n] [\-N] [\-h] [\-P\ \fIpidfile\fR] [\-D\ \fIdebuglevel\fR] [\-V] [[\fIsource\-name\fR]...]
+.SH "QUICK START"
+.PP
+If you have a GPS attached on the lowest\-numbered USB port of a Linux system, and want to read reports from it on TCP/IP port 2947, it will normally suffice to do this:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+gpsd /dev/ttyUSB0
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+For the lowest\-numbered serial port:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+gpsd /dev/ttyS0
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Change the device number as appropriate if you need to use a different port\&. Command\-line flags enable verbose logging, a control port, and other optional extras but should not be needed for basic operation; the one exception, on very badly designed hardware, might be
+\fB\-b\fR
+(which see)\&.
+.PP
+On Linux systems supporting udev,
+gpsd
+is normally started automatically when a USB plugin event fires (if it is not already running) and is handed the name of the newly active device\&. In that case no invocation is required at all\&.
+.PP
+For your initial tests set your GPS hardware to speak NMEA, as
+gpsd
+is guaranteed to be able to process that\&. If your GPS has a native or binary mode with better perfornance that
+gpsd
+knows how to speak,
+gpsd
+will autoconfigure that mode\&.
+.PP
+You can verify correct operation by first starting
+gpsd
+and then
+xgps, the X windows test client\&.
+.PP
+If you have problems, the GPSD project maintains a
+\m[blue]\fBFAQ\fR\m[]\&\s-2\u[1]\d\s+2
+to assist troubleshooting\&.
 .SH "DESCRIPTION"
 .PP
 gpsd
-is a monitor daemon that watches a TCP/IP port (2947 by default), waiting for applications to request information from GPSes or differential\-GPS radios attached to the host machine\&. Each GPS or radio is expected to be direct\-connected to the host via a USB or RS232C serial port\&. The port may be specified to
+is a monitor daemon that watches a TCP/IP port (2947 by default), waiting for applications to request information from GPSes, differential\-GPS radios, or AIS receivers attached to the host machine\&. Each GPS, DGPS radio, or AIS receiver is expected to be direct\-connected to the host via a USB or RS232C serial port\&. The port may be specified to
 gpsd
 at startup, or it may be set via a command shipped down a local control socket (e\&.g\&. by a USB hotplug script)\&. Given a GPS device by either means,
 gpsd
@@ -38,8 +96,7 @@ effectively hides the differences among the GPS types it supports\&. It also kno
 gpsd
 can use differential\-GPS corrections from a DGPS radio or over the net, from a ground station running a DGPSIP server or a Ntrip broadcaster that reports RTCM\-104 data; this will shrink position errors by roughly a factor of four\&. When
 gpsd
-opens a serial device emitting RTCM\-104, it automatically recognizes this and uses the device as a correction source for all connected GPSes that accept RTCM corrections (this is dependent on the type of the GPS; not all GPSes have the firmware capability to accept RTCM correction packets)\&.
-See
+opens a serial device emitting RTCM\-104, it automatically recognizes this and uses the device as a correction source for all connected GPSes that accept RTCM corrections (this is dependent on the type of the GPS; not all GPSes have the firmware capability to accept RTCM correction packets)\&. See
 the section called \(lqACCURACY\(rq
 and
 the section called \(lqFILES\(rq
@@ -59,7 +116,7 @@ Set TCP/IP port on which to listen for GPSD clients (default is 2947)\&.
 .PP
 \-b
 .RS 4
-Broken\-device\-safety, otherwise known as read\-only mode\&. Some popular bluetooth and USB receivers lock up or become totally inaccessible when probed or reconfigured\&. This switch prevents gpsd from writing to a receiver\&. This means that
+Broken\-device\-safety mode, otherwise known as read\-only mode\&. Some popular bluetooth and USB receivers lock up or become totally inaccessible when probed or reconfigured\&. This switch prevents gpsd from writing to a receiver\&. This means that
 gpsd
 cannot configure the receiver for optimal performance, but it also means that
 gpsd
@@ -84,7 +141,7 @@ control commands supported by that driver\&.
 .PP
 \-n
 .RS 4
-Don\'t wait for a client to connect before polling whatever GPS is associated with it\&. It is thought that some GPSes go to a standby mode (drawing less power) before the host machine asserts DTR, so waiting for the first actual request might save battery power on portable equipment\&. This option is deprecated as it was found to be confusing; gpsd will now always remain connected to the configured receivers\&.
+Don\'t wait for a client to connect before polling whatever GPS is associated with it\&. It is thought that some GPSes go to a standby mode (drawing less power) before the host machine asserts DTR, so waiting for the first actual request might save battery power on portable equipment\&.
 .RE
 .PP
 \-N
@@ -116,31 +173,41 @@ is in the foreground (\-N) or to syslog if in the background\&.
 Dump version and exit\&.
 .RE
 .PP
-Arguments are interpreted as the names of data sources\&. Normally, a data source is the name of a local serial device from which the daemon may expect GPS data\&.
+Arguments are interpreted as the names of data sources\&. Normally, a data source is the device pathname of a local serial device from which the daemon may expect GPS data\&.
 .PP
-A data source name may also be a URL pointing to a specific differential\-GPS service (DGPSIP server or Ntrip broadcaster)\&.If the URL starts with "ntrip://" Ntrip will be used; if the URL starts with "dgpsip://", DGPSIP will be used\&.
-Gpsd
-also defaults to DGPSIP if no protocol is defined\&. For Ntrip services that require authentication, a prefix of the form "username:password@" can be added before the name of the Ntrip broadcaster\&. If a suffix of the service name begins with ":" it is interpreted as a port number, overriding the default IANA\-assigned port of 2101\&. For Ntrip service you also need to specify which stream to use; the stream is given in the form "/streamname"\&. So, an example DGPSIP URL could be "dgpsip://dgpsip\&.example\&.com" and a Ntrip URL could be "ntrip://foo:bar@ntrip\&.example\&.com:80/example\-stream"\&.
+A data source name may also be a URI pointing to a specific network GNSS service (a DGPSIP server or Ntrip broadcaster)\&. If the URI starts with "ntrip://" Ntrip will be used; if the URI starts with "dgpsip://", DGPSIP will be used\&.
+gpsd
+defaults to DGPSIP if no protocol is defined\&. For Ntrip services that require authentication, a prefix of the form "username:password@" can be added before the name of the Ntrip broadcaster\&. If a suffix of the service name begins with ":" it is interpreted as a port number, overriding the default IANA\-assigned port of 2101\&. For Ntrip service you must specify which stream to use; the stream is given in the form "/streamname"\&. !n example DGPSIP URI could be "dgpsip://dgpsip\&.example\&.com" and a Ntrip URI could be "ntrip://foo:bar@ntrip\&.example\&.com:80/example\-stream"\&.
 .PP
 Internally, the daemon maintains a device list holding the pathnames of GPSes known to the daemon\&. Initially, this list is the list of device\-name arguments specified on the command line\&. That list may be empty, in which case the daemon will have no devices on its search list until they are added by a control\-socket command (see
 the section called \(lqGPS DEVICE MANAGEMENT\(rq
 for details on this)\&. Daemon startup will abort with an error if neither any devices nor a control socket are specified\&.
 .PP
-At any given time, each client will be listening to only one of the GPSes on the device list\&. By default, a client\'s device is the one that most recently shipped information to the daemon at the time the client first requests GPS information\&.
+Clients communicate with the dameon via textual request and responses\&. Currently there are two supported protocols, but there may be only one in the future\&. It is a bad idea for applications to speak either protocol directly: rather, they should use the
+libgps
+client library and take appropriate care to conditionalize their code on the major and minor protocol version symbols\&.
+.SH "OLD PROTOCOL"
+.if n \{\
 .sp
+.\}
+.RS 4
 .it 1 an-trap
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-Warning
+.ps +1
+\fBWarning\fR
+.ps -1
+.br
 .PP
-It is planned that the command protocol described below will change radically at API version 4\&. It is a bad idea for applications to speak this protocol directly: rather, they should use the
-libgps
-client library and take appropriate care to conditionalize their code on the major and minor API version symbols\&. See the GPSD project website for more information on the protocol and API change\&.
+\fIDo not rely on being able to use this protocol directly!\fR
+This protocol has run out of command namespace and is not flexible enough to handle report types other than for GPS devices\&. Thus, it is in the process of being replaced by a new, JSON\-based protocol documented in a later section; development on the old protocol has ceased and support for it may be removed at any time after the new one is deemed mature\&.
+.sp .5v
+.RE
 .PP
-The request protocol for
-gpsd
-clients is very simple\&. Each request normally consists of a single ASCII character followed by a newline\&. Case of the request character is ignored\&. Each request returns a line of response text ended by a CR/LF\&. Requests and responses are as follows, with %f standing for a decimal float numeral and %d for decimal integer numeral:
+Under the old protocol, each client will at any given time be listening to only one of the GPSes on the internal device list (this restriction is removed under the new JSON\-based protocol)\&. By default, a client\'s device is the one that most recently shipped information to the daemon at the time the client first requests GPS information\&.
+.PP
+Each request normally consists of a single ASCII character followed by a newline\&. Case of the request character is ignored\&. Each request returns a line of response text ended by a CR/LF\&. Requests and responses are as follows, with %f standing for a decimal float numeral and %d for decimal integer numeral:
 .PP
 Any command other than L, F, K, W=0 or R=0 is considered a request for GPS information and will cause a GPS device to be connected to the client\'s channel\&.
 .PP
@@ -151,9 +218,9 @@ The current altitude as "A=%f", meters above mean sea level\&.
 .PP
 b
 .RS 4
-The B command with no argument returns four fields giving the parameters of the serial link to the GPS as "B=%d %d %c %d"; baud rate, byte size, parity, (N, O or E for no parity, odd, or even) and stop bits (1 or 2)\&.
+The B command with no argument returns four fields giving the parameters of the serial link to the GPS as "B=%d %d %c %d"; baud rate, byte size, parity (N, O or E for no parity, odd, or even) and stop bits (1 or 2)\&.
 .sp
-The command "B=%d" sets the baud rate, not changing parity or stop bits; The command "B=%d [78] [NOE] [12]" (B followed by whiteapace; followed by a numeric speed; followed by one of the digits 7 or 8; followed by whitespace; followed by one of the letters \'N\', \'O\', or \'E\'; followed by whitespace; followed by one of the digits \'1\' or 2\') sets not only speed but word length, parity, and stop bits\&.
+The command "B=%d" sets the baud rate, not changing parity or stop bits; The command "B=%d [78] [NOE] [12]" (B followed by whitespace; followed by a numeric speed; followed by one of the digits 7 or 8; followed by whitespace; followed by one of the letters \'N\', \'O\', or \'E\'; followed by whitespace; followed by one of the digits \'1\' or 2\') sets not only speed but word length, parity, and stop bits\&.
 .sp
 For both forms, watch the response, because it is possible for this to fail if the GPS does not support a speed\-switching command or only supports some combinations of serial modes\&. In case of failure, the daemon and GPS will continue to communicate at the old speed\&. Both forms are rejected if more than one client is attached to the channel\&.
 .sp
@@ -205,9 +272,9 @@ Whether the command is \'f\' or \'f=\' or not, and whether it succeeds or not, t
 .PP
 g
 .RS 4
-With =, accepts a single argument which may have either of the values \'gps\' or \'rtcm104v2\', with case ignored\&. This specifies the type of information the client wants and forces a device assignment\&. Without =, forces a device assignment but doesn\'t force the type\&. This command is optional; if it is not given, the client will be bound to whatever available device the daemon finds first\&.
+With =, accepts a single argument which may have any of the values \'gps\', \'ais\', \'rtcm104v2\', or \'rtcm104v3\' , with case ignored\&. This specifies the type of information the client wants and forces a device assignment\&. Without =, forces a device assignment but doesn\'t force the type\&. This command is optional; if it is not given, the R, W and B commands will bind the client to whatever available device the daemon finds first\&. All other commands require a GPS and will attempt to bind the client to one\&.
 .sp
-This command returns either \'?\' if no device of the specified type(s) could be assigned, otherwise a string (\'GPS\' or \'RTCM104v2\') identifying the kind of information the attached device returns\&.
+This command returns either \'?\' if no device of the specified type(s) could be assigned, otherwise a string (\'GPS\', \'AIS\' or \'RTCM104v2\') identifying the kind of information the attached device returns\&.
 .sp
 (Earlier versions accepted \'RTCM104\' and returned \'RTCM104\' rather than \'RTCM104v2\')
 .RE
@@ -215,15 +282,6 @@ This command returns either \'?\' if no device of the specified type(s) could be
 i
 .RS 4
 Returns a text string identifying the GPS\&. The string may contain spaces and is terminated by CR\-LF\&. This command will return \'?\' at start of session, before the first full packet has been received from the GPS, because its type is not yet known\&.
-.RE
-.PP
-j
-.RS 4
-Get or set buffering policy; this only matters for NMEA devices which report fix data in several separate sentences during the poll cycle (and in particular it
-\fIdoesn\'t\fR
-matter for SiRF chips)\&. The default (j=0) is to clear all fix data at the start of each poll cycle, so until the sentence that reports a given piece of data arrives queries will report ?\&. Setting j=1 will disable this, retaining data from the previous cycle\&. This is a per\-user\-channel bit, not a per\-device one\&. The j=0 setting is hyper\-correct and never displays stale data, but may produce a jittery display; the j=1 setting allows stale data but smooths the display\&.
-.sp
-(At protocol level below 3, there was no J command\&. Note, this command is experimental and its semantics are subject to change\&.)
 .RE
 .PP
 k
@@ -236,7 +294,7 @@ gpsd, followed by a space, followed by a space\-separated list of the device nam
 .PP
 l
 .RS 4
-Returns four fields: the major protocol/API revision number, the minor revision number, the gpsd version, and a list of accepted request letters\&. Note: earlier versions of this command returned only three fields, omitting the minor revision number\&.
+Returns four fields: the major protocol revision number, the minor protocol revision number, the gpsd version, and a list of accepted request letters\&. Note: earlier versions of this command returned only three fields, omitting the minor protocol revision number\&.
 .RE
 .PP
 m
@@ -345,8 +403,7 @@ reported only the first three DOP numbers, omitting time DOP and total DOP\&.
 .PP
 r
 .RS 4
-Sets or toggles \'raw\' mode\&. Return "R=0" or "R=1" or "R=2"\&. In raw mode you read the NMEA data stream from each GPS\&. (Non\-NMEA GPSes get their communication format translated to NMEA on the fly\&.) If the device is a source of RTCM\-104 corrections, the corrections are dumped in the textual format described in
-\fBrtcm104\fR(5)\&.
+Sets or toggles \'raw\' mode\&. Return "R=0" or "R=1" or "R=2"\&. In raw mode you read the NMEA data stream from each GPS\&. (Non\-NMEA GPSes get their communication format translated to NMEA on the fly\&.)
 .sp
 The command \'r\' immediately followed by the digit \'1\' or the plus sign \'+\' sets raw mode\&. The command \'r\' immediately followed by the digit \'2\' sets super\-raw mode; for non\-NMEA (binary) GPSes or RTCM\-104 sources this dumps the raw binary packet\&. The command \'r\' followed by the digit \'0\' or the minus sign \'\-\' clears raw mode\&. The command \'r\' with neither suffix toggles raw mode\&.
 .sp
@@ -384,31 +441,21 @@ Sets or toggles \'watcher\' mode (see the description below)\&. Return "W=0" or 
 .PP
 x
 .RS 4
-Returns "X=0" if the GPS is offline, "X=%f" if online; in the latter case, %f is a timestamp from when the last sentence was received\&.
+Returns "X=0" if the GPS is offline, "X=%f" if online; in the latter case, %f is a timestamp from when the device was activated or the last sentence was received\&.
 .sp
 (At protocol level 1, the nonzero response was always 1\&.)
 .RE
 .PP
 y
 .RS 4
-Returns Y=, followed by a sentence tag, followed by a timestamp (seconds since the Unix epoch, UTC) and a count not more than 12, followed by that many quintuples of satellite PRNs, elevation/azimuth pairs (elevation an integer formatted as %d in range 0\-90, azimuth an integer formatted as %d in range 0\-359), signal strengths in decibels, and 1 or 0 according as the satellite was or was not used in the last fix\&. Each number is followed by one space\&.
+Returns Y=, followed by a sentence tag, followed by a timestamp (seconds since the Unix epoch, UTC) and a count, followed by that many quintuples of satellite PRNs, elevation/azimuth pairs (elevation an integer formatted as %d in range 0\-90, azimuth an integer formatted as %d in range 0\-359), signal strengths in decibels, and 1 or 0 according as the satellite was or was not used in the last fix\&. Each number is followed by one space\&. The count field was formerly limited 12 \- this is no longer the case, since receivers with more than 12 channels are common and there are enough satellites in orbit to have more than 12 usable\&.
 .sp
 (At protocol level 1, this response had no tag or timestamp\&.)
 .RE
 .PP
-z
-.RS 4
-The Z command returns daemon profiling information of interest to
-gpsd
-developers\&. The format of this string is subject to change without notice\&.
-.RE
+The "J" command present in earlier version of the protocol is now ignored and a no\-op\&. Internal changes in the daemon (which can now detect the end of a fix\-reporting cycle reliably) have made it unnecessary)\&.
 .PP
-$
-.RS 4
-The $ command returns daemon profiling information of interest to
-gpsd
-developers\&. The format of this string is subject to change without notice\&.
-.RE
+The "Z" command and "$" response, previously documented only with a warning that they were subject to change without notice, have been removed\&.
 .PP
 Note that a response consisting of just ? following the = means that there is no valid data available\&. This may mean either that the device being queried is offline, or (for position/velocity/time queries) that it is online but has no fix\&.
 .PP
@@ -420,7 +467,9 @@ Every
 gpsd
 reply will start with the string "GPSD" followed by the replies\&. Examples:
 .sp
+.if n \{\
 .RS 4
+.\}
 .nf
       query:       "p\en"
       reply:       "GPSD,P=36\&.000000 123\&.000000\er\en"
@@ -431,33 +480,1135 @@ reply will start with the string "GPSD" followed by the replies\&. Examples:
       query:       "va\en"
       reply:       "GPSD,V=0\&.000000,A=37\&.900000\er\en"
 .fi
+.if n \{\
 .RE
-.PP
-When clients are active but the GPS is not responding,
-gpsd
-will spin trying to open the GPS device once per second\&. Thus, it can be left running in background and survive having a GPS repeatedly unplugged and plugged back in\&. When it is properly installed along with hotplug notifier scripts feeding it device\-add commands,
-gpsd
-should require no configuration or user action to find devices\&.
+.\}
 .PP
 The recommended mode for clients is watcher mode\&. In watcher mode
 gpsd
-ships a line of data to the client each time the GPS gets either a fix update or a satellite picture, but rather than being raw NMEA the line is a gpsd \'o\' or \'y\' response\&. Additionally, watching clients get notifications in the form X=0 or X=%f when the online/offline status of the GPS changes, and an I response giving the device type when the user is assigned a device\&.
+ships a line of data to the client each time the GPS gets either a fix update or a satellite picture, but rather than being raw NMEA the line is a gpsd \'o\' or \'y\' response\&. If the device is a source of RTCM\-104 corrections, the corrections are dumped in the Sager dump format described in
+\fBrtcm104\fR(5)\&.
+Additionally, watching clients get notifications in the form X=0 or X=%f when the online/offline status of the GPS changes, and an I response giving the device type when the user is assigned a device\&.
+.SH "NEW PROTOCOL"
 .PP
-Clients should be prepared for the possibility that additional fields (such as heading or roll/pitch/yaw) may be added to the O command, and not treat the occurrence of extra fields as an error\&. The protocol number will be incremented if and when such fields are added\&.
+The new GPSD protocol is built on top of JSON, JaveScript Object Notation\&. Use of this metaprotocol to pass structured data between daemon and client avoids the non\-extensibility problems of the old protocol, and permits a richer set of record types to be passed up to clients\&.
 .PP
-Sending SIGHUP to a running
+A request line is introduced by "?" and may include multiple commands\&. Commands begin with a command identifier, followed either by a terminating \';\' or by an equal sign "=" and a JSON object treated as an argument\&. Any \';\' or newline indication (either LF or CR\-LF) after the end of a command is ignored\&. All request lines must be composed of US\-ASCII characters and may be no more than 80 characters in length, exclusive of the trailing newline\&.
+.PP
+Responses are JSON objects all of which have a "class" attribute the value of which is either the name of the invoking command or one of the strings "DEVICE" or "ERROR"\&. Their length limit is 1024 characters, including trailing newline\&.
+.PP
+Here are the most important responses:
+.PP
+TPV
+.RS 4
+A TPV object is a time\-position\-velocity report\&. The "class" and "mode" fields will reliably be present\&. Others may be reported or not depending on the fix quality\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&1.\ \&TPV object
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Name
+T}:T{
+Always?
+T}:T{
+Type
+T}:T{
+Description
+T}
+.T&
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l.
+T{
+class
+T}:T{
+Yes
+T}:T{
+string
+T}:T{
+Fixed: "TPV"
+T}
+T{
+tag
+T}:T{
+No
+T}:T{
+string
+T}:T{
+Type tag associated with this GPS sentence; from an NMEA
+	device this is just the NMEA sentence type\&.\&.
+T}
+T{
+device
+T}:T{
+No
+T}:T{
+string
+T}:T{
+Name of originating device
+T}
+T{
+time
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Seconds since the Unix epoch, UTC\&. May have a
+	fractional part of up to \&.01sec precision\&.
+T}
+T{
+ept
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Estimated timestamp error (%f, seconds, 95% confidence)\&.
+T}
+T{
+lat
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Latitude in degrees: +/\- signifies West/East
+T}
+T{
+lon
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Longitude in degrees: +/\- signifies North/South\&.
+T}
+T{
+alt
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Altitude in meters\&.
+T}
+T{
+epx
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Longitude error estimate in meters, 95% confidence\&.
+T}
+T{
+epy
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Latitude error estimate in meters, 95% confidence\&.
+T}
+T{
+epv
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Estimated vertical error in meters, 95% confidence\&.
+T}
+T{
+track
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Course over ground, degrees from true north\&.
+T}
+T{
+speed
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Speed over ground, meters per second\&.
+T}
+T{
+climb
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Climb (positive) or sink (negative) rate, meters per 
+	second\&.
+T}
+T{
+epd
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Direction error estinmate in degrees, 95% confifdence\&.
+T}
+T{
+eps
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Speed error estinmate in meters/sec, 95% confifdence\&.
+T}
+T{
+epc
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Climb/sink error estinmate in meters/sec, 95% confifdence\&.
+T}
+T{
+mode
+T}:T{
+Yes
+T}:T{
+numeric
+T}:T{
+NMEA mode: %d, 0=no mode value yet seen, 1=no fix, 2=2D, 3=3D\&.
+T}
+.TE
+.sp 1
+When the C client library parses a response of this kind, it will assert validity bits in the top\-level set member for each field actrually received; see gps\&.h for bitmask names and values\&.
+.sp
+Here\'s an example:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+{"class":"TPV","tag":"MID2","device":"/dev/pts/1",
+    "time":1118327688\&.280,"ept":0\&.005,
+    "lat":46\&.498293369,"lon":7\&.567411672,"alt":1343\&.127, 
+    "eph":36\&.000,"epv":32\&.321,
+    "track":10\&.3788,"speed":0\&.091,"climb":\-0\&.085,"mode":3}
+.fi
+.if n \{\
+.RE
+.\}
+.RE
+.PP
+SKY
+.RS 4
+A SKY object reports a sky view of the GPS satellite positions\&. If there is no GPS device available, or no skyview has been reported yet, only the "class" field will reliably be present\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&2.\ \&SKY object
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Name
+T}:T{
+Always?
+T}:T{
+Type
+T}:T{
+Description
+T}
+.T&
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l.
+T{
+class
+T}:T{
+Yes
+T}:T{
+string
+T}:T{
+Fixed: "SKY"
+T}
+T{
+tag
+T}:T{
+No
+T}:T{
+string
+T}:T{
+Type tag associated with this GPS sentence; from an NMEA
+	device this is just the NMEA sentence type\&.\&.
+T}
+T{
+device
+T}:T{
+No
+T}:T{
+string
+T}:T{
+Name of originating device
+T}
+T{
+time
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Seconds since the Unix epoch, UTC\&. May have a
+	fractional part of up to \&.01sec precision\&.
+T}
+T{
+xdop
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Longitudinal dilution of precision, a dimensionsless
+	factor which should be multiplied by a base UERE to get an
+	error estimate\&.
+T}
+T{
+ydop
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Latitudinal dilution of precision, a dimensionsless
+	factor which should be multiplied by a base UERE to get an
+	error estimate\&.
+T}
+T{
+vdop
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Altitude dilution of precision, a dimensionsless
+	factor which should be multiplied by a base UERE to get an
+	error estimate\&.
+T}
+T{
+tdop
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Time dilution of precision, a dimensionsless
+	factor which should be multiplied by a base UERE to get an
+	error estimate\&.
+T}
+T{
+hdop
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Horizontal dilution of precision, a dimensionsless
+	factor which should be multiplied by a base UERE to get a
+	circular error estimate\&.
+T}
+T{
+pdop
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Spherical dilution of precision, a dimensionsless
+	factor which should be multiplied by a base UERE to get an
+	error estimate\&.
+T}
+T{
+gdop
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Hyperspherical dilution of precision, a dimensionsless
+	factor which should be multiplied by a base UERE to get an
+	error estimate\&.
+T}
+T{
+xdop
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Longitudinal dilution of precision, a dimensionsless
+	factor which should be multiplied by a base UERE to get an
+	error estimate\&.
+T}
+T{
+satellites
+T}:T{
+Yes
+T}:T{
+list
+T}:T{
+List of satellite objects in skyview
+T}
+.TE
+.sp 1
+Many devices compute dilution of precision factors but do nit include them in their reports\&. Many that do report DOPs report only HDOP, two\-dimensial circular error\&.
 gpsd
-forces it to close all GPSes and all client connections\&. It will then attempt to reconnect to any GPSes on its device list and resume listening for client connections\&. This may be useful if your GPS enters a wedged or confused state but can be soft\-reset by pulling down DTR\&.
+always passes through whatever the device actually reports, then attempts to fill in other DOPs by calculating the appropriate determinants in a covariance matrix based on the satellite view\&. DOPs may be missing if some of these determinants are singular\&. It can even happen that the device reports an error estimate in meters when the correspoding DOP is unavailable; some devices use more sophisticated error modeling than the covariance calculation\&.
+.sp
+The satellite list objects have the following elements:
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&3.\ \&Satellite object
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Name
+T}:T{
+Always?
+T}:T{
+Type
+T}:T{
+Description
+T}
+.T&
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l.
+T{
+PRN
+T}:T{
+Yes
+T}:T{
+numeric
+T}:T{
+PRN ID of the satellite
+T}
+T{
+az
+T}:T{
+Yes
+T}:T{
+numeric
+T}:T{
+Azimuth, degrees from true north\&.
+T}
+T{
+el
+T}:T{
+Yes
+T}:T{
+numeric
+T}:T{
+Elevation in degrees\&.
+T}
+T{
+ss
+T}:T{
+Yes
+T}:T{
+numeric
+T}:T{
+Signal strength in dB\&.
+T}
+T{
+used
+T}:T{
+Yes
+T}:T{
+boolean
+T}:T{
+Used in current solution?
+T}
+.TE
+.sp 1
+Note that satellite objects do not have a "class" field\&.\&., as they are never shipped outside of a SKY object\&.
+.sp
+When the C client library parses a SKY response, it will assert the SATELLITE_SET bit in the top\-level set member\&.
+.sp
+Here\'s an example:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+{"class":"SKY","tag":"MID2","device":"/dev/pts/1","time":1118327688\&.280
+    "xdop":1\&.55,"hdop":1\&.24,"pdop":1\&.99,
+    "satellites":[
+        {"PRN":23,"el":6,"az":84,"ss":0,"used":false},
+        {"PRN":28,"el":7,"az":160,"ss":0,"used":false},
+        {"PRN":8,"el":66,"az":189,"ss":44,"used":true},
+        {"PRN":29,"el":13,"az":273,"ss":0,"used":false},
+        {"PRN":10,"el":51,"az":304,"ss":29,"used":true},
+        {"PRN":4,"el":15,"az":199,"ss":36,"used":true},
+        {"PRN":2,"el":34,"az":241,"ss":43,"used":true},
+        {"PRN":27,"el":71,"az":76,"ss":43,"used":true}]}
+.fi
+.if n \{\
+.RE
+.\}
+.RE
+.PP
+And here are the commands:
+.PP
+?VERSION;
+.RS 4
+Returns an object with the following attributes:
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&4.\ \&VERSION object
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Name
+T}:T{
+Always?
+T}:T{
+Type
+T}:T{
+Description
+T}
+.T&
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l.
+T{
+class
+T}:T{
+Yes
+T}:T{
+string
+T}:T{
+Fixed: "VERSION"
+T}
+T{
+release
+T}:T{
+Yes
+T}:T{
+string
+T}:T{
+Public release level
+T}
+T{
+rev
+T}:T{
+Yes
+T}:T{
+string
+T}:T{
+Internal revision\-control level\&.
+T}
+T{
+proto_major
+T}:T{
+Yes
+T}:T{
+numeric
+T}:T{
+API major revision level\&.\&.
+T}
+T{
+proto_minor
+T}:T{
+Yes
+T}:T{
+numeric
+T}:T{
+API minor revision level\&.\&.
+T}
+.TE
+.sp 1
+The daemon ships a VERSION response to each client when the client first connects to it\&.
+.sp
+When the C client library parses a response of this kind, it will assert the VERSION_SET bit in the top\-level set member\&.
+.sp
+Here\'s an example:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+{"class":"VERSION","version":"2\&.40dev","rev":$Id: gpsd\&.xml 6686 2009\-12\-03 07:43:49Z esr $,"proto_major":3,"proto_minor":1}
+.fi
+.if n \{\
+.RE
+.\}
+.RE
+.PP
+?DEVICES;
+.RS 4
+Returns a device list object with the following elements:
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&5.\ \&DEVICES object
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Name
+T}:T{
+Always?
+T}:T{
+Type
+T}:T{
+Description
+T}
+.T&
+l l l l
+l l l l.
+T{
+class
+T}:T{
+Yes
+T}:T{
+string
+T}:T{
+Fixed: "DEVICES"
+T}
+T{
+devices
+T}:T{
+Yes
+T}:T{
+list
+T}:T{
+List of device descriptions
+T}
+.TE
+.sp 1
+When the C client library parses a response of this kind, it will assert the DEVICELIST_SET bit in the top\-level set member\&.
+.sp
+Here\'s an example:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+{"class"="DEVICES","devices":[
+    {"class":"DEVICE","path":"/dev/pts/1","flags":1,"driver":"SiRF binary"},
+    {"class":"DEVICE","path":"/dev/pts/3","flags":4,"driver":"AIVDM"}]}
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+The daemon occasionally ships a bare DEVICE object to the client (that is, one not inside a DEVICES wrapper)\&. The data content of these objects will be described later in the section covering notifications\&.
+.RE
+.PP
+?WATCH
+.RS 4
+This command sets watcher mode\&. It also sets or elicits a report of per\-subscriber buffering policy and the raw bit\&. An argument WATCH object changes the subscriber\'s policy\&. The respunce describes the subscriber\'s policy\&. The response will also include a DEVICES object\&.
+.sp
+A WATCH object has the following elements:
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&6.\ \&WATCH object
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Name
+T}:T{
+Always?
+T}:T{
+Type
+T}:T{
+Description
+T}
+.T&
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l.
+T{
+class
+T}:T{
+Yes
+T}:T{
+string
+T}:T{
+Fixed: "WATCH"
+T}
+T{
+enable
+T}:T{
+No
+T}:T{
+boolean
+T}:T{
+Eanable (true) or disable (false) watcher mode\&. Default
+	is true\&.
+T}
+T{
+json
+T}:T{
+No
+T}:T{
+boolean
+T}:T{
+Enable (true) or disable (false) dumping of JSON reports\&.
+	Default is false\&.
+T}
+T{
+nmea
+T}:T{
+No
+T}:T{
+boolean
+T}:T{
+Enable (true) or disable (false) dumping of binary
+	packets as pseudo\-NMEA\&. Default
+	is false\&.
+T}
+T{
+raw
+T}:T{
+No
+T}:T{
+integer
+T}:T{
+Controls \'raw\' mode\&. When this attribute is set to 1
+	for a channel, gpsd reports the
+	unprocessed NMEA or AIVDM data stream from whatever device is attached\&.
+	Binary GPS packets are hex\-dumped\&.  RTCM2 and RTCM3
+        packets are not dumped in raw mode\&.
+T}
+T{
+scaled
+T}:T{
+No
+T}:T{
+boolean
+T}:T{
+If true, apply scaling divisors to output before
+	dumping; default is false\&. Applies only to AIS reports\&.
+T}
+T{
+device
+T}:T{
+No
+T}:T{
+string
+T}:T{
+If present, enable watching only of the specified device
+	rather than all devices\&.  Useful with raw and NMEA modes
+	in which device responses aren\'t tagged\&. Has no effect when
+	used with enable:false\&.
+T}
+.TE
+.sp 1
+There is an additional boolean "timing" attribute which is undodumented because that portion of the interface is considered unstable and for developer use only\&.
+.sp
+In watcher mode, GPS reports are dumpred as TPV and SKY responses\&. If the device is a source of RTCM2 corrections, the corrections are dumped in the JSON format described in
+\fBrtcm104\fR(5)\&. If the device is a source of AIS data, AIS packets are dumped in JSON form with each field (other than padding fields) dumped as an integer or string, whichever is appropriate\&.
+.sp
+When the C client library parses a response of this kind, it will assert the POLICY_SET bit in the top\-level set member\&.
+.sp
+Here\'s an example:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+{"class":"WATCH", "raw":1,"scaled":true}
+.fi
+.if n \{\
+.RE
+.\}
+.RE
+.PP
+?DEVICE
+.RS 4
+This command reports (when followed by \';\') the state of a device, or sets (when followed by \'=\' and a DEVICE object) device\-specific control bits, notably the device\'s speed and serial mode and the native\-mode bit\&. The parameter\-setting form will be rejected if more than one client is attached to the channel\&.
+.sp
+Pay attention to the response, because it is possible for this command to fail if the GPS does not support a speed\-switching command or only supports some combinations of serial modes\&. In case of failure, the daemon and GPS will continue to communicate at the old speed\&.
+.sp
+Use the parameter\-setting form with caution\&. On USB and Bluetooth GPSes it is also possible for serial mode setting to fail either because the serial adaptor chip does not support non\-8N1 modes or because the device firmware does not properly synchronize the serrial adaptor chip with the UART on the GPS chipset whjen the speed changes\&. These failures can hang your device, possibly requiring a GPS power cycle or (in extreme cases) physically disconnecting the NVRAM backup battery\&.
+.sp
+A DEVICE object has the following elements:
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&7.\ \&CONFIGCHAN object
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Name
+T}:T{
+Always?
+T}:T{
+Type
+T}:T{
+Description
+T}
+.T&
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l.
+T{
+class
+T}:T{
+Yes
+T}:T{
+string
+T}:T{
+Fixed: "DEVICE"
+T}
+T{
+path
+T}:T{
+No
+T}:T{
+string
+T}:T{
+Name the device for which the control bits are
+	being reported, or for which they are to be applied\&. This 
+        attribute may be omitted only when there is exactly one 
+        subscribed channel\&.
+T}
+T{
+activated
+T}:T{
+At device activation and device close time\&.
+T}:T{
+numeric
+T}:T{
+Time the device was activated, 
+	or 0 if it is being closed\&.
+T}
+T{
+flags
+T}:T{
+No
+T}:T{
+integer
+T}:T{
+Bit vector of property flags\&.  Currently defined flags are:
+        describe packet types seen so far (GPS, RTCM2, RTCM3,
+	AIS)\&. Won\'t be reported if empty, e\&.g\&. before
+	gpsd has seen identifiable packets
+	from the device\&.
+T}
+T{
+driver
+T}:T{
+No
+T}:T{
+string
+T}:T{
+GPSD\'s name for the device driver type\&. Won\'t be reported before
+	gpsd has seen identifiable packets
+	from the device\&.
+T}
+T{
+subtype
+T}:T{
+When the daemon sees a delayed response to a probe for
+	subtype or firmware\-version information\&.
+T}:T{
+string
+T}:T{
+Whatever version information the device returned\&.
+T}
+T{
+bps
+T}:T{
+No
+T}:T{
+integer
+T}:T{
+Device speed in bits per second\&.
+T}
+T{
+parity
+T}:T{
+Yes
+T}:T{
+string
+T}:T{
+N, O or E for no parity, odd, or even\&.
+T}
+T{
+stopbits
+T}:T{
+Yes
+T}:T{
+string
+T}:T{
+Stop bits (1 or 2)\&.
+T}
+T{
+native
+T}:T{
+No
+T}:T{
+integer
+T}:T{
+0 means NMEA mode and 1 means
+	alternate mode (binary if it has one, for SiRF and Evermore chipsets
+	in particular)\&. Attempting to set this mode on a non\-GPS
+	device will yield an error\&.
+T}
+T{
+cycle
+T}:T{
+No
+T}:T{
+real
+T}:T{
+Device cycle time in seconds\&.
+T}
+T{
+mincycle
+T}:T{
+No
+T}:T{
+real
+T}:T{
+Device minimum cycle time in seconds\&. Reported from 
+	?CONFIGDEV when (and only when) the rate is switchable\&. It is 
+	read\-only and not settable\&.
+T}
+.TE
+.sp 1
+The contents of the flags field should be interpreted as follows:
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&8.\ \&Device flags
+.TS
+allbox tab(:);
+lB lB lB.
+T{
+C #define
+T}:T{
+Value
+T}:T{
+Description
+T}
+.T&
+l l l
+l l l
+l l l
+l l l.
+T{
+SEEN_GPS
+T}:T{
+0x01
+T}:T{
+GPS data has been seen on this device
+T}
+T{
+SEEN_RTCM2
+T}:T{
+0x02
+T}:T{
+RTCM2 data has been seen on this device
+T}
+T{
+SEEN_RTCM3
+T}:T{
+0x04
+T}:T{
+RTCM3 data has been seen on this device
+T}
+T{
+SEEN_AIS
+T}:T{
+0x08
+T}:T{
+GPS data has been seen on this device
+T}
+.TE
+.sp 1
+When the C client library parses a response of this kind, it will assert the DEVICE_SET bit in the top\-level set member\&.
+.sp
+Here\'s an example:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+{"class":"DEVICE", "speed":4800,"serialmode":"8N1","native":0}
+.fi
+.if n \{\
+.RE
+.\}
+.RE
+.PP
+When a client is in watcher mode, the daemon will ship it DEVICE notifications when a device is added to the pool or deactivated\&.
+.PP
+When the C client library parses a response of this kind, it will assert the DEVICE_SET bit in the top\-level set member\&.
+.PP
+Here\'s an example:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+{"class":"DEVICE","path":"/dev/pts1","activated":0}
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+The daemon may ship an error object in response to a syntactically invalid command line or unknown command\&. It has the following elements:
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&9.\ \&ERROR notification object
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Name
+T}:T{
+Always?
+T}:T{
+Type
+T}:T{
+Description
+T}
+.T&
+l l l l
+l l l l.
+T{
+class
+T}:T{
+Yes
+T}:T{
+string
+T}:T{
+Fixed: "ERROR"
+T}
+T{
+message
+T}:T{
+Yes
+T}:T{
+string
+T}:T{
+Textual error message
+T}
+.TE
+.sp 1
+.PP
+Here\'s an example:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+{"class":"ERROR","message":"Unrecognized request \'?FOO\'"}
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+When the C client library parses a response of this kind, it will assert the ERR_SET bit in the top\-level set member\&.
 .SH "GPS DEVICE MANAGEMENT"
 .PP
 gpsd
 maintains an internal list of GPS devices\&. If you specify devices on the command line, the list is initialized with those pathnames; otherwise the list starts empty\&. Commands to add and remove GPS device paths from the daemon\'s device list must be written to a local Unix\-domain socket which will be accessible only to programs running as root\&. This control socket will be located wherever the \-F option specifies it\&.
 .PP
+When
+gpsd
+is properly installed along with hotplug notifier scripts feeding it device\-add commands over the control socket,
+gpsd
+should require no configuration or user action to find devices\&.
+.PP
+Sending SIGHUP to a running
+gpsd
+forces it to close all GPSes and all client connections\&. It will then attempt to reconnect to any GPSes on its device list and resume listening for client connections\&. This may be useful if your GPS enters a wedged or confused state but can be soft\-reset by pulling down DTR\&.
+.PP
 To point
 gpsd
 at a device that may be a GPS, write to the control socket a plus sign (\'+\') followed by the device name followed by LF or CR\-LF\&. Thus, to point the daemon at
-\fI/dev/foo\fR\&. send "+/dev/foo\en"\&. To tell the daemon that a device has been disconnected and is no longer available, send a minus sign (\'\-\') followed by the device name followed by LF or CR\-LF\&. Thus, to remove
-\fI/dev/foo\fR
+/dev/foo\&. send "+/dev/foo\en"\&. To tell the daemon that a device has been disconnected and is no longer available, send a minus sign (\'\-\') followed by the device name followed by LF or CR\-LF\&. Thus, to remove
+/dev/foo
 from the search list\&. send "\-/dev/foo\en"\&.
 .PP
 To send a control string to a specified device, write to the control socket a \'!\', followed by the device name, followed by \'=\', followed by the control string\&.
@@ -480,7 +1631,7 @@ These errors are intrinsic to the design and physics of the GPS system\&.
 gpsd
 does its internal computations at sufficient accuracy that it will add no measurable position error of its own\&.
 .PP
-DGPS correction will reduce UERE by a factor of 4, provided you are within about 100mi (160km) of a DGPS ground station from which you are eceiving corrections\&.
+DGPS correction will reduce UERE by a factor of 4, provided you are within about 100mi (160km) of a DGPS ground station from which you are receiving corrections\&.
 .PP
 On a 4800bps connection, the time latency of fixes provided by
 gpsd
@@ -513,12 +1664,14 @@ ntpd
 has been properly configured to receive this message, it will be used to correct the system clock\&.
 .PP
 Here is a sample
-\fIntp\&.conf\fR
+ntp\&.conf
 configuration stanza telling
 ntpd
 how to read the GPS notfications:
 .sp
+.if n \{\
 .RS 4
+.\}
 .nf
 server 127\&.127\&.28\&.0 minpoll 4 maxpoll 4
 fudge 127\&.127\&.28\&.0 time1 0\&.420 refid GPS
@@ -526,7 +1679,9 @@ fudge 127\&.127\&.28\&.0 time1 0\&.420 refid GPS
 server 127\&.127\&.28\&.1 minpoll 4 maxpoll 4 prefer
 fudge 127\&.127\&.28\&.1 refid GPS1
 .fi
+.if n \{\
 .RE
+.\}
 .PP
 The magic pseudo\-IP address 127\&.127\&.28\&.0 identifies unit 0 of the
 ntpd
@@ -542,24 +1697,32 @@ every 16 seconds and send it to unit 0\&. The number after the parameter time1 i
 .PP
 After restarting ntpd, a line similar to the one below should appear in the output of the command "ntpq \-p" (after allowing a couple of minutes):
 .sp
+.if n \{\
 .RS 4
+.\}
 .nf
 remote	   refid      st t when poll reach  delay    offset  jitter
 =========================================================================
 +SHM(0)	  \&.GPS\&.      0 l   13   16  377    0\&.000    0\&.885   0\&.882
 .fi
+.if n \{\
 .RE
+.\}
 .PP
 If you are running PPS then it will look like this:
 .sp
+.if n \{\
 .RS 4
+.\}
 .nf
 remote	   refid      st t when poll reach  delay    offset  jitter
 =========================================================================
 \-SHM(0)	  \&.GPS\&.      0 l   13   16  377    0\&.000    0\&.885   0\&.882
 *SHM(1)	  \&.GPS1\&.     0 l   11   16  377    0\&.000   \-0\&.059   0\&.006
 .fi
+.if n \{\
 .RE
+.\}
 .PP
 When the value under "reach" remains zero, check that gpsd is running; and some application is connected to it or the \'\-n\' option was used\&. Make sure the receiver is locked on to at least one satellite, and the receiver is in SiRF binary, Garmin binary or NMEA/PPS mode\&. Plain NMEA will also drive ntpd, but the accuracy as bad as one second\&. When the SHM(0) line does not appear at all, check the system logs for error messages from ntpd\&.
 .PP
@@ -580,7 +1743,7 @@ gpsd, if given the \-G flag, will listen for connections from any reachable host
 .PP
 gpsd
 must start up as root in order to open the NTPD shared\-memory segment, open its logfile, and create its local control socket\&. Before doing any processing of GPS data, it tries to drop root privileges by setting its UID to "nobody" (or another userid as set by configure) and its group ID to the group of the initial GPS passed on the command line \(em or, if that device doesn\'t exist, to the group of
-\fI/dev/ttyS0\fR\&.
+/dev/ttyS0\&.
 .PP
 Privilege\-dropping is a hedge against the possibility that carefully crafted data, either presented from a client socket or from a subverted serial device posing as a GPS, could be used to induce misbehavior in the internals of
 gpsd\&. It ensures that any such compromises cannot be used for privilege elevation to root\&.
@@ -617,9 +1780,11 @@ Autobauding on the Trimble GPSes can take as long as 5 seconds if the device spe
 If you are using an NMEA\-only GPS (that is, not using SiRF or Garmin or Zodiac binary mode) and the GPS does not emit GPZDA at the start of its update cycle (which most consumer\-grade NMEA GPSes do not) and it is after 2099, then the century part of the dates
 gpsd
 delivers will be wrong\&.
+.PP
+Generation of position error estimates (eph, epv, epd, eps, epc) from the incomplete data handed back by GPS reporting protocols involves both a lot of mathematical black art and fragile device\-dependent assumptions\&. This code has been bug\-prone in tbe past and problems may still lurk there\&.
 .SH "FILES"
 .PP
-\fI/dev/ttyS0\fR
+/dev/ttyS0
 .RS 4
 Prototype TTY device\&. After startup,
 gpsd
@@ -628,10 +1793,10 @@ sets its group ID to the owner of this device if no GPS device was specified on 
 .SH "APPLICABLE STANDARDS"
 .PP
 The official NMEA protocol standard is available on paper from the
-\fINational Marine Electronics Association\fR\&[1], but is proprietary and expensive; the maintainers of
+\m[blue]\fBNational Marine Electronics Association\fR\m[]\&\s-2\u[2]\d\s+2, but is proprietary and expensive; the maintainers of
 gpsd
 have made a point of not looking at it\&. The
-\fIGPSD website\fR\&[2]
+\m[blue]\fBGPSD website\fR\m[]\&\s-2\u[3]\d\s+2
 links to several documents that collect publicly disclosed information about the protocol\&.
 .PP
 gpsd
@@ -660,15 +1825,20 @@ RTCM Paper 177\-2006\-SC104\-STD\&.
 .SH "AUTHORS"
 .PP
 Remco Treffcorn, Derrick Brashear, Russ Nelson, Eric S\&. Raymond, Chris Kuethe\&. This manual page by Eric S\&. Raymond
-<esr@thyrsus\&.com>\&. There is a project site at
-\fIhere\fR\&[2]\&.
+esr@thyrsus\&.com\&. There is a
+\m[blue]\fBproject site\fR\m[]\&\s-2\u[3]\d\s+2\&.
 .SH "NOTES"
 .IP " 1." 4
+FAQ
+.RS 4
+\%http://gpsd.berlios.de/faq.html
+.RE
+.IP " 2." 4
 National Marine Electronics Association
 .RS 4
 \%http://www.nmea.org/pub/0183/
 .RE
-.IP " 2." 4
+.IP " 3." 4
 GPSD website
 .RS 4
 \%http://gpsd.berlios.de/

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: driver_superstar2.c 6566 2009-11-20 03:51:06Z esr $ */
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>

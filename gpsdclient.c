@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: gpsdclient.c 6185 2009-09-10 18:50:49Z esr $ */
 /* gpsclient.c -- support functions for GPSD clients */
 #include <sys/time.h>
 #include <stdio.h>

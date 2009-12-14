@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: crc24q.h 4794 2008-08-03 16:42:57Z ckuethe $ */
 #ifndef _CRC24Q_H_
 #define _CRC24Q_H_
 

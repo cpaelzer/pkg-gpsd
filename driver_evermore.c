@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: driver_evermore.c 6566 2009-11-20 03:51:06Z esr $ */
 /*
  * This is the gpsd driver for EverMore GPSes operating in binary mode.
  * About the only thing this gives us that NMEA won't is TDOP.

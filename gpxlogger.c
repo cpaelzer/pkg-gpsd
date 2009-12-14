@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: gpxlogger.c 6599 2009-11-25 13:21:01Z esr $ */
 #include <sys/types.h>
 #include <string.h>
 #include <stdlib.h>
@@ -353,7 +353,7 @@ int main (int argc, char** argv)
 			"WARNING: track timeout is an hour or more!\n");
 	    break;
 	case 'V':
-	    (void)fprintf(stderr, "SVN ID: $Id$ \n");
+	    (void)fprintf(stderr, "SVN ID: $Id: gpxlogger.c 6599 2009-11-25 13:21:01Z esr $ \n");
 	    exit(0);
 	default:
  	    usage();

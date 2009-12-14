@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: driver_rtcm3.c 6566 2009-11-20 03:51:06Z esr $ */
 /*****************************************************************************
 
 This is a decoder for RTCM-104 3.x, a serial protocol used for

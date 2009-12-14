@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: driver_superstar2.h 5317 2009-03-02 20:04:36Z ckuethe $ */
 #ifndef _GPSD_SUPERSTAR2_H_
 #define _GPSD_SUPERSTAR2_H_
 

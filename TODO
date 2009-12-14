@@ -1,4 +1,4 @@
-$Id$
+$Id: TODO 6705 2009-12-04 12:59:50Z esr $
 
 This is the gpsd to-do list.  If you're viewing it with Emacs, try
 doing Ctl-C Ctl-t and browsing through the outline headers.  Ctl-C Ctl-a 
@@ -24,20 +24,25 @@ fix the driver yourself and send us the patch, contact Bill Powell
 <bpowell@tntc.com> at True North Technologies and tell him he needs
 to reverse his refusal to send us an eval unit.
 
-*** SiRF 15-second lag
-
-The tendency of SiRF chips to lag real-time by 15 seconds or so
-under some (unexplained) circumstances is still...unexplained. Or,
-rather, we have several different possible explanations and have
-not been able to verify any of them.  Note, this is not properly
-a gpsd problem, but it may well be there is some sort
-of mode switch we should be uttering.
-
 *** Driver issues
-**** uBlox-lea-4h.log.chk: Time value in TPVs looks like garbage.
-**** uBlox-lea-4t.log.chk: ubx driver is dumping garbage values in GSA. 
+
+**** bu303-nofix.log.ck: 
+
+Test returns a bogus altitude (large and negative) on NetBSD 5.0
+i386, but not on Intel 64. This is probably a 32-vs.64-bit port problem.
+
+**** navcom.chk:
+
+This testfile triggers a numeric instability in the sin() and cos() 
+functions inside earth_distance().  The result is that epd is unstable.
 
 ** To do:
+
+*** Ship a DEVICE notification on every driver change
+
+There's a race condition where if you start cgps at just the right
+time while an NMEA device is being probed, it may switch to a binary
+type but never update the type display.
 
 *** Complete and test the speed/parity/stopbit methods in the drivers
 

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: cgps.c 6654 2009-12-01 08:52:02Z esr $ */
 /*
  * Copyright (c) 2005 Jeff Francis <jeff@gritch.org>
  *

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: driver_tsip.c 6550 2009-11-19 09:49:00Z esr $ */
 /*
  * Handle the Trimble TSIP packet format
  * by Rob Janssen, PE1CHL.

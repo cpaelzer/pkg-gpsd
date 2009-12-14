@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: driver_ubx.h 5338 2009-03-03 19:27:42Z ckuethe $ */
 #ifndef _GPSD_UBX_H_
 #define _GPSD_UBX_H_
 

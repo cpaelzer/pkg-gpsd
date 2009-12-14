@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id$
+# $Id: gps.py 6691 2009-12-03 11:21:41Z esr $
 #
 # gps.py -- Python interface to GPSD.
 #

@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: gpsd.c 6708 2009-12-04 20:26:49Z esr $ */
 #include <sys/types.h>
 #ifndef S_SPLINT_S
 #include <unistd.h>
@@ -1382,34 +1382,48 @@ static bool handle_oldstyle(struct subscriber_t *sub, char *buf,
 #undef ZEROIZE
 	    break;
 	case 'R':
-	    if (*p == '=') ++p;
-	    if (*p == '2') {
-		sub->policy.raw = 2;
-		gpsd_report(LOG_INF, "client(%d) turned on super-raw mode\n", sub_index(sub));
-		(void)snprintf(phrase, sizeof(phrase), ",R=2");
-		p++;
-	    } else if (*p == '1' || *p == '+') {
-		sub->policy.nmea = true;
-		sub->policy.raw = 0;
-		gpsd_report(LOG_INF, "client(%d) turned on raw mode\n", sub_index(sub));
-		(void)snprintf(phrase, sizeof(phrase), ",R=1");
-		p++;
-	    } else if (*p == '0' || *p == '-') {
-		sub->policy.raw = 0;
-		sub->policy.nmea = false;
-		gpsd_report(LOG_INF, "client(%d) turned off raw mode\n", sub_index(sub));
-		(void)snprintf(phrase, sizeof(phrase), ",R=0");
-		p++;
-	    } else if (sub->policy.nmea) {
-		sub->policy.nmea = false;
-		sub->policy.raw = 0;
-		gpsd_report(LOG_INF, "client(%d) turned off raw mode\n", sub_index(sub));
-		(void)snprintf(phrase, sizeof(phrase), ",R=0");
-	    } else {
-		sub->policy.nmea = true;
-		sub->policy.raw = 0;
-		gpsd_report(LOG_INF, "client(%d) turned on raw mode\n", sub_index(sub));
-		(void)snprintf(phrase, sizeof(phrase), ",R=1");
+	    if ((channel = mandatory_assign_channel(sub, ANY, NULL))==NULL)
+		(void)strlcpy(phrase, ",R=?", sizeof(phrase));
+	    else {
+		if (*p == '=') ++p;
+		if (*p == '2') {
+		    sub->policy.watcher = true;
+		    sub->policy.json = false;
+		    sub->policy.raw = 2;
+		    gpsd_report(LOG_INF, "client(%d) turned on super-raw mode\n", sub_index(sub));
+		    (void)snprintf(phrase, sizeof(phrase), ",R=2");
+		    p++;
+		} else if (*p == '1' || *p == '+') {
+		    sub->policy.watcher = true;
+		    sub->policy.json = false;
+		    sub->policy.nmea = true;
+		    sub->policy.raw = 1;
+		    gpsd_report(LOG_INF, "client(%d) turned on raw mode\n", sub_index(sub));
+		    (void)snprintf(phrase, sizeof(phrase), ",R=1");
+		    p++;
+		} else if (*p == '0' || *p == '-') {
+		    sub->policy.watcher = false;
+		    sub->policy.json = false;
+		    sub->policy.raw = 0;
+		    sub->policy.nmea = false;
+		    gpsd_report(LOG_INF, "client(%d) turned off raw mode\n", sub_index(sub));
+		    (void)snprintf(phrase, sizeof(phrase), ",R=0");
+		    p++;
+		} else if (sub->policy.nmea) {
+		    sub->policy.watcher = false;
+		    sub->policy.json = false;
+		    sub->policy.nmea = false;
+		    sub->policy.raw = 0;
+		    gpsd_report(LOG_INF, "client(%d) turned off raw mode\n", sub_index(sub));
+		    (void)snprintf(phrase, sizeof(phrase), ",R=0");
+		} else {
+		    sub->policy.watcher = true;
+		    sub->policy.json = false;
+		    sub->policy.nmea = true;
+		    sub->policy.raw = 1;
+		    gpsd_report(LOG_INF, "client(%d) turned on raw mode\n", sub_index(sub));
+		    (void)snprintf(phrase, sizeof(phrase), ",R=1");
+		}
 	    }
 	    break;
 	case 'S':
@@ -1443,17 +1457,25 @@ static bool handle_oldstyle(struct subscriber_t *sub, char *buf,
 		if (*p == '=') ++p;
 		if (*p == '1' || *p == '+') {
 		    sub->policy.watcher = true;
+		    sub->policy.json = false;
+		    sub->policy.scaled = true;	/* UGH! */
 		    (void)snprintf(phrase, sizeof(phrase), ",W=1");
 		    p++;
 		} else if (*p == '0' || *p == '-') {
 		    sub->policy.watcher = false;
+		    sub->policy.json = false;
+		    sub->policy.scaled = false;	/* UGH! */
 		    (void)snprintf(phrase, sizeof(phrase), ",W=0");
 		    p++;
 		} else if (sub->policy.watcher) {
 		    sub->policy.watcher = false;
+		    sub->policy.json = false;
+		    sub->policy.scaled = false;	/* UGH! */
 		    (void)snprintf(phrase, sizeof(phrase), ",W=0");
 		} else {
 		    sub->policy.watcher = true;
+		    sub->policy.json = false;
+		    sub->policy.scaled = true;	/* UGH! */
 		    gpsd_report(LOG_INF, "client(%d) turned on watching\n", sub_index(sub));
 		    (void)snprintf(phrase, sizeof(phrase), ",W=1");
 		}
@@ -2323,7 +2345,14 @@ int main(int argc, char *argv[])
 
 
 #ifdef OLDSTYLE_ENABLE
-			if (!newstyle(sub)) {
+			/*
+			 * UGH! Good thing this code is going away soon.
+			 * We press the scaled flag, which isn't otherwise
+			 * used when oldstyle is on, into service as an
+			 * enable flag for oldstyle reports,  See where
+			 * it says "UGH!" in the oldstyle command interpreter.
+			 */
+			if (!newstyle(sub) && sub->policy.scaled) {
 			    char cmds[4] = "";
 			    if (report_fix)
 				(void)strlcat(cmds, "o", 4);

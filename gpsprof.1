@@ -1,19 +1,27 @@
+'\" t
 .\"     Title: gpsprof
-.\"    Author: 
-.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 03/14/2009
-.\"    Manual: 10 Feb 2005
-.\"    Source: 10 Feb 2005
+.\"    Author: [see the "AUTHOR" section]
+.\" Generator: DocBook XSL Stylesheets v1.75.1 <http://docbook.sf.net/>
+.\"      Date: 12/04/2009
+.\"    Manual: [FIXME: manual]
+.\"    Source: [FIXME: source]
+.\"  Language: English
 .\"
-.TH "GPSPROF" "1" "03/14/2009" "10 Feb 2005" "10 Feb 2005"
+.TH "GPSPROF" "1" "12/04/2009" "[FIXME: source]" "[FIXME: manual]"
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
 .SH "NAME"
 gpsprof \- profile a GPS and gpsd, plotting latency information
 .SH "SYNOPSIS"
-.HP 8
+.HP \w'\fBgpsprof\fR\ 'u
 \fBgpsprof\fR [\-f\ \fIplot_type\fR] [\-m\ \fIthreshold\fR] [\-n\ \fIpacketcount\fR] [\-s\ \fIspeed\fR] [\-t\ \fItitle\fR] [\-h]
 .SH "DESCRIPTION"
 .PP
@@ -27,11 +35,15 @@ gpsd\&.
 To display the graph, use
 \fBgnuplot\fR(1)\&. Thus, for example, to display the default spatial scatter plot, do this:
 .sp
+.if n \{\
 .RS 4
+.\}
 .nf
 gpsprof | gnuplot \-persist
 .fi
+.if n \{\
 .RE
+.\}
 .sp
 .SH "OPTIONS"
 .PP
@@ -69,17 +81,8 @@ The instrumented time plot conveys the following information:
 .PP
 RS232 time
 .RS 4
-Minimum time required to send the sentence from the GPS to
-gpsd\&. This is computed, not measured, and may be an underestimate\&.
-.RE
-.PP
-Other line latency
-.RS 4
-The transmission latency between the GPS and
-gpsd
-not accounted for by RS232 time\&. Total line latency (the sum of this bar and RS232 time) is measured; it begins with the GPS sentence\'s timestamp and ends with a timestamp that
-gpsd
-generates at sentence\-reading time, before it is decoded\&.
+Time required to send the sentence from the GPS to
+gpsd\&. This measured from the time of the last zero\-length read before the packet to when the packet sniffer recognizes a complete sentence, so there is a small aountt of computational overhead mixed in\&.
 .RE
 .PP
 Decode time
@@ -107,9 +110,6 @@ The \-t option sets a text string to be included in the plot title\&.
 The \-h option makes
 gpsprof
 print a usage message and exit\&.
-.SH "BUGS AND LIMITAIONS"
-.PP
-Probably overestimates TCP/IP latency somewhat, as that includes the Python interpreter\'s decode time\&. A C client would be faster\&.
 .SH "SEE ALSO"
 .PP
 
@@ -124,9 +124,9 @@ Probably overestimates TCP/IP latency somewhat, as that includes the Python inte
 .SH "AUTHOR"
 .PP
 Eric S\&. Raymond
-<esr@thyrsus\&.com>\&. There is a project page for
+esr@thyrsus\&.com\&. There is a project page for
 gpsd
-\fIhere\fR\&[1]\&.
+\m[blue]\fBhere\fR\m[]\&\s-2\u[1]\d\s+2\&.
 .SH "NOTES"
 .IP " 1." 4
 here

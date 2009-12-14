@@ -1,7 +1,7 @@
 /* Feature configuration switches end here */
 #endif /* GPSD_CONFIG_H */
 
-/* $Id$ */
+/* $Id: gpsd.h-tail 6688 2009-12-03 08:41:20Z esr $ */
 
 /* constants for the VERSION response */
 #define GPSD_PROTO_MAJOR_VERSION	3	/* bump on incompatible changes */

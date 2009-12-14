@@ -1,15 +1,23 @@
+'\" t
 .\"     Title: 3
-.\"    Author: 
-.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"    Author: [see the "AUTHOR" section]
+.\" Generator: DocBook XSL Stylesheets v1.75.1 <http://docbook.sf.net/>
 .\"      Date: 14 Aug 2004
 .\"    Manual: Linux
 .\"    Source: Linux
+.\"  Language: English
 .\"
 .TH "3" "3" "14 Aug 2004" "Linux" "Linux"
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
 .SH "NAME"
 libgps \- C service library for communicating with the GPS daemon
 .SH "SYNOPSIS"
@@ -23,22 +31,24 @@ C:
 
 .fi
 .ft
-.HP 28
+.HP \w'struct\ gps_data_t\ *gps_open('u
 .BI "struct gps_data_t *gps_open(char\ *" "server" ", char\ *\ " "port" ");"
-.HP 14
-.BI "int gps_query(struct\ gps_data_t\ *" "gpsdata" ", char\ *" "fmt" "\&.\&.\&.);"
-.HP 22
-.BI "void gps_set_raw_hook(struct\ gps_data_t\ *" "gpsdata" ", void\ (*" "hook" ")(struct\ gps_data_t\ *,\ char\ *buf));"
-.HP 13
+.HP \w'int\ gps_open_r('u
+.BI "int gps_open_r(char\ *" "server" ", char\ *\ " "port" ", struct\ gps_data_t\ *" "gpsdata" ");"
+.HP \w'int\ gps_send('u
+.BI "int gps_send(struct\ gps_data_t\ *" "gpsdata" ", char\ *" "fmt" "\&.\&.\&.);"
+.HP \w'void\ gps_set_raw_hook('u
+.BI "void gps_set_raw_hook(struct\ gps_data_t\ *" "gpsdata" ", void\ (*" "hook" ")(struct\ gps_data_t\ *,\ char\ *buf,\ size_t\ len));"
+.HP \w'int\ gps_poll('u
 .BI "int gps_poll(struct\ gps_data_t\ *" "gpsdata" ");"
-.HP 15
+.HP \w'void\ gps_close('u
 .BI "void gps_close(struct\ gps_data_t\ *" "gpsdata" ");"
-.HP 22
-.BI "void gps_set_callback(struct\ gps_data_t\ *" "gpsdata" ", void\ (*" "callback" ")(struct\ gps_data_t\ *sentence,\ char\ *buf), pthread_t\ *" "handler" ");"
-.HP 22
-.BI "void gps_del_callback(struct\ gps_data_t\ *" "gpsdata" ", pthread\ *" "handler" ");"
-.HP 18
+.HP \w'void\ rtcm2_unpack('u
 .BI "void rtcm2_unpack(struct\ rtcm_t\ *" "rtcmp" ", char\ *" "buf" ");"
+.HP \w'int\ gps_stream('u
+.BI "int gps_stream(struct\ gps_data_t\ *" "gpsdata" ", unsigned\ int" "flags" ", void\ *" "data" ");"
+.HP \w'char\ *gps_errstr('u
+.BI "char *gps_errstr(int\ " "err" ");"
 .sp
 .ft B
 .nf
@@ -51,9 +61,10 @@ session = gps\&.gps(host="127\&.0\&.0\&.1", port="2947")
 
 session\&.set_raw_hook(raw_hook)
 
-session\&.query(commands)
+session\&.stream(flags=WATCH_JSON)
 
-session\&.poll()
+for report in session:
+    process(report)
 
 del session
 
@@ -66,15 +77,23 @@ is a service library which supports querying GPS devices; link it with the linke
 \fBgpsd\fR(1)
 and is intended for concurrent use by several applications, and one low\-level interface that speaks directly with the serial or USB device to which the GPS is attached\&. This page describes the high\-level interface that is safe for multiple applications to use simultaneously; it is probably the one you want\&. The low\-level interface is documented at
 \fBlibgpsd\fR(3)\&.
+.if n \{\
 .sp
+.\}
+.RS 4
 .it 1 an-trap
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-Warning
+.ps +1
+\fBWarning\fR
+.ps -1
+.br
 .PP
 The API described below may change incompatibly at API version 4\&. Take care to conditionalize your code on the major and minor API version symbols in
-\fIgps\&.h\fR; ideally, force a compilation failure if the header is not exporting a version you recognize\&. See the GPSD project website for more information on the protocol and API change\&.
+gps\&.h; ideally, force a compilation failure if the header is not exporting a version you recognize\&. See the GPSD project website for more information on the protocol and API changes\&.
+.sp .5v
+.RE
 .PP
 Calling
 \fBgps_open()\fR
@@ -82,22 +101,35 @@ initializes a GPS\-data structure to hold the data collected by the GPS, and ret
 \fBgpsd\fR(1)\&.
 \fBgps_open()\fR
 returns NULL on errors\&. errno is set depending on the error returned from the the socket layer; see
-\fIgps\&.h\fR
+gps\&.h
 for values and explanations\&.
 .PP
+\fBgps_open_r()\fR
+is a reentrent\-friendly version That put the session storage where you wish to allocate it\&. It returns 0 on success and \-1 on failure, with errno set appropriately\&.
+.PP
 \fBgps_close()\fR
-ends the session\&. NB: ending the session does not destroy any threads created to handle callbacks\&. You must delete all callbacks prior to calling
-\fBgps_close()\fR\&. Failure to do so results in undefined behavior\&. Currently it will leak a thread, and in the future might result in aborting the program\&.
+ends the session\&.
+.PP
+\fBgps_send()\fR
+writes a command to the daemon\&. The second argument must be a format string containing elements from the command set documented at
+\fBgpsd\fR(1)\&. It may have % elements as for
+\fBsprintf\fR(3), which will be filled in from any following arguments\&. This function returns a \-1 if there was a Unix\-level write error, otherwise 0\&. Please read the LIMITATIONS section for additional information and cautions\&.
 .PP
 \fBgps_poll()\fR
 accepts a response, or sequence of responses, from the daemon and interprets it as though it were a query response (the return value is as for a query)\&.
 \fBgps_poll()\fR
 returns the validity mask of the received structure\&. This function does a blocking read waiting for data from the daemon; it returns 0 for success, or \-1 on a Unix\-level read error\&.
 .PP
+\fBgps_stream()\fR
+asks
+gpsd
+to stream the reports it has at you, to be made available whenn you poll\&. It is preferable to the older\-style (pre\-2\&.90) way of doing this,
 \fBgps_query()\fR
-writes a command to the daemon, accepts a one\-line response, and updates parts of the GPS\-data structure that correspond to data changed since the last call\&. The second argument must be a format string containing letters from the command set documented at
-\fBgpsd\fR(1)\&. It may have % elements as for
-\fBsprintf\fR(3), which will be filled in from any following arguments\&. This function returns a 0 on success, or a \-1 if there was a Unix\-level read error\&.
+with a "w+" argument, because it insulates your code from whether your client library and your
+gpsd
+are using old or new protocol\&. The second argument is a flag mask that sets various policy bits; see gps\&.h for description\&. Calling
+\fBgps_stream()\fR
+more than once with different flag masks is allowed\&.The third argument is not presently used but reserved for expansion\&.
 .PP
 \fBgps_set_raw_hook()\fR
 takes a function you specify and run it (synchronously) on the raw data pulled by a
@@ -108,27 +140,12 @@ call\&. The arguments passed to this hook will be a pointer to a structure conta
 gpsd
 response\&.
 .PP
-\fBgps_set_callback()\fR
-takes a function you specify and runs it asynchronously each time new data arrives from
-gpsd, using POSIX threads\&. For example, you can call gps_set_callback(gpsdata, my_function, handler) once in your program, and from there on your gpsdata structure will be parsed by your
-\fBmy_function()\fR
-each time new data are available\&.
-\fBmy_function()\fR
-could change some global variables in your program based on received data; it is your responsibility to ensure that your program uses mutexes or other mechanisms to avoid race conditions\&. NB:
-\fBgps_set_callback()\fR
-will create a new thread, and contrary to what you might expect
-\fBgps_close()\fR
-will not destroy that thread\&. You must therefore explicitly remove the callback with
-\fBgps_del_callback()\fR
-before calling
-\fBgps_close()\fR\&.
-.PP
-\fBgps_del_callback()\fR
-deregisters the callback function previously set with
-\fBgps_set_callback()\fR\&. After the invocation of this function no operation will be done when new data arrives\&.
+\fBgps_errstr()\fR
+returns an ASCII string (in English) describing the error indicated by a nonzero return value from
+\fBgps_open()\fR\&.
 .PP
 Consult
-\fIgps\&.h\fR
+gps\&.h
 to learn more about the data members and associated timestamps\&. Note that information will accumulate in the session structure over time, and the \'valid\' field is not automatically zeroed by each poll\&. It is up to the client to zero that field when appropriate and to keep an eye on the fix and sentence timestamps\&.
 .PP
 The
@@ -149,7 +166,9 @@ The following is an excerpted and simplified version of the libgps interface cod
 \fBhandle_input()\fR
 is a trivial piece of code that calls gps_poll(gpsdata)\&.
 .sp
+.if n \{\
 .RS 4
+.\}
 .nf
     gpsdata = gps_open(server, port);
 
@@ -157,7 +176,7 @@ is a trivial piece of code that calls gps_poll(gpsdata)\&.
 
     gps_set_raw_hook(gpsdata, update_panel);
 	
-    (void)gps_query(gpsdata, "w+x\en");
+    (void)gps_stream(gpsdata, WATCH_ENABLE, NULL);
 
     (void)XtAppAddInput(app, gpsdata\->gps_fd, 
 		  (XtPointer)XtInputReadMask, handle_input, NULL);
@@ -165,7 +184,33 @@ is a trivial piece of code that calls gps_poll(gpsdata)\&.
 
     (void)gps_close(gpsdata);
 .fi
+.if n \{\
 .RE
+.\}
+.SH "LIMITATIONS"
+.PP
+Incautious use of
+\fBgps_send()\fR
+may lead to subtle bugs\&. In order to not bloat
+struct gps_data_t
+with space used by responses that are not expected to be shipped in close sequence with each other, the storage for fields associated with certain responses are combined in a union\&.
+.PP
+Sends that might invoke this set of responses need to be sequenced carefully so the unpacking of multiple responses arriving in the same socket read cannot result in later updates to the union obliterating data from earlier ones before it becomes visible to the client application\&.
+.PP
+The risky set of responses includes VERSION, DEVICELIST, RTCM2, RTCM3, and AIS; it may not be limited to that set\&. The logic of the daemon\'s watcher mode is careful to avoid dangerous sequences, but you should read and understand the layout of
+struct gps_data_t
+before using
+\fBgps_send()\fR
+to request any of these responses\&.
+.SH "COMPATIBILITY"
+.PP
+The
+\fBgps_query()\fR
+supported in major versions 1 and 2 of this library has been removed\&. With the new streaming\-oriented wire protocol behind this library, it is extremely unwise to assume that the first transmission from the damon after a command is shipped to it will be the reponse to command\&.
+.PP
+If you must send commands to the daemon explicity, use
+\fBgps_send()\fR
+but beware that this ties your code to the GPSD wire protocol\&. It is not recommended\&.
 .SH "SEE ALSO"
 .PP
 

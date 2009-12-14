@@ -1,19 +1,27 @@
+'\" t
 .\"     Title: gpspipe
-.\"    Author: 
-.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 03/14/2009
-.\"    Manual: 03 Aug 2005
-.\"    Source: 03 Aug 2005
+.\"    Author: [see the "AUTHOR" section]
+.\" Generator: DocBook XSL Stylesheets v1.75.1 <http://docbook.sf.net/>
+.\"      Date: 12/04/2009
+.\"    Manual: [FIXME: manual]
+.\"    Source: [FIXME: source]
+.\"  Language: English
 .\"
-.TH "GPSPIPE" "1" "03/14/2009" "03 Aug 2005" "03 Aug 2005"
+.TH "GPSPIPE" "1" "12/04/2009" "[FIXME: source]" "[FIXME: manual]"
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
 .SH "NAME"
 gpspipe \- tool to connect to gpsd and retrieve sentences
 .SH "SYNOPSIS"
-.HP 8
+.HP \w'\fBgpspipe\fR\ 'u
 \fBgpspipe\fR [\-h] [\-d] [\-l] [\-f\ \fIfilename\fR] [\-n\ \fIcount\fR] [\-r] [\-R] [\-s\ \fIserial\-device\fR] [\-t] [\-w] [\-v] [\fIserver\fR [\fI:port\fR [\fI:device\fR]]]
 .SH "DESCRIPTION"
 .PP
@@ -77,8 +85,6 @@ gpsdsentences to be output\&.
 gpspipe
 will then exit gracefully\&.
 .PP
-\-j makes the program send J=1 to the daemon, requesting fix hold across cycles\&.
-.PP
 \-v causes
 gpspipe
 to show a spinning activity indicator on stderr\&. This is useful if stdout is redirected into a file or a pipe\&. By default the spinner is advanced with every messages written; specifying \-v more than once will double the number of messages required to rotate the spinner\&.
@@ -107,9 +113,9 @@ will send one hundred raw NMEA sentences to standard output, then exit\&.
 .SH "AUTHOR"
 .PP
 Gary E\&. Miller
-<gem@rellim\&.com>\&. There is a project page for
+gem@rellim\&.com\&. There is a project page for
 gpsd
-\fIhere\fR\&[1]\&.
+\m[blue]\fBhere\fR\m[]\&\s-2\u[1]\d\s+2\&.
 .SH "NOTES"
 .IP " 1." 4
 here

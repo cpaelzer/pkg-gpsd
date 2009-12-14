@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: gpsmon.h 5333 2009-03-03 13:18:31Z esr $ */
 /* gpsmon.h -- what monitor capabuilities look like */
 
 #ifndef _GPSD_GPSMON_H_

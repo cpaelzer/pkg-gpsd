@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: subframe.c 6566 2009-11-20 03:51:06Z esr $ */
 /* subframe.c -- interpret satellite subframe data. */
 #include <sys/types.h>
 
