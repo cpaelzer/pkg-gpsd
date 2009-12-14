@@ -4,6 +4,7 @@
  _ZN5gpsmm4pollEv@Base 2.39
  _ZN5gpsmm4sendEPKc@Base 2.90~svn6694
  _ZN5gpsmm6streamEi@Base 2.90~svn6694
+ _ZN5gpsmm7waitingEv@Base 2.90.1~svn6819
  _ZN5gpsmm9clear_fixEv@Base 2.39
  _ZN5gpsmmC1Ev@Base 2.39-2~
  _ZN5gpsmmC2Ev@Base 2.39-2~
@@ -52,6 +53,7 @@
  gps_set_raw_hook@Base 2.39
  gps_stream@Base 2.90~svn6694
  gps_unpack@Base 2.90~svn6694
+ gps_waiting@Base 2.90.1~svn6819
  gpsclock@Base 2.39
  gpsd_activate@Base 2.39
  gpsd_assert_sync@Base 2.39
