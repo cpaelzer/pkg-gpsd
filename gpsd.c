@@ -610,16 +610,6 @@ static bool open_device(char *device_name)
 {
     struct gps_device_t *devp;
 
-    /* special case: source may be a URI to a remote GNSS or DGPS service */
-    if (netgnss_uri_check(device_name)) {
-	int dsock = netgnss_uri_open(&context, device_name);
-	if (dsock >= 0) {
-	    FD_SET(dsock, &all_fds);
-	    adjust_max_fd(dsock, true);
-	}
-    }
-
-    /* normal case: set up GPS/RTCM/AIS service */
     for (devp = devices; devp < devices + MAXDEVICES; devp++)
 	if (!allocated_device(devp) || (strcmp(devp->gpsdata.dev.path, device_name)==0 && !initialized_device(devp))) {
 	    goto found;
@@ -1219,7 +1209,7 @@ static bool handle_oldstyle(struct subscriber_t *sub, char *buf,
 	* fighting with Dragorn.  We'll just disable it.  The client
 	* library could never parse the response anyway, so the only
 	* people who lose are the ones opening a socket direct to the
-	* daemon and doing depreacated single-shot queries.
+	* daemon and doing deprecated single-shot queries.
 	*/
 	case 'L':
 	    (void)snprintf(phrase, sizeof(phrase), ",L=%d %d %s abcdefgijklmnopqrstuvwxyz", GPSD_API_MAJOR_VERSION, GPSD_API_MINOR_VERSION, VERSION);	//h
@@ -1382,34 +1372,48 @@ static bool handle_oldstyle(struct subscriber_t *sub, char *buf,
 #undef ZEROIZE
 	    break;
 	case 'R':
-	    if (*p == '=') ++p;
-	    if (*p == '2') {
-		sub->policy.raw = 2;
-		gpsd_report(LOG_INF, "client(%d) turned on super-raw mode\n", sub_index(sub));
-		(void)snprintf(phrase, sizeof(phrase), ",R=2");
-		p++;
-	    } else if (*p == '1' || *p == '+') {
-		sub->policy.nmea = true;
-		sub->policy.raw = 0;
-		gpsd_report(LOG_INF, "client(%d) turned on raw mode\n", sub_index(sub));
-		(void)snprintf(phrase, sizeof(phrase), ",R=1");
-		p++;
-	    } else if (*p == '0' || *p == '-') {
-		sub->policy.raw = 0;
-		sub->policy.nmea = false;
-		gpsd_report(LOG_INF, "client(%d) turned off raw mode\n", sub_index(sub));
-		(void)snprintf(phrase, sizeof(phrase), ",R=0");
-		p++;
-	    } else if (sub->policy.nmea) {
-		sub->policy.nmea = false;
-		sub->policy.raw = 0;
-		gpsd_report(LOG_INF, "client(%d) turned off raw mode\n", sub_index(sub));
-		(void)snprintf(phrase, sizeof(phrase), ",R=0");
-	    } else {
-		sub->policy.nmea = true;
-		sub->policy.raw = 0;
-		gpsd_report(LOG_INF, "client(%d) turned on raw mode\n", sub_index(sub));
-		(void)snprintf(phrase, sizeof(phrase), ",R=1");
+	    if ((channel = mandatory_assign_channel(sub, ANY, NULL))==NULL)
+		(void)strlcpy(phrase, ",R=?", sizeof(phrase));
+	    else {
+		if (*p == '=') ++p;
+		if (*p == '2') {
+		    sub->policy.watcher = true;
+		    sub->policy.json = false;
+		    sub->policy.raw = 2;
+		    gpsd_report(LOG_INF, "client(%d) turned on super-raw mode\n", sub_index(sub));
+		    (void)snprintf(phrase, sizeof(phrase), ",R=2");
+		    p++;
+		} else if (*p == '1' || *p == '+') {
+		    sub->policy.watcher = true;
+		    sub->policy.json = false;
+		    sub->policy.nmea = true;
+		    sub->policy.raw = 1;
+		    gpsd_report(LOG_INF, "client(%d) turned on raw mode\n", sub_index(sub));
+		    (void)snprintf(phrase, sizeof(phrase), ",R=1");
+		    p++;
+		} else if (*p == '0' || *p == '-') {
+		    sub->policy.watcher = false;
+		    sub->policy.json = false;
+		    sub->policy.raw = 0;
+		    sub->policy.nmea = false;
+		    gpsd_report(LOG_INF, "client(%d) turned off raw mode\n", sub_index(sub));
+		    (void)snprintf(phrase, sizeof(phrase), ",R=0");
+		    p++;
+		} else if (sub->policy.nmea) {
+		    sub->policy.watcher = false;
+		    sub->policy.json = false;
+		    sub->policy.nmea = false;
+		    sub->policy.raw = 0;
+		    gpsd_report(LOG_INF, "client(%d) turned off raw mode\n", sub_index(sub));
+		    (void)snprintf(phrase, sizeof(phrase), ",R=0");
+		} else {
+		    sub->policy.watcher = true;
+		    sub->policy.json = false;
+		    sub->policy.nmea = true;
+		    sub->policy.raw = 1;
+		    gpsd_report(LOG_INF, "client(%d) turned on raw mode\n", sub_index(sub));
+		    (void)snprintf(phrase, sizeof(phrase), ",R=1");
+		}
 	    }
 	    break;
 	case 'S':
@@ -1443,17 +1447,25 @@ static bool handle_oldstyle(struct subscriber_t *sub, char *buf,
 		if (*p == '=') ++p;
 		if (*p == '1' || *p == '+') {
 		    sub->policy.watcher = true;
+		    sub->policy.json = false;
+		    sub->policy.scaled = true;	/* UGH! */
 		    (void)snprintf(phrase, sizeof(phrase), ",W=1");
 		    p++;
 		} else if (*p == '0' || *p == '-') {
 		    sub->policy.watcher = false;
+		    sub->policy.json = false;
+		    sub->policy.scaled = false;	/* UGH! */
 		    (void)snprintf(phrase, sizeof(phrase), ",W=0");
 		    p++;
 		} else if (sub->policy.watcher) {
 		    sub->policy.watcher = false;
+		    sub->policy.json = false;
+		    sub->policy.scaled = false;	/* UGH! */
 		    (void)snprintf(phrase, sizeof(phrase), ",W=0");
 		} else {
 		    sub->policy.watcher = true;
+		    sub->policy.json = false;
+		    sub->policy.scaled = true;	/* UGH! */
 		    gpsd_report(LOG_INF, "client(%d) turned on watching\n", sub_index(sub));
 		    (void)snprintf(phrase, sizeof(phrase), ",W=1");
 		}
@@ -1805,7 +1817,9 @@ int main(int argc, char *argv[])
 	case 'D':
 	    debuglevel = (int) strtol(optarg, 0, 0);
 	    gpsd_hexdump_level = debuglevel;
+#ifdef CLIENTDEBUG_ENABLE
 	    gps_enable_debug(debuglevel, stderr);
+#endif /* CLIENTDEBUG_ENABLE */
 	    break;
 	case 'F':
 	    control_socket = optarg;
@@ -2323,7 +2337,14 @@ int main(int argc, char *argv[])
 
 
 #ifdef OLDSTYLE_ENABLE
-			if (!newstyle(sub)) {
+			/*
+			 * UGH! Good thing this code is going away soon.
+			 * We press the scaled flag, which isn't otherwise
+			 * used when oldstyle is on, into service as an
+			 * enable flag for oldstyle reports,  See where
+			 * it says "UGH!" in the oldstyle command interpreter.
+			 */
+			if (!newstyle(sub) && sub->policy.scaled) {
 			    char cmds[4] = "";
 			    if (report_fix)
 				(void)strlcat(cmds, "o", 4);
@@ -2387,7 +2408,7 @@ int main(int argc, char *argv[])
 #endif /* TIMING_ENABLE */
 			}
 		    }
-		    gpsd_report(LOG_PROG, "reporting finished\n");
+		    //gpsd_report(LOG_PROG, "reporting finished\n");
 		}
 		/*@-nullderef@*/
 	    }

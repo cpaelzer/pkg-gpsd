@@ -24,18 +24,40 @@ fix the driver yourself and send us the patch, contact Bill Powell
 <bpowell@tntc.com> at True North Technologies and tell him he needs
 to reverse his refusal to send us an eval unit.
 
-*** SiRF 15-second lag
-
-The tendency of SiRF chips to lag real-time by 15 seconds or so
-under some (unexplained) circumstances is still...unexplained. Or,
-rather, we have several different possible explanations and have
-not been able to verify any of them.  Note, this is not properly
-a gpsd problem, but it may well be there is some sort
-of mode switch we should be uttering.
-
 *** Driver issues
-**** uBlox-lea-4h.log.chk: Time value in TPVs looks like garbage.
-**** uBlox-lea-4t.log.chk: ubx driver is dumping garbage values in GSA. 
+
+**** bu303-nofix.log.ck: 
+
+The expected-correct output has an altitude of -6378137m, about earth
+radius, with lat/lon of 180,0.  On NetBSD 5.0/i386, the altitude is
+-6378253m, on NetBSD 5.0/amd64 it is -6378253m, and on NetBSD
+5.0/sparc64 it is -6378171m.  On Linux/i386, it is -6378143m.
+
+Thus, it seems there is an unstable calculation sensitive to rounding
+mode or other FP details.  Note that bu303 logs with valid fixes have
+not been problematic.  It is not clear that anyone has hand-validated
+the expected output.
+
+(amd64 is what NetBSD labels all implementations of AMD's 64-bit
+architecture; the machine in question above is an Intel CPU under
+Xen.)
+
+**** navcom.chk:
+
+This testfile triggers a numeric instability in the earth_distance()
+function.  The result is that epd is unstable.  What we should do is
+use the official US Government function for
+calculating earth distances: INVERSE.  See
+http://www.ngs.noaa.gov/TOOLS/Inv_Fwd/Inv_Fwd.html =>
+http://www.ngs.noaa.gov/PC_PROD/Inv_Fwd/source/
+
+Useful tool for the purpose: http://www.netlib.org/f2c/
+
+**** superstar2.chk:
+
+Packet detection appears to fail completely on big-endian machines.
+Greg Troxel reports this from netbsd-5/sparc64.  output at
+<http://www.lexort.com/gpsd/>.
 
 ** To do:
 

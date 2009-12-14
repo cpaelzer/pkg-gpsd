@@ -1,9 +1,16 @@
-* Thu Nov 19 2009 Eric S. Raymond <esr@snark.thyrsus.com> - 2.90dev
+* Fri Dec 4 2009 Eric S. Raymond <esr@snark.thyrsus.com> - 2.91dev
+  We have support for NMEA GLONASS sentences, and a regression test.
+  Clients now get a DEVICE dotification on every driver switch.
+  It is possible to specify a TCP/IP AIS feed such as AISHub 
+  as a data source. Serious bitrot in the NTRIP support has been fixed -
+  it was probably nonfunctional for several releases before this.
+
+* Fri Dec 4 2009 Eric S. Raymond <esr@snark.thyrsus.com> - 2.90
   GPSD-NG, the new JSON-based command protocol, is now deployed; as a
   consequence, AIS is now fully supported in both daemon and client.
   Detection of end of a fix-reporting cycle is now reliable;
   accordingly data is accumulated from cycle start and the "J"
-  (nojitter) opoption on both server and client side is gone. We have
+  (nojitter) option on both server and client side is gone. We have
   abandoned the gpsflash subproject since it has become apparent that
   we can't do it without more vendor cooperation than we're likely to
   get. Increase major version of shared library due to significant API
@@ -25,7 +32,7 @@
   GPS chipset and adaptor can support it. Specfile and other packaging
   paraphenalia now live in a packaging subdirectory.  rtcmdecode becomes
   gpsdecode and can now de-armor and dump AIDVM packets. The client
-  library now work correctly in locales where the decimal separator is 
+  library now works correctly in locales where the decimal separator is 
   not a period.
 
 * Tue Feb 10 2009 Eric S. Raymond <esr@snark.thyrsus.com> - 2.38

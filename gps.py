@@ -59,15 +59,16 @@ MODE_3D = 3
 MAXCHANNELS = 12
 SIGNAL_STRENGTH_UNKNOWN = NaN
 
-WATCH_DISABLE	= 0x00
-WATCH_ENABLE	= 0x01
-WATCH_JSON	= 0x02
-WATCH_NMEA	= 0x04
-WATCH_RARE	= 0x08
-WATCH_RAW	= 0x10
-WATCH_SCALED	= 0x20
-WATCH_NEWSTYLE	= 0x40
-WATCH_OLDSTYLE	= 0x80
+WATCH_DISABLE	= 0x0000
+WATCH_ENABLE	= 0x0001
+WATCH_JSON	= 0x0002
+WATCH_NMEA	= 0x0004
+WATCH_RARE	= 0x0008
+WATCH_RAW	= 0x0010
+WATCH_SCALED	= 0x0020
+WATCH_NEWSTYLE	= 0x0040
+WATCH_OLDSTYLE	= 0x0080
+WATCH_DEVICE	= 0x0100
 
 GPSD_PORT = 2947
 
@@ -374,7 +375,7 @@ class gps(gpsdata):
                     va = v
                 t[ka] = va
             return t
-        self.data = dictwrapper(**asciify(json.loads(buf, encoding="ascii")))
+        self.data = dictwrapper(**asciify(json.loads(buf.strip(), encoding="ascii")))
         # The rest is backwards compatibility for the old interface
         def default(k, dflt, vbit=0):
             if k not in self.data.keys():
@@ -419,6 +420,7 @@ class gps(gpsdata):
             for attrp in "xyvhpg":
                 setattr(self, attrp+"dop", default(attrp+"dop", NaN, DOP_SET))
             if "satellites" in self.data.keys():
+                self.satellites = [] 
                 for sat in self.data['satellites']:
                     self.satellites.append(gps.satellite(PRN=sat['PRN'], elevation=sat['el'], azimuth=sat['az'], ss=sat['ss'], used=sat['used']))
             self.satellites_used = 0
@@ -431,18 +433,6 @@ class gps(gpsdata):
             self.data["c_decode"] = time.time()
             self.timings = self.data
 
-    def readline(self):
-        "Get a line of data from the socket connected to the daemon."
-        while True:
-            eol = self.linebuffer.find('\n')
-            if eol > -1:
-                eol += 1
-                line = self.linebuffer[:eol]
-                self.linebuffer = self.linebuffer[eol:]
-                return line
-            else:
-                self.linebuffer += self.sock.recv(4096)
-
     def waiting(self):
         "Return True if data is ready for the client."
         if self.linebuffer:
@@ -452,14 +442,21 @@ class gps(gpsdata):
 
     def poll(self):
         "Wait for and read data being streamed from gpsd."
-        self.response = self.readline()
-        # This code can go away when we remove oldstyle protocol
-        if self.response.startswith("H") and "=" not in self.response:
-            while True:
-                frag = self.readline()
-                self.response += frag
-                if frag.startswith("."):
-                    break
+        eol = self.linebuffer.find('\n')
+        if eol == -1:
+            frag = self.sock.recv(4096)
+            self.linebuffer += frag
+            if not self.linebuffer:
+                return -1
+            eol = self.linebuffer.find('\n')
+            if eol == -1:
+                return 0
+
+        # We got a line
+        eol += 1
+        self.response = self.linebuffer[:eol]
+        self.linebuffer = self.linebuffer[eol:]
+
         # Can happen if daemon terminates while we're reading.
         if not self.response:
             return -1
@@ -473,6 +470,7 @@ class gps(gpsdata):
             self.__json_unpack(self.response)
         else:
             self.__oldstyle_unpack(self.response)
+        self.valid |= PACKET_SET
         return 0
 
     def next(self):
@@ -504,7 +502,7 @@ class gps(gpsdata):
             commands += "\n"
         self.sock.send(commands)
 
-    def stream(self, flags=0):
+    def stream(self, flags=0, outfile=None):
         "Ask gpsd to stream reports at your client."
         if (flags & (WATCH_JSON|WATCH_OLDSTYLE|WATCH_NMEA|WATCH_RAW)) == 0:
             # If we're looking at a daemon that speakds JSON, this
@@ -551,15 +549,21 @@ class gps(gpsdata):
                     arg += ',"raw":0'
                 if flags & WATCH_SCALED:
                     arg += ',"scaled":true'
+                if flags & WATCH_DEVICE:
+                    arg += ',"device":"%s"' % outfile
             return self.send(arg + "}")
 
 # some multipliers for interpreting GPS output
-METERS_TO_FEET  = 3.2808399
-METERS_TO_MILES = 0.00062137119
-KNOTS_TO_MPH    = 1.1507794
+METERS_TO_FEET	= 3.2808399	# Meters to U.S./British feet
+METERS_TO_MILES	= 0.00062137119	# Meters to miles
+KNOTS_TO_MPH	= 1.1507794	# Knots to miles per hour
+KNOTS_TO_KPH	= 1.852		# Knots to kilometers per hour
+KNOTS_TO_MPS	= 0.51444444	# Knots to meters per second
+MPS_TO_KPH	= 3.6		# Meters per second to klicks/hr
+MPS_TO_MPH	= 2.2369363	# Meters/second to miles per hour
+MPS_TO_KNOTS	= 1.9438445	# Meters per second to knots
 
 # EarthDistance code swiped from Kismet and corrected
-# (As yet, this stuff is not in the libgps C library.)
 
 def Deg2Rad(x):
     "Degrees to radians."
@@ -643,11 +647,14 @@ def isotime(s):
 
 if __name__ == '__main__':
     import readline, getopt
-    (options, arguments) = getopt.getopt(sys.argv[1:], "w")
+    (options, arguments) = getopt.getopt(sys.argv[1:], "vw")
     streaming = False
+    verbose = False
     for (switch, val) in options:
-        if (switch == '-w'):
+        if switch == '-w':
             streaming = True    
+        elif switch == '-v':
+            verbose = True    
     if len(arguments) > 2:
         print 'Usage: gps.py [host [port]]'
         sys.exit(1)

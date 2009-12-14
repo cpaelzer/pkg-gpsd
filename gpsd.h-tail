@@ -237,6 +237,7 @@ struct gps_device_t {
     struct gps_data_t gpsdata;
     /*@relnull@*/const struct gps_type_t *device_type;
     struct gps_context_t	*context;
+    bool is_serial;
     double rtcmtime;	/* timestamp of last RTCM104 correction to GPS */
     struct termios ttyset, ttyset_old;
     unsigned int baudindex;
@@ -257,6 +258,7 @@ struct gps_device_t {
     size_t msgbuflen;
     int observed;			/* which packet type`s have we seen? */
     bool cycle_end_reliable;		/* does driverr signal REPORT_SET */
+    bool notify_clients;		/* ship DEVICE notification on poll? */
     /*
      * The rest of this structure is driver-specific private storage.
      * Because the Garmin driver uses a long buffer, you can have
@@ -376,6 +378,7 @@ struct gps_device_t {
 	    int PRN[ONCORE_VISIBLE_CH];		/* PRNs of satellite */
 	    int elevation[ONCORE_VISIBLE_CH];	/* elevation of satellite */
 	    int azimuth[ONCORE_VISIBLE_CH];	/* azimuth */
+	    double pps_delay;
 	} oncore;
 #endif /* ONCORE_ENABLE */
 

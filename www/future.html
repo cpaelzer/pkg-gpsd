@@ -31,7 +31,7 @@ Future of the GPS project
     <a href="hall-of-shame.html">Hall of Shame</a><br/>
     <a href="hacking.html">Hacker's Guide</a><br/>
     <a href="references.html">References</a><br/>
-    <a href="compatibility">Application Compatibility</a>
+    <a href="protocol-transition.html">Application Compatibility</a>
     <a href="history.html">History</a><br/>
     Future<br/>
 
@@ -64,35 +64,21 @@ Future of the GPS project
 
 <h2>The new GPSD protocol</h2>
 
-<p>As of mid-September 2009, we are wrapping up a three-month siege of
-intense work on a top-to-bottom redesign of GPSD's wire protocol.
+<p>2.90 has shipped, and with it the redesign of GPSD's wire protocol.
 While this brings many benefits (including, immediately, the ability
 to interpret and report on the output of marine AIS receivers) it
 poses some significant deployment challenges as well.</p>
 
 <p>Over the next few releases we're going to be preoccupied with 
 <a href="protocol-transition.html">managing the transition to the
-new protocol.</a>. Here is our tentative release schedule:</p>
+new protocol.</a>. See that document is our tentative release schedule:</p>
 
-<dl>
-<dt>2.40 &mdash; Before end of October</dt>
-<dd><p>New client API freezes. Wire protocol still considered unstable.</p></dd>
-
-<dt>2.41 &mdash; Before end of 2009</dt>
-<dd><p>Wire protocol freezes (no incompatible changes going forward from
-this point). Old protocol support will be removed from the daemon, but
-not from the library.</p></dd>
-
-<dt>2.42 &mdash; Jan-Feb 2010</dt>
-<dd><p>Cleanup release, if needed.</p></dd>
-
-<dt>3.0 &mdash; Some time in the first quarter of 2010</dt>
-<dd><p>Old protocol support will be removed from the library.</p></dd>
-</dl>
+<p>For more on specific tasks planned for upcoming releases, see our
+<a href="TODO">file</a>.</p>
 
 <h2>Changing hosting sites</h2>
 
-<p>We're presently (September 2009) hosted at <a
+<p>We're presently (December 2009) hosted at <a
 href="http://developer.berlios.de">berlios.de</a>, but find that it
 has become extremely flaky of late (logins failing due to broken SSL
 certs is the most recent symptom).  We plan to change sites before
@@ -104,7 +90,7 @@ face-to-face access to the administrators.</p>
 <p>Sometime after we move house, we'll change version-control systems
 as well.  Subversion has seved us well for five years, but we want to
 move to a 3G system to make off-net development easier.  No decision
-has been matde yet, but the top candidates are Mercurial and git.</p>
+has been made yet, but the top candidates are Mercurial and git.</p>
 
 </div>
 <hr/>

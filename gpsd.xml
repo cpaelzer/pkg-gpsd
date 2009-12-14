@@ -220,33 +220,64 @@ to standard error if <application>gpsd</application> is in the foreground
 </variablelist>
 
 <para>Arguments are interpreted as the names of data sources.
-Normally, a data source is the device pathname of a local serial
-device from which the daemon may expect GPS data.</para>
+Normally, a data source is the device pathname of a local device from
+which the daemon may expect GPS data. But there are three other
+special source types recognized, for a total of four:</para>
 
-<para>A data source name may also be a URI pointing to a specific
-network GNSS service (a DGPSIP server or Ntrip broadcaster).  If the
-URI starts with "ntrip://" Ntrip will be used; if the URI starts with
-"dgpsip://", DGPSIP will be used. <application>gpsd</application>
-defaults to DGPSIP if no protocol is defined. For Ntrip services that
-require authentication, a prefix of the form "username:password@" can
-be added before the name of the Ntrip broadcaster.  If a suffix of the
-service name begins with ":" it is interpreted as a port number,
-overriding the default IANA-assigned port of 2101.  For Ntrip service
-you must specify which stream to use; the stream is given in the form
-"/streamname". !n example DGPSIP URI could be
-"dgpsip://dgpsip.example.com" and a Ntrip URI could be
-"ntrip://foo:bar@ntrip.example.com:80/example-stream".  <!-- If this
-option is not given, <application>gpsd</application> will hunt for a
-DGPSIP server. --></para>
+<variablelist>
+<varlistentry>
+<term>Local serial or USB device</term>
+<listitem>
+<para>A normal Unix device name of a serial or USB device to which a
+sensor is attached. Example:
+<filename>/dev/ttyUSB0</filename>.</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>AIS feed</term>
+<listitem>
+<para>A URI with the prefix "ais://", followed by a hostname, a
+colon, and a port number. The daemon will open a socket to the
+indicated server and read AIVDM/AIVDO packets from it. Example:
+<filename>ais://data.aishub.net:4006</filename>.</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>Ntrip caster</term>
+<listitem>
+<para>A URI with the prefix "ntrip://" followed by the name of an Ntrp
+caster. For Ntrip services that require authentication, a prefix of
+the form "username:password@" can be added before the name of the
+Ntrip broadcaster.  For Ntrip service, you must specify which stream to use;
+the stream is given in the form "/streamname". An example DGPSIP URI
+could be "dgpsip://dgpsip.example.com" and a Ntrip URI could be
+"ntrip://foo:bar@ntrip.example.com:80/example-stream". Corrections
+from the caster will be send to each attached GPS with the capability
+to accept them.</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>DGPSIP server</term>
+<listitem>
+<para>A URI with the prefix "dgpsip://" followed by a hostname, a
+colon, and an optional colon-separated port number (defaulting to
+2101). The daemon will handshake with the DGPSIP server and 
+read RTCM2 correction data from it. Corrections
+from the server will be set to each attached GPS with the capability
+to accept them.Example:
+<filename>dgpsip://dgps.wsrcc.com:2101</filename>.</para>
+</listitem>
+</varlistentry>
+</variablelist>
 
 <para>Internally, the daemon maintains a device list holding the
-pathnames of GPSes known to the daemon. Initially, this list is the
-list of device-name arguments specified on the command line.  That
-list may be empty, in which case the daemon will have no devices on
-its search list until they are added by a control-socket command (see
-<xref linkend='devices'/> for details on this).  Daemon startup will
-abort with an error if neither any devices nor a control socket are
-specified.</para>
+pathnames of devices and remote servers known to the
+daemon. Initially, this list is the list of device-name arguments
+specified on the command line.  That list may be empty, in which case
+the daemon will have no devices on its search list until they are
+added by a control-socket command (see <xref linkend='devices'/> for
+details on this).  Daemon startup will abort with an error if neither
+any devices nor a control socket are specified.</para>
 
 <para>Clients communicate with the dameon via textual request and
 responses.  Currently there are two supported protocols, but there
@@ -1509,6 +1540,9 @@ backup battery.</para>
 </tgroup>
 </table>
 
+<para>The serial parameters will be omitted in a responce describing a 
+TCP/IP source such as an Ntrip, DGPSIP, or AIS feed.</para>
+
 <para>The contents of the flags field should be interpreted as follows:</para>
 
 <table frame="all" pgwide="0"><title>Device flags</title>
@@ -1873,14 +1907,13 @@ result of inadequacies in NMEA and the vendor binary GPS protocols,
 which often do not give clients any way to query the values of control
 settings in order to be able to restore them later.</para>
 
-<para>If your GPS uses a SiRF chipset at firmware level 231, and it is
-after 31 May 2007, reported UTC time may be off by the difference
-between 13 seconds and whatever leap-second correction is currently
-applicable, from startup until complete subframe information is
-received (normally about six seconds).  Firmware levels 232 and up
-don't have this problem.  You may run <application>gpsd</application> at
-debug level 4 to see the chipset type and firmware revision
-level.</para>
+<para>If your GPS uses a SiRF chipset at firmware level 231, reported
+UTC time may be off by the difference between 13 seconds and whatever
+leap-second correction is currently applicable, from startup until
+complete subframe information is received (normally about six
+seconds).  Firmware levels 232 and up don't have this problem.  You
+may run <application>gpsd</application> at debug level 4 to see the
+chipset type and firmware revision level.</para>
 
 <para>When using SiRF chips, the VDOP/TDOP/GDOP figures and associated
 error estimates are computed by <application>gpsd</application> rather
@@ -1945,10 +1978,11 @@ disclosed information about the protocol.</para>
 
 <para><application>gpsd</application> parses the following NMEA
 sentences: RMC, GGA, GLL, GSA, GSV, VTG, ZDA.  It recognizes these
-with either the normal GP talker-ID prefix, or with the II prefix
-emitted by Seahawk Autohelm marine navigation systems, or with the IN
-prefix emitted by some Garmin units.  It recognizes one vendor
-extension, the PGRME emitted by some Garmin GPS models.</para>
+with either the normal GP talker-ID prefix, or with the GN prefix used
+by GLONASS, or with the II prefix emitted by Seahawk Autohelm marine
+navigation systems, or with the IN prefix emitted by some Garmin
+units.  It recognizes one vendor extension, the PGRME emitted by some
+Garmin GPS models.</para>
 
 <para>Note that <application>gpsd</application> returns pure decimal
 degrees, not the hybrid degree/minute format described in the NMEA

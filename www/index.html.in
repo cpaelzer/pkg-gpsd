@@ -33,7 +33,7 @@
     <a href="hall-of-shame.html">Hall of Shame</a><br/>
     <a href="hacking.html">Hacker's Guide</a><br/>
     <a href="references.html">References</a><br/>
-    <a href="compatibility">Application Compatibility</a>
+    <a href="protocol-transition.html">Application Compatibility</a>
     <a href="history.html">History</a><br/>
     <a href="future.html">Future</a><br/>
 
@@ -66,10 +66,10 @@
 
 <h1 id='news'>Urgent news for maintainers of <code>gpsd</code> clients</h1>
 
-<p>We've been warning it was coming for years, and it's here: the
-request/response protocol used by <code>gpsd</code> is about to change
-in ways that will break your application if you're not careful.  The
-old protocol is still supported, but will remain so only for a very
+<p>We've been warning it was coming for years, and it's here: in 2.90,
+the request/response protocol used by <code>gpsd</code> has changed in
+ways that will break your application if you're not careful.  The old
+protocol is still supported, but will remain so only for a very
 limited time.  Read <a href="protocol-transition.html">"Moving to
 GPSD-NG: a Guide for Client Developers"</a> to find out why this is
 happening and what you need to do about it.</p>
@@ -101,15 +101,15 @@ aim for simple, robust interfaces, unfussy operation, and an easy
 learning curve for application developers.  Applications that
 presently use <code>gpsd</code> include <a
 href="http://www.pygps.org">pyGPS</a>, <a
+href="http://www.gpsdrive.de/">gpsdrive</a>, <a
 href="http://www.kismetwireless.net/">Kismet</a>, <a
 href="http://www.gpsdrive.de/">GPSdrive</a>, <a
 href="http://qpegps.sourceforge.net/">gpeGPS</a>, <a
 href="http://www.gnustep.it/enrico/position/">position</a>, <a
-href="http://roadmap.digitalomaha.net/index.html">roadmap</a>, <a
+href="http://roadmap.sourceforge.net/">roadmap</a>, <a
 href="http://roadnav.sourceforge.net/">roadnav</a>, <a
-href="http://www.navit-project.org/">navit</a>, <a
-href="http://viking.sf.net">viking</a>,
-and <a href="http://gaia.serezhkin.com/">gaia</a>.</p>
+href="http://www.navit-project.org/">navit</a>, and <a
+href="http://viking.sf.net">viking</a>.</p>
 
 <p>Under Linux, <code>gpsd</code> normally runs with zero
 configuration.  Binary packages for this program install hotplug
@@ -214,7 +214,7 @@ features of the repository tip (development version) rather than the
 latest stable version.</p>
 
 <dl>
-<dt><a href="gpsd.html">gpsd.1</a></dt>
+<dt><a href="gpsd.html">gpsd.8</a></dt>
 <dd>The <code>gpsd</code> daemon.</dd>
 
 <dt><a href="xgps.html">gps.1</a></dt>
@@ -323,6 +323,10 @@ design of <code>gpsd</code> and vendor claims about binary protocols.</dd>
 
 <dt><a href="writing-a-driver.html">Notes on Writing a GPSD Driver</a></dt>
 <dd>A guide for the perplexed by the author of the Jupiter-T driver.</dd>
+
+<dt><a href="excellence.html">GPSD and Code Excellence</a></dt>
+<dd>An essay written for the <a href="http://codeoffsets.com/">The
+Alliance for Code Excellence</a> on how GPSD drives out bad code.</dd>
 
 </dl>
 

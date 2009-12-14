@@ -48,7 +48,7 @@ endif
 bin_PROGRAMS = $(MOTIF_PROGS) $(XAW_PROGS) $(RTCM104PROGS) $(CURSESPROGS) gpsctl gpspipe gpxlogger lcdgps
 sbin_PROGRAMS = gpsd
 
-check_PROGRAMS = test_float test_bits test_packet test_mkgmtime test_geoid test_json
+check_PROGRAMS = test_float test_trig test_bits test_packet test_mkgmtime test_geoid test_json
 if LIBGPSMM_ENABLE
 check_PROGRAMS += test_gpsmm
 endif
@@ -267,10 +267,10 @@ clean-local:
 	rm -rf build
 
 if LIBGPSMM_ENABLE
-TESTBINS = test_float test_gpsmm test_bits test_packet test_geoid \
+TESTBINS = test_float test_trig test_gpsmm test_bits test_packet test_geoid \
 	test_mkgmtime test_json
 else
-TESTBINS = test_float test_bits test_packet test_geoid \
+TESTBINS = test_float test_trig test_bits test_packet test_geoid \
 	test_mkgmtime test_json
 endif
 
@@ -279,6 +279,12 @@ endif
 #
 test_float_SOURCES = test_float.c
 test_float_LDADD = $(LIBC) libgps.la -lm
+
+#
+# Build test_trig
+#
+test_trig_SOURCES = test_trig.c
+test_trig_LDADD = $(LIBC) libgps.la -lm
 
 if LIBGPSMM_ENABLE
 #
@@ -324,7 +330,6 @@ MANPAGES_BASE = \
 	xgpsspeed.1 \
 	cgps.1 \
 	lcdgps.1 \
-	cgpxlogger.1 \
 	libgps.3 \
 	libgpsmm.3 \
 	libgpsd.3 \
@@ -363,7 +368,7 @@ BUILT_MANPAGES = $(MANPAGES_DIST)
 	$(MANGENERATOR) $(MANFLAGS) $(MANTARGET) $<
 
 # Another instance of the multiple-outputs hack.
-gps.1 xgps.1 xgpsspeed.1 cgps.1 lcdgps.1 cgpxlogger.1: stamp-gps-manpages
+gps.1 xgps.1 xgpsspeed.1 cgps.1 lcdgps.1: stamp-gps-manpages
 	+@WITNESS=stamp-gps-manpages; $(MULTIOUT_RECOVER_DELETED)
 stamp-gps-manpages: gps.xml
 	@rm -f '$@' '$@.tmp'
@@ -375,7 +380,8 @@ endif
 
 noinst_HEADERS = gpsd_config.h \
 	driver_italk.h driver_rtcm2.h driver_superstar2.h \
-	driver_ubx.h gpsmon.h gpsdclient.h json.h gps_json.h
+	driver_ubx.h gpsmon.h gpsdclient.h json.h gps_json.h \
+	revision.h
 
 nodist_include_HEADERS = gpsd.h
 
@@ -400,6 +406,7 @@ EXTRA_DIST = \
 	maskaudit.py.in \
 	dgpsip-servers \
 	test_float.c \
+	test_trig.c \
 	gpsd.php \
 	gpsd.xml \
 	gpsd.h-head \
@@ -438,7 +445,9 @@ EXTRA_DIST = \
 	packaging/gpsd.spec \
 	packaging/etc_default_gpsd \
 	packaging/etc_init.d_gpsd \
-	packaging/etc_init.d_gpsd_rpm
+	packaging/etc_init.d_gpsd_rpm \
+	regress-driver \
+	test
 
 #dist-hook:
 #	$(MKDIR_P) '$(distdir)/contrib' && \
@@ -452,7 +461,7 @@ pkgconfig_DATA = libgps.pc libgpsd.pc
 pkgconfigdir = $(libdir)/pkgconfig
 
 # These are not distributed
-libgps: libgps_core.c .libs/libgps.a
+libgps: libgps_core.c gps.h .libs/libgps.a
 	$(CC) $(CFLAGS) -o libgps -lm -DTESTMAIN $(LIBPTHREAD) -g libgps_core.c .libs/libgps.a
 
 # Report splint warnings
@@ -485,7 +494,7 @@ splint: gpsd.h packet_names.h
 	@echo "Running splint on test_json test harness..."
 	-splint $(SPLINTOPTS) $(test_json_SOURCES)
 
-# Re-indenting to a uniform style would be nice, and we leave this hear
+# Re-indenting to a uniform style would be nice, and we leave this here
 # as a rough guide to the project style, but it turns out that indent is
 # an excessively blunt instrument.  As of 2.2.10 it doesn't honor -nfca
 # and produces loads of spurious changes to splint directives.  Nor does
