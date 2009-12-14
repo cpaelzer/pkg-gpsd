@@ -1,3 +1,9 @@
+gpsd (2.90.1~svn6819-1) experimental; urgency=low
+
+  * SVN snapshot.
+
+ -- Bernd Zeimetz <bzed@debian.org>  Tue, 15 Dec 2009 00:30:41 +0100
+
 gpsd (2.90-2) unstable; urgency=low
 
   * Upload to unstable.
