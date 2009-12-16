@@ -1,8 +1,16 @@
-gpsd (2.90.1~svn6819-1) experimental; urgency=low
+gpsd (2.90.1~svn6819-1) unstable; urgency=low
 
-  * SVN snapshot.
+  * SVN snapshot, uploading to unstable as it fixes
+    the blocking issues with gps_poll.
+    The non-blocking gps_poll was introduced while fixing
+    an issue in gps_unpack, so this upload also
+    Closes: #561280
+  * [84ab918f] Merge branch 'master' into experimental.
+  * [bbd1d183] Merge branch 'experimental-upstream' into experimental
+  * [fd98f498] Update symbols file.
+  * [6f63fa61] Update gbp.conf.
 
- -- Bernd Zeimetz <bzed@debian.org>  Tue, 15 Dec 2009 00:30:41 +0100
+ -- Bernd Zeimetz <bzed@debian.org>  Wed, 16 Dec 2009 10:25:26 +0100
 
 gpsd (2.90-2) unstable; urgency=low
 
