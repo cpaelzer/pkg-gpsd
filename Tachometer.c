@@ -1,4 +1,3 @@
-/* $Id: Tachometer.c 6566 2009-11-20 03:51:06Z esr $ */
 /*
  * Tachometer Widget Implementation
  *
@@ -6,6 +5,9 @@
  * Revised by Shinji Sumimoto, 1989/9 (xtachos)
  * Modifications : ilham@mit.edu   (July 10 '90)
  * Cleaned up and simplified by Eric S. Raymond, December 2004.
+ *
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
  */
 #include <sys/types.h>
 #include <X11/IntrinsicP.h>

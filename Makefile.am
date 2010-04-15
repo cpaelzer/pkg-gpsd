@@ -1,10 +1,14 @@
 # Automake description for gpsd
-# $Id: Makefile.am 7020 2010-03-03 01:42:28Z esr $
+#
+# This file is Copyright (c) 2010 by the GPSD project
+# BSD terms apply: see the file COPYING in the distribution root for details.
+#
 
-# Exclude Subversion state from the tarball.  Needed because we 
+# Exclude version-control state from the tarball.  Needed because we 
 # grab the test directory wholesale. Hack appropriately when and if we 
 # change version control systems.
-am__tar += --exclude '*svn*'
+# \bug This is non-portable and depends on GNU tar beyond-POSIX extensions.
+am__tar += --exclude '*git*'
 
 CLEANFILES =
 
@@ -45,11 +49,17 @@ RTCM104PAGES_DIST = gpsdecode.1
 if HAVE_RTCM104V2
 RTCM104PROGS = gpsdecode
 RTCM104PAGES = $(RTCM104PAGES_DIST)
+else
+if HAVE_RTCM104V3
+RTCM104PROGS = gpsdecode
+RTCM104PAGES = $(RTCM104PAGES_DIST)
+endif
 endif
 
 bin_PROGRAMS = $(MOTIF_PROGS) $(XAW_PROGS) $(RTCM104PROGS) $(CURSESPROGS) gpsctl gpspipe gpxlogger lcdgps
 sbin_PROGRAMS = gpsd
 
+# \todo Add programs to TESTS if not already. used.
 check_PROGRAMS = test_float test_trig test_bits test_packet test_mkgmtime test_geoid test_json
 if LIBGPSMM_ENABLE
 check_PROGRAMS += test_gpsmm
@@ -73,7 +83,7 @@ xgpsspeed_c_sources = \
 xgpsspeed_SOURCES = \
 	$(xgpsspeed_c_sources) \
 	xgpsspeed.icon
-xgpsspeed_LDADD = $(LIBM) $(LIBC) $(LIBNSL) $(LIBSOCKET) $(XAW_LIBS) $(X_LIBS) $(X_PRE_LIBS) libgps.la -lm $(LIBPTHREAD)
+xgpsspeed_LDADD = $(LIBM) $(LIBC) $(LIBNSL) $(LIBSOCKET) $(XAW_LIBS) $(XT_LIBS) $(X_LIBS) $(X_PRE_LIBS) libgps.la -lm $(LIBPTHREAD)
 
 #
 # Build cgps
@@ -159,6 +169,7 @@ libgpsd_c_sources = \
 	serial.c \
 	rtcm2_json.c \
 	srecord.c \
+	shared_json.c \
 	strl.c \
 	subframe.c \
 	drivers.c \
@@ -207,7 +218,7 @@ ais_json.i: jsongen.py
 
 revision.h: Makefile
 	@rm -f revision.h && \
-	echo '#define' REVISION '"svn'`svnversion -n`'"' >revision.h && \
+	echo '#define' REVISION '"'`date -u +%Y-%m-%dT%H:%M:%S`'"' >revision.h && \
 	chmod a-w revision.h
 
 maskdump.c: gpsd.h-tail maskaudit.py
@@ -250,7 +261,6 @@ stamp-python-modules: gpspacket.c gpsclient.c libgps.la setup.py
 	    MAKE='$(MAKE)' \
 		$(PYTHON) setup.py build_ext \
 			--build-lib '$(srcdir)' \
-			--build-temp '$(srcdir)/build' \
 			--include-dirs '$(srcdir):.'\
 			--mangenerator '$(MANGENERATOR)') && \
 	mv -f '$@.tmp' '$@'
@@ -263,14 +273,6 @@ clean-local:
 # Install Python modules
 install-exec-local:
 	$(PYTHON) setup.py install --prefix=${prefix} # --root=$(DESTDIR)
-endif
-
-if LIBGPSMM_ENABLE
-TESTBINS = test_float test_trig test_gpsmm test_bits test_packet test_geoid \
-	test_mkgmtime test_json
-else
-TESTBINS = test_float test_trig test_bits test_packet test_geoid \
-	test_mkgmtime test_json
 endif
 
 #
@@ -394,7 +396,7 @@ endif
 # tarball in order for 'make diat-rpm' to work.  The BUILT_SOURCES
 # files are here in order to minimize build dependencies for package
 # builders who never alter anything, especially the Python dependency.
-# Alsoo note that the test and gps directories are here rather than
+# Also note that the test and gps directories are here rather than
 # being the contents of a SUBDIRS variable so that autconf won't 
 # go looking for makefiles in them.
 EXTRA_DIST = \
@@ -450,9 +452,13 @@ EXTRA_DIST = \
 	packaging/etc_default_gpsd \
 	packaging/etc_init.d_gpsd \
 	packaging/etc_init.d_gpsd_rpm \
+	do-tests \
 	regress-driver \
-	test \
-	gps
+	gps/__init__.py \
+	gps/client.so \
+	gps/fake.py \
+	gps/gps.py \
+	test
 
 #dist-hook:
 #	$(MKDIR_P) '$(distdir)/contrib' && \
@@ -460,7 +466,7 @@ EXTRA_DIST = \
 #distclean-local:
 #	rm -rf '$(distdir)/contrib'
 
-CLEANFILES += $(BUILT_SOURCES) $(TESTBINS) *.core $(PYEXTENSIONS) $(BUILT_MANPAGES)
+CLEANFILES += $(BUILT_SOURCES) *.core $(PYEXTENSIONS) $(BUILT_MANPAGES)
 
 pkgconfig_DATA = libgps.pc libgpsd.pc
 pkgconfigdir = $(libdir)/pkgconfig
@@ -510,7 +516,7 @@ indent:
 	chmod u+w maskdump.c
 	indent -i4 -br -cbi0 -bli0 -ncs -npcs -nfca $(gpsd_c_sources) $(libgpsd_c_sources)
 	chmod u-w maskdump.c
-	@echo "Diff lines:" `svn diff | wc -l`
+	@echo "Diff lines:" `git diff | wc -l`
 
 version:
 	@echo $(VERSION)
@@ -524,6 +530,23 @@ version:
 # These require gcc4; use of the math coprocessor's on-board trig functions
 # apparently increases the accuracy of computation in a way that affects
 # the low-order digits of the track field in the O response.
+
+# Our regression tests are make targets, while automake expects
+# programs.  Thus, our approach is to construct the test
+# infrastructure our way, with make targets, and to have one TEST from
+# automake's viewpoint: a trivial shell script to invoke make with our
+# top-level regression target.
+
+# One might think that using TESTS_ENVIRONMENT=$(MAKE) would work
+# around this, but because the generated rule (check-TESTS) both
+# depends on each TEST as well as invokes it (with TESTS_ENVIRONMENT)
+# the entire list of tests is run twice.
+
+# Make the srcdir test directory writable, because non-srcdir builds
+# write in the wrong place.
+kludge-permissions-regress:
+	chmod +w $(srcdir)/test
+	echo "WARNING: writing to \$\(srcdir])/test!!!"
 
 # Regression-test the daemon
 gps-regress: gpsd 
@@ -553,7 +576,7 @@ rtcm-regress: gpsdecode
 		diff -ub $${f}.chk $(srcdir)/test/test.chk; \
 	done;
 	@echo "Testing idempotency of JSON dump/decode for RTCM2"
-	@gpsdecode -e -j <test/synthetic-rtcm2.json >$(srcdir)/test/test.chk
+	@$(srcdir)/gpsdecode -e -j <test/synthetic-rtcm2.json >$(srcdir)/test/test.chk
 	@grep -v '^#' test/synthetic-rtcm2.json | diff -ub - $(srcdir)/test/test.chk
 	@rm $(srcdir)/test/test.chk
 
@@ -573,8 +596,8 @@ aivdm-regress: gpsdecode
 		diff -ub $${f}.chk $(srcdir)/test/test.chk; \
 	done;
 	@echo "Testing idempotency of JSON dump/decode for AIS"
-	@gpsdecode -e -j <test/synthetic-ais.json >$(srcdir)/test/test.chk
-	@grep -v '^#' test/synthetic-ais.json | diff -ub - $(srcdir)/test/test.chk
+	@$(srcdir)/gpsdecode -e -j <$(srcdir)/test/synthetic-ais.json >$(srcdir)/test/test.chk
+	@grep -v '^#' $(srcdir)/test/synthetic-ais.json | diff -ub - $(srcdir)/test/test.chk
 	@rm $(srcdir)/test/test.chk
 
 # Rebuild the AIVDM regression tests.
@@ -605,7 +628,7 @@ geoid-makeregress: test_geoid
 
 # Regression-test the calendar functions
 time-regress: test_mkgmtime
-	./test_mkgmtime
+	$(srcdir)/test_mkgmtime
 
 # Regression test the unpacking code in libgps
 unpack-regress: libgps
@@ -619,21 +642,20 @@ unpack-makeregress: libgps
 
 # Unit-test the JSON parsing
 json-regress: test_json
-	test_json
+	$(srcdir)/test_json
 
 # Unit-test the bitfield extractor - not in normal tests
 bits-regress: test_bits
-	test_bits
+	$(srcdir)/test_bits
 
-# Do all normal regression tests
-testregress: gps-regress rtcm-regress aivdm-regress packet-regress time-regress unpack-regress json-regress
+# Do all normal regression tests.
+testregress: kludge-permissions-regress gps-regress rtcm-regress aivdm-regress packet-regress time-regress unpack-regress json-regress
 	@echo "Regressions complete."
 
-# automake has support for running programs, but not make targets.
-# However, TESTS_ENVIRONMENT can be used to specify an interpreter,
-# which we use to re-invoke make.
-TESTS_ENVIRONMENT = $(MAKE)
-TESTS = gps-regress rtcm-regress aivdm-regress packet-regress time-regress unpack-regress json-regress
+# do-tests is a shell script that invokes make with target testregress.
+# This works around automake's lack of support for make targets as tests.
+TESTS_ENVIRONMENT = MAKE=$(MAKE)
+TESTS = do-tests
 
 # Productions for setting up and performing udev tests.
 #
@@ -684,17 +706,16 @@ upload-ftp: dist
 	lftp -c "open ftp://ftp.berlios.de/incoming; mput gpsd-$(VERSION).tar.gz gpsd.sum"
 
 #
-# This is how to tag a release for the SVN repository.
+# This is how to tag a release.
 # It requires developer access verified via ssh.
 #
-REPO=https://svn.berlios.de/svnroot/repos/gpsd
-svn-tag:
-	svn copy $(REPO)/trunk $(REPO)/tags/release-$(VERSION) \
-		-m "Tagged for external release $(VERSION)"
+release-tag:
+	git tag -s -m "Tagged for external release $(VERSION)" HEAD
+	git push --tags
 #
 # Ship a release, providing all regression tests pass.
 # The clean is necessary so that dist will remake revision.h
 # with the current revision level in it.
 #
-ship: testregress clean dist upload-ftp svn-tag
+ship: testregress clean dist upload-ftp release-tag
 

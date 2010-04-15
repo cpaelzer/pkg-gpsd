@@ -1,4 +1,6 @@
-# $Id: setup.py 6846 2009-12-17 02:19:16Z esr $
+# This file is Copyright (c) 2010 by the GPSD project
+# BSD terms apply: see the file COPYING in the distribution root for details.
+#
 # Creates build/lib.linux-${arch}-${pyvers}/gpspacket.so,
 # where ${arch} is an architecture and ${pyvers} is a Python version.
 

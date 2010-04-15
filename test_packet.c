@@ -1,4 +1,7 @@
-/* $Id: test_packet.c 6566 2009-11-20 03:51:06Z esr $ */
+/*
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ */
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -236,8 +239,7 @@ static int packet_test(struct map *mp)
     struct gps_packet_t packet;
     int failure = 0;
 
-    packet.type = BAD_PACKET;
-    packet.state = 0;
+    packet_init(&packet);
     /*@i@*/memcpy(packet.inbufptr = packet.inbuffer, mp->test, mp->testlen);
     packet.inbuflen = mp->testlen;
     /*@ -compdef -uniondef -usedef -formatcode @*/
@@ -278,7 +280,7 @@ int main(int argc, char *argv[])
     int option, singletest = 0;
 
     verbose = 0;
-    while ((option = getopt(argc, argv, "Vt:v:")) != -1) {
+    while ((option = getopt(argc, argv, "t:v:")) != -1) {
 	switch (option) {
 	case 't':
 	    singletest = atoi(optarg);
@@ -286,9 +288,6 @@ int main(int argc, char *argv[])
 	case 'v':
 	    verbose = atoi(optarg); 
 	    break;
-	case 'V':
-	    (void)fprintf(stderr, "SVN ID: $Id: test_packet.c 6566 2009-11-20 03:51:06Z esr $ \n");
-	    exit(0);
 	}
     }
 

@@ -1,4 +1,7 @@
-/* $Id: gpsd_report.c 6757 2009-12-07 20:29:57Z mledford $ */
+/*
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ */
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdarg.h>

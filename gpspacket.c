@@ -1,6 +1,9 @@
-/* $Id: gpspacket.c 6832 2009-12-15 13:03:49Z esr $ */
 /*
  * Python binding for the packet.c module.
+ *
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ *
  */
 #include <Python.h>
 

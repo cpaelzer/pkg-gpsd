@@ -1,4 +1,7 @@
-/* $Id: gpsdecode.c 6965 2010-01-30 14:19:42Z esr $ */
+/*
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ */
 #include <sys/types.h>
 #ifndef S_SPLINT_S
 #include <unistd.h>
@@ -341,6 +344,29 @@ static void aivdm_csv_dump(struct ais_t *ais, char *buf, size_t buflen)
 			   ais->type24.dim.to_starboard);
 	}
 	break;
+    case 25:	/* Binary Message, Single Slot */
+	(void)snprintf(buf+strlen(buf), buflen-strlen(buf),
+		       "%u,%u,%u,%u,%zd:%s\r\n",
+		       (uint)ais->type25.addressed,
+		       (uint)ais->type25.structured,
+		       ais->type25.dest_mmsi,
+		       ais->type25.app_id,
+		       ais->type25.bitcount,
+		       gpsd_hexdump(ais->type25.bitdata,
+				       (ais->type25.bitcount+7)/8));
+	break;
+    case 26:	/* Binary Message, Multiple Slot */
+	(void)snprintf(buf+strlen(buf), buflen-strlen(buf),
+		       "%u,%u,%u,%u,%zd:%s:%u\r\n",
+		       (uint)ais->type26.addressed,
+		       (uint)ais->type26.structured,
+		       ais->type26.dest_mmsi,
+		       ais->type26.app_id,
+		       ais->type26.bitcount,
+		       gpsd_hexdump(ais->type26.bitdata,
+				    (ais->type26.bitcount+7)/8),
+		       ais->type26.radio);
+	break;
     default:
 	(void)snprintf(buf+strlen(buf),
 		      buflen-strlen(buf), "unknown AIVDM message content.");
@@ -366,6 +392,7 @@ static void decode(FILE *fpin, FILE *fpout)
     while (packet_get(fileno(fpin), &lexer) > 0) {
 	if (lexer.type == COMMENT_PACKET)
 	    continue;
+#ifdef RTCM104V2_ENABLE
 	else if (lexer.type == RTCM2_PACKET) {
 	    rtcm2_unpack(&rtcm2, (char *)lexer.isgps.buf);
 	    if (json)
@@ -374,10 +401,13 @@ static void decode(FILE *fpin, FILE *fpout)
 		rtcm2_sager_dump(&rtcm2, buf, sizeof(buf));
 	    (void)fputs(buf, fpout);
 	}
+#endif
+#ifdef RTCM104V3_ENABLE
 	else if (lexer.type == RTCM3_PACKET) {
 	    rtcm3_unpack(&rtcm3, (char *)lexer.outbuffer);
 	    rtcm3_dump(&rtcm3, stdout);
 	}
+#endif
 	else if (lexer.type == AIVDM_PACKET) {
 	    if (verbose >=1 )
 		(void)fputs((char *)lexer.outbuffer, stdout);
@@ -474,7 +504,7 @@ int main(int argc, char **argv)
 	    break;
 
 	case 'V':
-	    (void)fprintf(stderr, "SVN ID: $Id: gpsdecode.c 6965 2010-01-30 14:19:42Z esr $ \n");
+	    (void)fprintf(stderr, "gpsdecode revision " VERSION "\n");
 	    exit(0);
 
 	case '?':

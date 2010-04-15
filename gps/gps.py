@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-# $Id: gps.py 7020 2010-03-03 01:42:28Z esr $
+#
+# This file is Copyright (c) 2010 by the GPSD project
+# BSD terms apply: see the file COPYING in the distribution root for details.
 #
 # gps.py -- Python interface to GPSD.
 #
@@ -659,34 +661,20 @@ def isotime(s):
 
 if __name__ == '__main__':
     import readline, getopt
-    (options, arguments) = getopt.getopt(sys.argv[1:], "vw")
+    (options, arguments) = getopt.getopt(sys.argv[1:], "w")
     streaming = False
     verbose = False
     for (switch, val) in options:
-        if switch == '-w':
-            streaming = True    
-        elif switch == '-v':
+        if switch == '-v':
             verbose = True    
     if len(arguments) > 2:
-        print 'Usage: gps.py [host [port]]'
+        print 'Usage: gps.py [-v] [host [port]]'
         sys.exit(1)
 
-    if streaming:
-        session = gps(*arguments)
-        session.set_raw_hook(lambda s: sys.stdout.write(s.strip() + "\n"))
-        session.stream(WATCH_ENABLE|WATCH_NEWSTYLE)
-        for report in session:
-            print report
-    else:
-        print "This is the exerciser for the Python gps interface."
-        session = gps(*arguments)
-        session.set_raw_hook(lambda s: sys.stdout.write(s.strip() + "\n"))
-        try:
-            while True:
-                session.query(raw_input("> "))
-                print session
-        except EOFError:
-            print "Goodbye!"
-        del session
+    session = gps(*arguments)
+    session.set_raw_hook(lambda s: sys.stdout.write(s.strip() + "\n"))
+    session.stream(WATCH_ENABLE|WATCH_NEWSTYLE)
+    for report in session:
+        print report
 
 # gps.py ends here

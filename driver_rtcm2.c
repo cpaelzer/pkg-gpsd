@@ -1,4 +1,3 @@
-/* $Id: driver_rtcm2.c 6566 2009-11-20 03:51:06Z esr $ */
 /*****************************************************************************
 
 This is a decoder for RTCM-104 2.x, an obscure and complicated serial
@@ -47,6 +46,9 @@ are one or two annoying and vital omissions!). Information
 about the serial interface format was gleaned from studying
 the output of a beacon receiver test program made available on
 Starlink's website.
+
+This file is Copyright (c) 2010 by the GPSD project
+BSD terms apply: see the file COPYING in the distribution root for details.
 
 *****************************************************************************/
 

@@ -1,0 +1,100 @@
+# Binaries
+gpsd
+xgps
+xgpsspeed
+rtcmdecode
+gpsmon
+gpsctl
+gpsdecode
+cgps
+lcdgps
+gpxlogger
+cgpxlogger
+gpspipe
+libgps
+gpspacket.so
+# These are built from .in files
+gpscat
+gpsfake
+gpsprof
+jsongen.py
+maskaudit.py
+valgrind-audit
+# Unit tests
+test_float
+test_bits
+test_gpsmm
+test_packet
+test_mkgmtime
+test_geoid
+test_json
+test_trig
+# Other generated files
+./*.html
+*.[1358]
+*.pyc
+*.pc
+*.log
+*.sum
+*.i
+*.o
+*.lo
+*.so
+*.la
+*~
+maskdump.c
+gpsd.h
+gpsd_config.h.in
+gpsd_config.h
+packet_names.h
+gpsd.spec
+revision.h
+MANIFEST
+# Used by setup.py as scratch space
+build
+# Developer sandbox directory for patches that haven't been applied yet
+patches
+# autotools cruft
+configure
+Makefile.in
+Makefile
+config.*
+aclocal.m4
+py-compile
+ltmain.sh
+missing
+autom4te.cache
+depcomp
+install-sh
+stamp-*
+.libs
+.deps
+libtool
+NEWS
+ChangeLog
+# Documentation
+www/AIVDM.html
+www/NMEA.html
+www/gps.html
+www/gpscat.html
+www/gpsctl.html
+www/gpsd.html
+www/gpsdecode.html
+www/gpsfake.html
+www/gpsmon.html
+www/gpspipe.html
+www/gpsprof.html
+www/hardware.html
+www/index.html
+www/libgps.html
+www/libgpsd.html
+www/libgpsmm.html
+www/performance/performance.html
+www/protocol-evolution.html
+www/protocol-transition.html
+www/client-howto.html
+www/rtcm-104.html
+www/srec.html
+www/writing-a-driver.html
+# Control for the flock tester
+devtools/.flocktest

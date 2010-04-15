@@ -1,19 +1,26 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+This file is Copyright (c) 2010 by the GPSD project
+BSD terms apply: see the file COPYING in the distribution root for details.
+-->
 <!DOCTYPE refentry PUBLIC
    "-//OASIS//DTD DocBook XML V4.1.2//EN"
    "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
 <!ENTITY gpsdsock	 "/var/run/gpsd.sock">
 ]>
 <refentry id='gpsd.8'>
+<refentryinfo><date>9 Aug 2004</date></refentryinfo>
 <refmeta>
 <refentrytitle>gpsd</refentrytitle>
 <manvolnum>8</manvolnum>
-<refmiscinfo class='date'>9 Aug 2004</refmiscinfo>
+<refmiscinfo class="source">The GPSD Project</refmiscinfo>
+<refmiscinfo class="manual">GPSD Documentation</refmiscinfo>
 </refmeta>
 <refnamediv id='name'>
 <refname>gpsd</refname>
 <refpurpose>interface daemon for GPS receivers</refpurpose>
 </refnamediv>
+
 <refsynopsisdiv id='synopsis'>
 
 <cmdsynopsis>
@@ -312,7 +319,12 @@ the value of which is either the name of the invoking command
 or one of the strings "DEVICE" or "ERROR". Their length
 limit is 1024 characters, including trailing newline.</para>
 
-<para>Here are the most important responses:</para>
+<para>The remainder of this section documents the core GPSD protocol.
+Extensions are docomented in the following sections. The extensions 
+may not be supported in your <application>gpsd</application> instance 
+if it has been compiled with a restricted feature set.</para>
+
+<para>Here are the core-protocol responses:</para>
 
 <variablelist>
 <varlistentry>
@@ -731,7 +743,7 @@ will assert the VERSION_SET bit in the top-level set member.</para>
 <para>Here's an example:</para>
 
 <programlisting>
-{"class":"VERSION","version":"2.40dev","rev":$Id: gpsd.xml 6988 2010-02-03 23:40:57Z esr $,"proto_major":3,"proto_minor":1}
+{"class":"VERSION","version":"2.40dev","rev":"06f62e14eae9886cde907dae61c124c53eb1101f","proto_major":3,"proto_minor":1}
 </programlisting>
 
 
@@ -790,14 +802,14 @@ notifications.</para>
 </varlistentry>
 
 <varlistentry>
-<term>?WATCH</term> 
+<term>?WATCH;</term> 
 <listitem>
 
-<para>This command sets watcher mode. It also sets or elicits a
-report of per-subscriber buffering policy and the raw bit.  An
-argument WATCH object changes the subscriber's policy. The respunce
-describes the subscriber's policy. The response will also include a
-DEVICES object.</para>
+<para>This command sets watcher mode. It also sets or elicits a report
+of per-subscriber policy and the raw bit.  An argument WATCH object
+changes the subscriber's policy. The respunce describes the
+subscriber's policy. The response will also include a DEVICES
+object.</para>
 
 <para>A WATCH object has the following elements:</para>
 
@@ -886,6 +898,81 @@ will assert the POLICY_SET bit in the top-level set member.</para>
 <programlisting>
 {"class":"WATCH", "raw":1,"scaled":true}
 </programlisting>
+
+</listitem>
+</varlistentry>
+
+<varlistentry>
+<term>?POLL;</term> 
+<listitem>
+
+<warning>
+<para>This feature is a work in progress, introduced at protocol version
+3.2.  The name, attributes, and semantics may change before it is
+finalized. The minor version number of the protocol will be bumped
+each time this occurs.</para>
+</warning>
+
+<para>The POLL command requests data from the last-seen fixes on all
+active GPS devices.  Devices must previously have been activated by
+?WATCH to be pollable, or have been specified on the GPSD command line
+together with an <option>-n</option> option.</para>
+
+<para>Polling can lead to possibly surprising results when it is used
+on a device such as an NMEA GPS for which a complete fix has to be
+accumulated from several sentences. If you poll while those sentences
+are being omitted, the response will only contain partial fix
+data.</para>
+
+<para>The POLL response is a timestamped list of TPV objects
+describing cached data. If a device ha not seen fixes, it will
+be reported with a mode field of zero.</para>
+
+<table frame="all" pgwide="0"><title>POLL object</title>
+<tgroup cols="3" align="left" colsep="1" rowsep="1">
+<thead>
+<row>
+	<entry>Name</entry>
+	<entry>Always?</entry>
+	<entry>Type</entry>
+	<entry>Description</entry>
+</row>
+</thead>
+<tbody>
+<row>
+	<entry>class</entry>
+	<entry>Yes</entry>
+	<entry>string</entry>
+        <entry>Fixed: "POLL"</entry>
+</row>
+<row>
+	<entry>time</entry>
+	<entry>Yes</entry>
+	<entry>Numeric</entry>
+        <entry>Seconds since the Unix epoch, UTC. May have a
+	fractional part of up to .001sec precision.</entry>
+</row>
+<row>
+	<entry>active</entry>
+	<entry>Yes</entry>
+	<entry>Numeric</entry>
+        <entry>Count of active devices.</entry>
+</row>
+<row>
+	<entry>fixes</entry>
+	<entry>Yes</entry>
+	<entry>JSON array</entry>
+        <entry>Comma-separated list of TPV objects.</entry>
+</row>
+<row>
+	<entry>skyviews</entry>
+	<entry>Yes</entry>
+	<entry>JSON array</entry>
+        <entry>Comma-separated list of SKY objects.</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
 
 </listitem>
 </varlistentry>
@@ -1152,15 +1239,21 @@ the following elements:</para>
 
 <para>When the C client library parses a response of this kind, it
 will assert the ERR_SET bit in the top-level set member.</para>
+
 </refsect1>
 <refsect1 id='ais-rtcm'><title>AIS AND RTCM DUMP FORMATS</title>
+
+<para>AIS support is an extension.  It may not be present if your
+instance of <application>gpsd</application> has been built with
+a restricted feature set.</para>
 
 <para>AIS packets are dumped as JSON objects with class "AIS".  Each
 AIS report object contains a "type" field giving the AIS message type
 and a "scaled" field telling whether the remainder of the fields are
-dumped in scaled or unscaled form. Other fields are as named ands
-specified in the <citetitle>AIVDM/AIVDO Protocol Decoding</citetitle>
-document.</para>
+dumped in scaled or unscaled form. Other fields have names and types
+as specified in the <citetitle>AIVDM/AIVDO Protocol Decoding</citetitle>
+document; each message field table may be directly interpreted as a 
+specification for the members of the corresponding JSON object type.</para>
 
 <para>RTCM2 corrections are dumped in the JSON format described in
 <citerefentry><refentrytitle>rtcm104</refentrytitle><manvolnum>5</manvolnum></citerefentry>.</para>

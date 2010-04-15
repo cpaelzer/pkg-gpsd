@@ -1,4 +1,7 @@
-/* $Id: test_float.c 6516 2009-11-17 19:23:00Z esr $ */
+/*
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ */
 #include <stdio.h>
 
 /*

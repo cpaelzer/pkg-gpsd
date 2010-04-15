@@ -1,11 +1,17 @@
-/* Feature configuration switches end here */
+/* Feature configuration switches end here
+ *
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ */
 #endif /* GPSD_CONFIG_H */
 
-/* $Id: gpsd.h-tail 6931 2010-01-13 18:48:02Z esr $ */
+#ifdef _WIN32
+typedef unsigned int speed_t;
+#endif
 
 /* constants for the VERSION response */
 #define GPSD_PROTO_MAJOR_VERSION	3	/* bump on incompatible changes */
-#define GPSD_PROTO_MINOR_VERSION	1	/* bump on compatible changes */
+#define GPSD_PROTO_MINOR_VERSION	2	/* bump on compatible changes */
 
 /* Some internal capabilities depend on which drivers we're compiling. */
 #ifdef EARTHMATE_ENABLE
@@ -101,6 +107,7 @@ struct gps_packet_t {
     } isgps;
 };
 
+extern void packet_init(struct gps_packet_t *);
 extern void packet_reset(struct gps_packet_t *);
 extern void packet_pushback(struct gps_packet_t *);
 extern void packet_parse(struct gps_packet_t *);
@@ -138,15 +145,6 @@ extern size_t oncore_payload_cksum_length(unsigned char id1,unsigned char id2);
 
 /* this is where we choose the confidence level to use in reports */
 #define GPSD_CONFIDENCE	CEP95_SIGMA
-
-/* the map of device class names */
-struct classmap_t {
-    char	*name;
-    int		typemask;
-    int		packetmask;
-};
-#define CLASSMAP_NITEMS	5
-extern struct classmap_t classmap[CLASSMAP_NITEMS];
 
 #define NTPSHMSEGS	4		/* number of NTP SHM segments */
 
@@ -239,7 +237,9 @@ struct gps_device_t {
     struct gps_context_t	*context;
     bool is_serial;
     double rtcmtime;	/* timestamp of last RTCM104 correction to GPS */
+#ifndef _WIN32
     struct termios ttyset, ttyset_old;
+#endif
     unsigned int baudindex;
     int saved_baud;
     struct gps_packet_t packet;
@@ -259,6 +259,8 @@ struct gps_device_t {
     int observed;			/* which packet type`s have we seen? */
     bool cycle_end_reliable;		/* does driverr signal REPORT_SET */
     bool notify_clients;		/* ship DEVICE notification on poll? */
+    struct gps_fix_t fixbuffer;		/* info to report to the client */
+    struct gps_fix_t oldfix;		/* previous fix for error modeling */
     /*
      * The rest of this structure is driver-specific private storage.
      * Because the Garmin driver uses a long buffer, you can have
@@ -305,7 +307,6 @@ struct gps_device_t {
 #define TIME_SEEN_GPS_2	0x02	/* Seen GPS time variant 2? */
 #define TIME_SEEN_UTC_1	0x04	/* Seen UTC time variant 1? */
 #define TIME_SEEN_UTC_2	0x08	/* Seen UTC time variant 2? */
-#ifdef ALLOW_RECONFIGURE
 	    /* fields from Navigation Parameters message */
 	    bool nav_parameters_seen;	/* have we seen one? */
 	    unsigned char altitude_hold_mode;
@@ -315,7 +316,6 @@ struct gps_device_t {
 	    unsigned char degraded_timeout;
 	    unsigned char dr_timeout;
 	    unsigned char track_smooth_mode;
-#endif /* ALLOW_RECONFIGURE */
 	} sirf;
 #endif /* SIRF_ENABLE */
 #ifdef SUPERSTAR2_ENABLE

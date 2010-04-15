@@ -1,4 +1,7 @@
-/* $Id: gpxlogger.c 6920 2010-01-12 19:22:47Z esr $ */
+/*
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ */
 #include <stdlib.h>
 #include "gpsd_config.h"
 #include <sys/types.h>
@@ -17,6 +20,7 @@
 #endif /* S_SPLINT_S */
 #include "gps.h"
 #include "gpsdclient.h"
+#include "revision.h"
 
 /**************************************************************************
  *
@@ -301,7 +305,7 @@ static int socket_mainloop(void)
     }
 
     gps_set_raw_hook(gpsdata, process);
-    gps_stream(gpsdata, WATCH_ENABLE|WATCH_NEWSTYLE, NULL);
+    gps_stream(gpsdata, WATCH_ENABLE, NULL);
 
     for(;;) {
 	int data;
@@ -348,12 +352,12 @@ int main (int argc, char** argv)
     progname = argv[0];
     while ((ch = getopt(argc, argv, "D:hi:V")) != -1) {
 	switch (ch) {
+#ifdef CLIENTDEBUG_ENABLE
 	case 'D':
 	    debug = atoi(optarg);
-#ifdef CLIENTDEBUG_ENABLE
 	    gps_enable_debug(debug, stdout);
-#endif /* CLIENTDEBUG_ENABLE */
 	    break;
+#endif /* CLIENTDEBUG_ENABLE */
 	case 'i':		/* set polling interfal */
 	    timeout = (unsigned int)atoi(optarg);
 	    if (timeout < 1)
@@ -363,7 +367,7 @@ int main (int argc, char** argv)
 			"WARNING: track timeout is an hour or more!\n");
 	    break;
 	case 'V':
-	    (void)fprintf(stderr, "SVN ID: $Id: gpxlogger.c 6920 2010-01-12 19:22:47Z esr $ \n");
+	    (void)fprintf(stderr, "gpxlogger revision " REVISION "\n");
 	    exit(0);
 	default:
  	    usage();

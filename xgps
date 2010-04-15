@@ -10,6 +10,9 @@ This is xgps, a test client for the gpsd daemon.
 
 By Eric S. Raymond for the GPSD project, December 2009
 '''
+#
+# This file is Copyright (c) 2010 by the GPSD project
+# BSD terms apply: see the file COPYING in the distribution root for details.
 
 import sys, os, re, math, time, exceptions, getopt, socket
 
@@ -275,7 +278,7 @@ class AISView:
 class Base:
     gpsfields = (
         # First column
-        ("Time", lambda s, r: gps.isotime(r.time)),
+        ("Time", lambda s, r: s.update_time(r)),
         ("Latitude", lambda s, r: s.update_latitude(r)),
         ("Longitude", lambda s, r: s.update_longitude(r)),
         ("Altitude", lambda s, r: s.update_altitude(r)),
@@ -458,6 +461,12 @@ class Base:
         return False
 
     # State updates
+
+    def update_time(self, data):
+        if hasattr(data, "time"):
+            return gps.isotime(data.time)
+        else:
+            return "n/a"
 
     def update_latitude(self, data):
         if data.mode >= gps.MODE_2D:

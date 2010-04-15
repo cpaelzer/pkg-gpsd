@@ -4,8 +4,13 @@ NAME
    gpsd_json.c - move data between in-core and JSON structures
 
 DESCRIPTION
-   This module uses the generic JSON parser to get data from JSON
-representations to gpsd core strctures, and vice_versa.
+   These are functions (used only by the daemon) to dump the contents
+of various core data structures in JSON.
+
+PERMISSIONS
+  Written by Eric S. Raymond, 2009
+  This file is Copyright (c) 2010 by the GPSD project
+  BSD terms apply: see the file COPYING in the distribution root for details.
 
 ***************************************************************************/
 
@@ -23,6 +28,14 @@ representations to gpsd core strctures, and vice_versa.
  * Manifest names for the gnss_type enum - must be kept synced with it.
  * Also, masks so we can tell what packet types correspond to each class.
  */
+/* the map of device class names */
+struct classmap_t {
+    char	*name;
+    int		typemask;
+    int		packetmask;
+};
+#define CLASSMAP_NITEMS	5
+
 struct classmap_t classmap[CLASSMAP_NITEMS] = {
     /* name	typemask	packetmask */
     {"ANY",	0,       	0},
@@ -89,7 +102,7 @@ void json_version_dump(/*@out@*/char *reply, size_t replylen)
 		   GPSD_PROTO_MAJOR_VERSION, GPSD_PROTO_MINOR_VERSION);
 }
 
-void json_tpv_dump(const struct gps_data_t *gpsdata, struct gps_fix_t *fixp, 
+void json_tpv_dump(const struct gps_data_t *gpsdata,
 		   /*@out@*/char *reply, size_t replylen)
 {
     assert(replylen > 2);
@@ -102,78 +115,89 @@ void json_tpv_dump(const struct gps_data_t *gpsdata, struct gps_fix_t *fixp,
 		   replylen-strlen(reply),
 		   "\"device\":\"%s\",",
 		   gpsdata->dev.path);
-    if (isnan(fixp->time)==0)
+    if (isnan(gpsdata->fix.time)==0)
 	(void)snprintf(reply+strlen(reply),
 		       replylen-strlen(reply),
 		       "\"time\":%.3f,",
-		       fixp->time);
-    if (isnan(fixp->ept)==0)
+		       gpsdata->fix.time);
+    if (isnan(gpsdata->fix.ept)==0)
 	(void)snprintf(reply+strlen(reply),
 		       replylen-strlen(reply),
 		       "\"ept\":%.3f,",
-		       fixp->ept);
-    if (isnan(fixp->latitude)==0)
-	(void)snprintf(reply+strlen(reply),
-		       replylen-strlen(reply),
-		       "\"lat\":%.9f,",
-		       fixp->latitude);
-    if (isnan(fixp->longitude)==0)
-	(void)snprintf(reply+strlen(reply),
-		       replylen-strlen(reply),
-		       "\"lon\":%.9f,",
-		       fixp->longitude);
-    if (isnan(fixp->altitude)==0)
-	(void)snprintf(reply+strlen(reply),
-		       replylen-strlen(reply),
-		       "\"alt\":%.3f,",
-		       fixp->altitude);
-    if (isnan(fixp->epx)==0)
-	(void)snprintf(reply+strlen(reply),
-		       replylen-strlen(reply),
-		       "\"epx\":%.3f,",
-		       fixp->epx);
-    if (isnan(fixp->epy)==0)
-	(void)snprintf(reply+strlen(reply),
-		       replylen-strlen(reply),
-		       "\"epy\":%.3f,",
-		       fixp->epy);
-    if (isnan(fixp->epv)==0)
-	(void)snprintf(reply+strlen(reply),
-		       replylen-strlen(reply),
-		       "\"epv\":%.3f,",
-		       fixp->epv);
-    if (isnan(fixp->track)==0)
-	(void)snprintf(reply+strlen(reply),
-		       replylen-strlen(reply),
-		       "\"track\":%.4f,",
-		       fixp->track);
-    if (isnan(fixp->speed)==0)
-	(void)snprintf(reply+strlen(reply),
-		       replylen-strlen(reply),
-		       "\"speed\":%.3f,",
-		       fixp->speed);
-    if (isnan(fixp->climb)==0)
-	(void)snprintf(reply+strlen(reply),
-		       replylen-strlen(reply),
-		       "\"climb\":%.3f,",
-		       fixp->climb);
-    if (isnan(fixp->epd)==0)
-	(void)snprintf(reply+strlen(reply),
-		       replylen-strlen(reply),
-		       "\"epd\":%.4f,",
-		       fixp->epd);
-    if (isnan(fixp->eps)==0)
-	(void)snprintf(reply+strlen(reply),
-		       replylen-strlen(reply),
-		       "\"eps\":%.2f,", fixp->eps);
-    if (isnan(fixp->epc)==0)
-	(void)snprintf(reply+strlen(reply),
-		       replylen-strlen(reply),
-		       "\"epc\":%.2f,", fixp->epc);
-    if (fixp->mode > 0)
-	(void)snprintf(reply+strlen(reply),
-		       replylen-strlen(reply),
-		       "\"mode\":%d,", fixp->mode);
+		       gpsdata->fix.ept);
+    /*
+     * Suppressing TPV fields that would be invalid because the fix
+     * quality doesn't support them is nice for cutting down on the
+     * volume of meaningless output, but the real reason to do it is
+     * that we've observed that geodetic fix computation is unstable
+     * in a way that tends to change low-order digits in invalid
+     * fixes. Dumping these tends to cause cross-architecture failures
+     * in the regression tests.  Rgus effect has been seen on SiRF-II
+     * chips, which are quite common.
+     */
+    if (gpsdata->fix.mode >= MODE_2D) {
+	if (isnan(gpsdata->fix.latitude)==0)
+	    (void)snprintf(reply+strlen(reply),
+			   replylen-strlen(reply),
+			   "\"lat\":%.9f,",
+			   gpsdata->fix.latitude);
+	if (isnan(gpsdata->fix.longitude)==0)
+	    (void)snprintf(reply+strlen(reply),
+			   replylen-strlen(reply),
+			   "\"lon\":%.9f,",
+			   gpsdata->fix.longitude);
+	if (gpsdata->fix.mode >= MODE_3D && isnan(gpsdata->fix.altitude)==0)
+	    (void)snprintf(reply+strlen(reply),
+			   replylen-strlen(reply),
+			   "\"alt\":%.3f,",
+			   gpsdata->fix.altitude);
+	if (isnan(gpsdata->fix.epx)==0)
+	    (void)snprintf(reply+strlen(reply),
+			   replylen-strlen(reply),
+			   "\"epx\":%.3f,",
+			   gpsdata->fix.epx);
+	if (isnan(gpsdata->fix.epy)==0)
+	    (void)snprintf(reply+strlen(reply),
+			   replylen-strlen(reply),
+			   "\"epy\":%.3f,",
+			   gpsdata->fix.epy);
+	if ((gpsdata->fix.mode >= MODE_3D) && isnan(gpsdata->fix.epv)==0)
+	    (void)snprintf(reply+strlen(reply),
+			   replylen-strlen(reply),
+			   "\"epv\":%.3f,",
+			   gpsdata->fix.epv);
+	if (isnan(gpsdata->fix.track)==0)
+	    (void)snprintf(reply+strlen(reply),
+			   replylen-strlen(reply),
+			   "\"track\":%.4f,",
+			   gpsdata->fix.track);
+	if (isnan(gpsdata->fix.speed)==0)
+	    (void)snprintf(reply+strlen(reply),
+			   replylen-strlen(reply),
+			   "\"speed\":%.3f,",
+			   gpsdata->fix.speed);
+	if ((gpsdata->fix.mode >= MODE_3D) && isnan(gpsdata->fix.climb)==0)
+	    (void)snprintf(reply+strlen(reply),
+			   replylen-strlen(reply),
+			   "\"climb\":%.3f,",
+			   gpsdata->fix.climb);
+	if (isnan(gpsdata->fix.epd)==0)
+	    (void)snprintf(reply+strlen(reply),
+			   replylen-strlen(reply),
+			   "\"epd\":%.4f,",
+			   gpsdata->fix.epd);
+	if (isnan(gpsdata->fix.eps)==0)
+	    (void)snprintf(reply+strlen(reply),
+			   replylen-strlen(reply),
+			   "\"eps\":%.2f,", gpsdata->fix.eps);
+	if ((gpsdata->fix.mode >= MODE_3D) && isnan(gpsdata->fix.epc)==0)
+	    (void)snprintf(reply+strlen(reply),
+			   replylen-strlen(reply),
+			   "\"epc\":%.2f,", gpsdata->fix.epc);
+    }
+    (void)snprintf(reply+strlen(reply),
+		   replylen-strlen(reply),
+		   "\"mode\":%d,", gpsdata->fix.mode);
     if (reply[strlen(reply)-1] == ',')
 	reply[strlen(reply)-1] = '\0';	/* trim trailing comma */
     (void)strlcat(reply, "}\r\n", sizeof(reply)-strlen(reply));
@@ -305,10 +329,12 @@ void json_device_dump(const struct gps_device_t *device,
 			   device->gpsdata.dev.parity,
 			   device->gpsdata.dev.stopbits,
 			   device->gpsdata.dev.cycle);
+#ifdef ALLOW_RECONFIGURE
 	    if (device->device_type != NULL && device->device_type->rate_switcher != NULL)
 		(void)snprintf(reply+strlen(reply), replylen-strlen(reply),
 			       ",\"mincycle\":%2.2f",
 			       device->device_type->min_cycle);
+#endif /* ALLOW_RECONFIGURE */
 	}
     }
     if (reply[strlen(reply)-1] == ',')
@@ -1281,6 +1307,31 @@ void aivdm_json_dump(const struct ais_t *ais, bool scaled, /*@out@*/char *buf, s
 			  ais->type24.dim.to_starboard);
 	}
 	break;
+    case 25:	/* Binary Message, Single Slot */
+	(void)snprintf(buf+strlen(buf), buflen-strlen(buf),
+		       "\"addressed\":%s,\"structured\":%s,\"dest_mmsi\":%u,"
+		       "\"app_id\":%u,\"data\":\"%zd:%s\"}\r\n",
+		       JSON_BOOL(ais->type25.addressed),
+		       JSON_BOOL(ais->type25.structured),
+		       ais->type25.dest_mmsi,
+		       ais->type25.app_id,
+		       ais->type25.bitcount,
+		       gpsd_hexdump(ais->type25.bitdata,
+				       (ais->type25.bitcount+7)/8));
+	break;
+    case 26:	/* Binary Message, Multiple Slot */
+	(void)snprintf(buf+strlen(buf), buflen-strlen(buf),
+		       "\"addressed\":%s,\"structured\":%s,\"dest_mmsi\":%u,"
+		       "\"app_id\":%u,\"data\":\"%zd:%s\"\"radio\":%u}\r\n",
+		       JSON_BOOL(ais->type26.addressed),
+		       JSON_BOOL(ais->type26.structured),
+		       ais->type26.dest_mmsi,
+		       ais->type26.app_id,
+		       ais->type26.bitcount,
+		       gpsd_hexdump(ais->type26.bitdata,
+				    (ais->type26.bitcount+7)/8),
+		       ais->type26.radio);
+	break;
     default:
 	if (buf[strlen(buf)-1] == ',')
 	    buf[strlen(buf)-1] = '\0';
@@ -1292,74 +1343,5 @@ void aivdm_json_dump(const struct ais_t *ais, bool scaled, /*@out@*/char *buf, s
 }
 
 #endif /* defined(AIVDM_ENABLE) */
-
-int json_device_read(const char *buf, 
-		     /*@out@*/struct devconfig_t *dev, 
-		     /*@null@*/const char **endptr)
-{
-    /*@ -fullinitblock @*/
-    const struct json_attr_t json_attrs_device[] = {
-	{"class",      t_check,      .dflt.check = "DEVICE"},
-	
-        {"path",       t_string,     .addr.string  = dev->path,
-	                                .len = sizeof(dev->path)},
-	{"activated",  t_real,       .addr.real = &dev->activated},
-	{"flags",      t_integer,    .addr.integer = &dev->flags},
-	{"driver",     t_string,     .addr.string  = dev->driver,
-	                                .len = sizeof(dev->driver)},
-	{"subtype",    t_string,     .addr.string  = dev->subtype,
-	                                .len = sizeof(dev->subtype)},
-	{"native",     t_integer,    .addr.integer = &dev->driver_mode,
-				        .dflt.integer = DEVDEFAULT_NATIVE},
-	{"bps",	       t_uinteger,   .addr.uinteger = &dev->baudrate,
-				        .dflt.uinteger = DEVDEFAULT_BPS},
-	{"parity",     t_character,  .addr.character = &dev->parity,
-                                        .dflt.character = DEVDEFAULT_PARITY},
-	{"stopbits",   t_uinteger,   .addr.uinteger = &dev->stopbits,
-				        .dflt.uinteger = DEVDEFAULT_STOPBITS},
-	{"cycle",      t_real,       .addr.real = &dev->cycle,
-				        .dflt.real = NAN},
-	{"mincycle",   t_real,       .addr.real = &dev->mincycle,
-				        .dflt.real = NAN},
-	{NULL},
-    };
-    /*@ +fullinitblock @*/
-    int status;
-
-    status = json_read_object(buf, json_attrs_device, endptr);
-    if (status != 0)
-	return status;
-
-    return 0;
-}
-
-int json_watch_read(const char *buf, 
-		    /*@out@*/struct policy_t *ccp,
-		    /*@null@*/const char **endptr)
-{
-    /*@ -fullinitblock @*/
-    struct json_attr_t chanconfig_attrs[] = {
-	{"class",          t_check,    .dflt.check = "WATCH"},
-	
-	{"enable",         t_boolean,  .addr.boolean = &ccp->watcher,
-                                          .dflt.boolean = true},
-	{"json",           t_boolean,  .addr.boolean = &ccp->json,
-                                          .nodefault = true},
-	{"raw",	           t_integer,  .addr.integer = &ccp->raw,
-	                                  .nodefault = true},
-	{"nmea",	   t_boolean,  .addr.boolean = &ccp->nmea,
-	                                  .nodefault = true},
-	{"scaled",         t_boolean,  .addr.boolean = &ccp->scaled},
-	{"timing",         t_boolean,  .addr.boolean = &ccp->timing},
-	{"device",         t_string,   .addr.string = ccp->devpath,
-	                                  .len = sizeof(ccp->devpath)},
-	{NULL},
-    };
-    /*@ +fullinitblock @*/
-    int status;
-
-    status = json_read_object(buf, chanconfig_attrs, endptr);
-    return status;
-}
 
 /* gpsd_json.c ends here */

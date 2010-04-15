@@ -1,4 +1,7 @@
-/* $Id: TachometerP.h 4794 2008-08-03 16:42:57Z ckuethe $ */
+/*
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ */
 #ifndef _GPSD_TACHOMETERP_H_
 #define _GPSD_TACHOMETERP_H_
 

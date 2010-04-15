@@ -1,7 +1,9 @@
-/* $Id: driver_tsip.c 6550 2009-11-19 09:49:00Z esr $ */
 /*
  * Handle the Trimble TSIP packet format
  * by Rob Janssen, PE1CHL.
+ *
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
  */
 #include <sys/types.h>
 #include <stdio.h>
@@ -897,6 +899,19 @@ static gps_mask_t tsip_parse_input(struct gps_device_t *session)
 	session->gpsdata.dev.driver_mode = MODE_BINARY;
 	return st;
 #endif /* EVERMORE_ENABLE */
+#ifdef SIRF_ENABLE
+    /*
+     * mrd reported that once every couple of weeks his SiRF was flipping
+     * into Trimble binary mode and not recovering.  Damn Trimble for not
+     * checksumming their packets, it make palse positives hard to reject.
+     * This should enable the SiRF to recover.
+     */
+    } else if (session->packet.type == SIRF_PACKET) {
+	(void)gpsd_switch_driver(session, "SiRF binary");
+	st = sirf_parse(session, session->packet.outbuffer, session->packet.outbuflen);
+	session->gpsdata.dev.driver_mode = MODE_BINARY;
+	return st;
+#endif /* SIRF_ENABLE */
     } else
 	return 0;
 }
@@ -911,7 +926,6 @@ static ssize_t tsip_control_send(struct gps_device_t *session,
 }
 #endif /* ALLOW_CONTROLSEND */
 
-#ifdef ALLOW_RECONFIGURE
 static void tsip_event_hook(struct gps_device_t *session, event_t event)
 {
     /* FIXME: Resending this might not be needed on reactivation */
@@ -990,6 +1004,7 @@ static void tsip_event_hook(struct gps_device_t *session, event_t event)
     }
 }
 
+#ifdef ALLOW_RECONFIGURE
 static bool tsip_speed_switch(struct gps_device_t *session,
 			      speed_t speed,
 			      char parity, int stopbits)
@@ -1092,7 +1107,7 @@ const struct gps_type_t tsip_binary =
     .rate_switcher  = NULL,		/* no rate switcher */
     .min_cycle      = 1,		/* not relevant, no rate switcher */
 #endif /* ALLOW_RECONFIGURE */
-#ifdef ALLOW_RECONFIGURE
+#ifdef ALLOW_CONTROLSEND
     .control_send   = tsip_control_send,/* how to send commands */
 #endif /* ALLOW_CONTROLSEND */
 };

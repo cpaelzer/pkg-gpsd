@@ -1,5 +1,8 @@
-/* $Id: net_dgpsip.c 6920 2010-01-12 19:22:47Z esr $ */
-/* net_dgpsip.c -- gather and dispatch DGPS data from DGPSIP servers */
+/* net_dgpsip.c -- gather and dispatch DGPS data from DGPSIP servers
+ *
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ */
 #include <stdlib.h>
 #include "gpsd_config.h"
 #include <sys/types.h>

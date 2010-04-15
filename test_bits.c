@@ -1,5 +1,8 @@
-/* $Id: test_bits.c 6401 2009-10-26 10:08:50Z esr $ */
-/* test harness for bits.h */
+/* test harness for bits.h
+ *
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ */
 
 #include <stdio.h>
 #include <stdlib.h>

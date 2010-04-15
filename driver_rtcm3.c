@@ -1,4 +1,3 @@
-/* $Id: driver_rtcm3.c 6908 2010-01-02 22:29:16Z esr $ */
 /*****************************************************************************
 
 This is a decoder for RTCM-104 3.x, a serial protocol used for
@@ -22,6 +21,9 @@ RTCM reporting and diagnostic tools.  It is not necessary when
 passing RTCM corrections to a GPS, which normally should just be
 passed an entire correction packet for processing by their internal
 firmware.
+
+This file is Copyright (c) 2010 by the GPSD project
+BSD terms apply: see the file COPYING in the distribution root for details.
 
 *****************************************************************************/
 

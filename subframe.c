@@ -1,5 +1,8 @@
-/* $Id: subframe.c 6943 2010-01-26 20:49:49Z garyemiller $ */
-/* subframe.c -- interpret satellite subframe data. */
+/* subframe.c -- interpret satellite subframe data.
+ *
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ */
 #include <sys/types.h>
 
 #include "gpsd.h"

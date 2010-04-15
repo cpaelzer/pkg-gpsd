@@ -1,5 +1,4 @@
-/* $Id: driver_proto.c 6566 2009-11-20 03:51:06Z esr $
- *
+/*
  * A prototype driver.  Doesn't run, doesn't even compile.
  *
  * For new driver authors: replace "_PROTO_" and "_proto_" with the name of
@@ -31,8 +30,8 @@
  * packet.c
  * packet_states.h
  *
- * see http://svn.berlios.de/viewvc/gpsd/trunk/?sortby=date&pathrev=5078
- * for an example of how a new driver arrived.
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
  */
 
 #include <sys/types.h>

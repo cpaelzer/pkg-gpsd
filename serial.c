@@ -1,4 +1,7 @@
-/* $Id: serial.c 6908 2010-01-02 22:29:16Z esr $ */
+/*
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ */
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifndef S_SPLINT_S

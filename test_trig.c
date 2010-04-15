@@ -1,5 +1,3 @@
-/* $Id: test_trig.c 6712 2009-12-04 20:51:25Z gdt $ */
-
 /*
  * Copyright (c) 2006 Chris Kuethe <chris.kuethe@gmail.com>
  * Copyright (c) 2009 BBN Technologies (Greg Troxel)

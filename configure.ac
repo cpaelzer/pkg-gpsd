@@ -1,6 +1,8 @@
-dnl $Id: configure.ac 7020 2010-03-03 01:42:28Z esr $
+dnl This file is Copyright (c)2010 by the GPSD project
+dnl BSD terms apply: see the file COPYING in the distribution root for details.
+
 AC_INIT
-AM_INIT_AUTOMAKE(gpsd, 2.92)
+AM_INIT_AUTOMAKE(gpsd, 2.93dev)
 dnl AC_PREFIX_PROGRAM(gcc)
 AM_CONFIG_HEADER(gpsd_config.h)
 AC_LANG([C])
@@ -229,10 +231,22 @@ AC_SUBST(LIBPTHREAD)
 AH_VERBATIM([_GNU_SOURCE],
 	  [/* Some libc's don't have strlcat/strlcpy. Local copies are provided */
 #ifndef HAVE_STRLCAT
+# ifdef __cplusplus
+extern "C" {
+# endif
 size_t strlcat(/*@out@*/char *dst, /*@in@*/const char *src, size_t size);
+# ifdef __cplusplus
+}
+# endif
 #endif
 #ifndef HAVE_STRLCPY
+# ifdef __cplusplus
+extern "C" {
+# endif
 size_t strlcpy(/*@out@*/char *dst, /*@in@*/const char *src, size_t size);
+# ifdef __cplusplus
+}
+# endif
 #endif
 
 #define GPSD_CONFIG_H])
@@ -926,6 +940,20 @@ fi
 
 AM_CONDITIONAL([LIBGPSMM_ENABLE], [test x"$ac_libgpsmm" = x"yes"])
 
+AC_ARG_ENABLE(ipv6,
+  AC_HELP_STRING([--disable-ipv6],
+		 [don't build IPv6 support]),
+  [ac_ipv6=$enableval], [ac_ipv6=$ISCXX])
+AC_MSG_CHECKING([for IPv6 support])
+if test x"$ac_ipv6" = "xyes"; then
+    AC_MSG_RESULT([yes])
+	AC_DEFINE([IPV6_ENABLE], 1, [IPv6 support])
+else
+  AC_MSG_RESULT([no])
+fi
+
+AM_CONDITIONAL([IPV6_ENABLE], [test x"$ac_ipv6" = x"yes"])
+
 dnl Test for XSLT processor (xsltproc or xmlto)
 AC_CHECK_PROG(WITH_XSLTPROC,[xsltproc],[yes],[no])
 MANGENERATOR=
@@ -1016,7 +1044,6 @@ echo "MTK-3301                : $ac_mtk3301"
 dnl Below this line are non-protocol switches
 echo "	Daemon Features"
 echo "	---------------"
-echo "GPSD-NG                 : $ac_gpsdng"
 echo "Old protocol            : $ac_oldstyle"
 echo "NTP SHM                 : $ac_ntpshm"
 echo "NTP PPS                 : $ac_pps"
@@ -1025,6 +1052,7 @@ echo "Fixed port speed        : $ac_baud"
 echo "Priv-drop user          : $ac_user"
 echo "Enable shared libraries : $enable_shared"
 echo "Enable DBUS support     : $ac_dbus"
+echo "Enable IPv6 support     : $ac_ipv6"
 echo "Limited max clients     : $ac_maxclients"
 echo "Limited max devices     : $ac_maxdevices"
 echo "Allow device reconfig   : $ac_reconfigure"

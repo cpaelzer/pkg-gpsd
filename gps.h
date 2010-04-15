@@ -1,8 +1,15 @@
-/* $Id: gps.h 7007 2010-02-27 23:46:26Z ckuethe $ */
+/*
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ */
 #ifndef _GPSD_GPS_H_
 #define _GPSD_GPS_H_
 
 /* gps.h -- interface of the libgps library */
+
+#ifdef _WIN32
+#define strtok_r(s,d,p) strtok_s(s,d,p)
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -957,7 +964,11 @@ struct gps_data_t {
 				 * prone to false zero values.
 				 */
 
+#ifndef USE_QT
     socket_t gps_fd;		/* socket or file descriptor to GPS */
+#else
+    void* gps_fd;
+#endif
     struct gps_fix_t	fix;	/* accumulated PVT data */
 
     double separation;		/* Geoidal separation, MSL - WGS84 (Meters) */
@@ -1046,7 +1057,6 @@ extern void gps_merge_fix(/*@ out @*/struct gps_fix_t *,
 			  gps_mask_t,
 			  /*@ in @*/struct gps_fix_t *);
 extern unsigned int gps_valid_fields(/*@ in @*/struct gps_fix_t *);
-extern char *gps_show_transfer(int);
 extern void gps_enable_debug(int, FILE *);
 
 extern time_t mkgmtime(register struct tm *);

@@ -1,6 +1,8 @@
-/* $Id: gpsmon.c 6920 2010-01-12 19:22:47Z esr $ */
 /*
  * The generic GPS packet monitor.
+ *
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
  */
 #include <sys/types.h>
 #include <stdio.h>
@@ -203,8 +205,7 @@ static void packet_dump(char *buf, size_t buflen)
     }
 }
 
-
-#ifdef ALLOW_CONTROLSEND
+#if defined(ALLOW_CONTROLSEND) || defined(ALLOW_RECONFIGURE)
 static void monitor_dump_send(void)
 {
     if (packetwin != NULL) {
@@ -214,7 +215,9 @@ static void monitor_dump_send(void)
 	(void)wattrset(packetwin, A_NORMAL);
     }
 }
+#endif /* defined(ALLOW_CONTROLSEND) || defined(ALLOW_RECONFIGURE) */
 
+#ifdef ALLOW_CONTROLSEND
 bool monitor_control_send(/*@in@*/unsigned char *buf, size_t len)
 {
     if (controlfd == -1)
@@ -396,9 +399,9 @@ static void onsig(int sig UNUSED)
 
 int main (int argc, char **argv)
 {
-#ifdef ALLOW_CONTROLSEND
+#if defined(ALLOW_CONTROLSEND) || defined(ALLOW_RECONFIGURE)
     unsigned int v;
-#endif /* ALLOW_CONTROLSEND */
+#endif /* defined(ALLOW_CONTROLSEND) || defined(ALLOW_RECONFIGURE) */
     int option, status, last_type = BAD_PACKET;
     ssize_t len;
     struct fixsource_t source;
@@ -412,7 +415,7 @@ int main (int argc, char **argv)
     (void)putenv("TZ=GMT"); // for ctime()
     /*@ +observertrans @*/
     /*@ -branchstate @*/
-    while ((option = getopt(argc, argv, "D:F:Vhl")) != -1) {
+    while ((option = getopt(argc, argv, "D:F:LVhl:")) != -1) {
 	switch (option) {
 	case 'D':
 	    debuglevel = atoi(optarg);
@@ -423,7 +426,7 @@ int main (int argc, char **argv)
 	case 'V':
 	    (void)printf("gpsmon: %s (revision %s)\n", VERSION, REVISION);
 	    exit(0);
-	case 'l':		/* list known device types */
+	case 'L':		/* list known device types */
 	    (void) fputs("General commands available per type. '+' means there are private commands.\n", stdout);
 	    for (active = monitor_objects; *active; active++) {
 		(void)fputs("i l q ^S ^Q", stdout);
@@ -461,6 +464,13 @@ int main (int argc, char **argv)
 		(void)fputc('\n', stdout);
 	    }
 	    exit(0);
+	case 'l':		/* enable logging at startup */
+	    logfile = fopen(optarg, "w");
+	    if (logfile == NULL) {
+		(void)fprintf(stderr, "Couldn't open logfile for writing.\n");
+		exit(1);
+	    }
+	    break;
 	case 'h': case '?': default:
 	    (void)fputs("usage:  gpsmon [-?hVl] [-D debuglevel] [-F controlsock] [server[:port:[device]]]\n", stderr);
 	    exit(1);

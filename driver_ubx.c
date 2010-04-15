@@ -1,6 +1,9 @@
-/* $Id: driver_ubx.c 7014 2010-03-01 21:27:59Z esr $
- *
+/*
  * UBX driver
+ *
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ *
  */
 
 #include <sys/types.h>
@@ -588,7 +591,6 @@ static ssize_t ubx_control_send(struct gps_device_t *session, char *msg, size_t 
 }
 #endif /* ALLOW_CONTROLSEND */
 
-#ifdef ALLOW_RECONFIGURE
 static void ubx_event_hook(struct gps_device_t *session, event_t event)
 {
     if (event == event_identified || event == event_reactivate) {
@@ -647,6 +649,7 @@ static void ubx_event_hook(struct gps_device_t *session, event_t event)
     }
 }
 
+#ifdef ALLOW_RECONFIGURE
 static void ubx_nmea_mode(struct gps_device_t *session, int mode)
 {
     int i;
@@ -661,10 +664,10 @@ static void ubx_nmea_mode(struct gps_device_t *session, int mode)
     if(buf[0] == 0x01)				/* set baudrate on serial port only */
 	putlelong(buf, 8, session->gpsdata.dev.baudrate);
 
-    if (mode == 0) {
+    if (mode == MODE_NMEA) {
 	buf[14] &= ~0x01;			/* turn off UBX output on this port */
 	buf[14] |=  0x02;			/* turn on NMEA output on this port */
-    } else {
+    } else { /* MODE_BINARY */
 	buf[14] &= ~0x02;			/* turn off NMEA output on this port */
 	buf[14] |=  0x01;			/* turn on UBX output on this port */
     }

@@ -1,4 +1,3 @@
-/* $Id: driver_navcom.c 6588 2009-11-23 19:16:14Z esr $ */
 /*
  * Driver for Navcom receivers using propietary NCT messages, a binary protocol.
  *
@@ -27,6 +26,8 @@
  *
  * By Diego Berge. Contact via web form at http://www.navlost.eu/contact
  *
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
  */
 
 #include <stdio.h>

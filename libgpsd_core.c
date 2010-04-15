@@ -1,5 +1,8 @@
-/* $Id: libgpsd_core.c 6920 2010-01-12 19:22:47Z esr $ */
-/* libgpsd_core.c -- direct access to GPSes on serial or USB devices. */
+/* libgpsd_core.c -- direct access to GPSes on serial or USB devices.
+ *
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ */
 #include <stdlib.h>
 #include "gpsd_config.h"
 #include <sys/time.h>
@@ -83,6 +86,8 @@ void gpsd_init(struct gps_device_t *session, struct gps_context_t *context, char
     /*@ +mayaliasunique @*/
     /*@ +mustfreeonly @*/
     gps_clear_fix(&session->gpsdata.fix);
+    gps_clear_fix(&session->fixbuffer);
+    gps_clear_fix(&session->oldfix);
     session->gpsdata.set = 0;
     session->gpsdata.dop.hdop = NAN;
     session->gpsdata.dop.vdop = NAN;
@@ -363,8 +368,7 @@ int gpsd_activate(struct gps_device_t *session)
 #ifdef SIRF_ENABLE
 	session->driver.sirf.satcounter = 0;
 #endif /* SIRF_ENABLE */
-	session->packet.char_counter = 0;
-	session->packet.retry_counter = 0;
+	packet_init(&session->packet);
 	gpsd_report(LOG_INF,
 		    "gpsd_activate(): opened GPS (fd %d)\n",
 		    session->gpsdata.gps_fd);
@@ -437,6 +441,7 @@ char /*@observer@*/ *gpsd_id(/*@in@*/struct gps_device_t *session)
     }
     return(buf);
 }
+
 void gpsd_error_model(struct gps_device_t *session,
 		      struct gps_fix_t *fix, struct gps_fix_t *oldfix)
 /* compute errors and derived quantities */
@@ -686,6 +691,25 @@ gps_mask_t gpsd_poll(struct gps_device_t *session)
 	    session->gpsdata.epe = NAN;
 	}
 	session->gpsdata.set = ONLINE_SET | dopmask | received;
+
+	/* copy/merge device data into staging buffers */
+	/*@-nullderef -nullpass@*/
+	if ((session->gpsdata.set & CLEAR_SET)!=0)
+	    gps_clear_fix(&session->fixbuffer);
+	/* don't downgrade mode if holding previous fix */
+	if (session->fixbuffer.mode > session->gpsdata.fix.mode)
+	    session->gpsdata.set &=~ MODE_SET;
+	//gpsd_report(LOG_PROG,
+	//		"transfer mask on %s: %02x\n", session->gpsdata.tag, session->gpsdata.set);
+	gps_merge_fix(&session->fixbuffer,
+		      session->gpsdata.set,
+		      &session->gpsdata.fix);
+	gpsd_error_model(session,
+			 &session->fixbuffer, &session->oldfix);
+	memcpy(&session->gpsdata.fix, 
+	       &session->fixbuffer, 
+	       sizeof(session->fixbuffer));
+	/*@+nullderef -nullpass@*/
 
 	/*
 	 * Count good fixes. We used to check

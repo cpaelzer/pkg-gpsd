@@ -1,6 +1,6 @@
+# This file is Copyright (c) 2010 by the GPSD project
+# BSD terms apply: see the file COPYING in the distribution root for details.
 """
-$Id: fake.py 6851 2009-12-17 17:08:27Z esr $
-
 gpsfake.py -- classes for creating a controlled test environment around gpsd.
 
 The gpsfake(1) regression tester shipped with gpsd is a trivial wrapper

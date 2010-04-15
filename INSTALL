@@ -20,12 +20,15 @@ pthreads library       -> support for PPS timekeeping on serial GPSes
 DBUS                   -> gpsd will issue DBUS notifications 
 X windows + lesstif    -> two test clients depend on this
 ncurses                -> two more test clients depend on this
+Qt + qmake             -> libQgpsmm depends on this
 
-Python 2.6 or 2.4+ & simplejson.  The Python code in GPSD is 2.4-compatible
-except that you need either the json library module from 2.6 or the
-functionally equivalent simplejson backport.
+Python 2.6 or 2.4+ & simplejson.  The Python code in GPSD is
+2.4-compatible except that you need either the json library module
+from 2.6 or the functionally equivalent simplejson backport.  Note
+that while Python is required to *build* GPSD (the build uses some code
+generators in Python), it is not required to *run* GPSD.
 
-For building from SVN, the following are necessary:
+For building from the source tree, the following are necessary:
 autoconf 2.61 or later
 automake 1.10 or later
 libtool 2.26 or later
@@ -35,9 +38,10 @@ For working with DBUS, you'll need the DBUS development
 headers and libraries installed.  Under Debian/Ubuntu these
 are the packages ibdbus-1-dev and libdbus-glib-1-dev.
 
-For building from SVN, or if you change the man page source, xslt and
-docbook xsl style files are used to generate nroff -man source from
-docbook xml.  The following packages are used in this process:
+For building from the source tree, or if you change the man page
+source, xslt and docbook xsl style files are used to generate nroff
+-man source from docbook xml.  The following packages are used in this
+process:
 
 libxslt                -> xsltproc is used to build man pages from xml
 docbook-xsl            -> style file for xml to man translation
@@ -161,9 +165,6 @@ hardware already supported.
 11. Note for small embedded systems and those without threading.  It is
 possible to build gpsd without thread support if you configure with
 --disable-pps.  You'll lose support for updating the clock from PPS pulses.
-It's also possible to build without Python via --disable-python, in which 
-case you'd build won't make Python libraries and "make install" won't
-try to install Python tools.
 
 12. Note for systems using DBUS: gpsd includes support for shipping fixes
 as DBUS notifications, but it is not compiled in by default.  Configure 
@@ -177,8 +178,34 @@ file called 'gpsd_config.inc' containing configuration information;
 edit to taste.  Note that for the Google Maps feature work you need
 to set a valid Google API key in your config file.
 
-14. There are regression tests to verify proper operation of gpsd, and
+14. libQgpsmm is a Qt version of the libgps/libgpsmm pair. Thanks to
+the multi-platform approach of Qt, it allows the gpsd client library
+to be available on all the Qt supported platforms.  Please see
+http://qt.nokia.com/doc/4.6/supported-platforms.html for a status of
+Qt supported platforms as of version 4.6.
+
+You can build libQgpsmm if you have qmake and Qt (specifically the
+(specifically QtCore and QtNetwork modules) version 4.5.3 or higher.
+You will also need a C++ compiler supported by Qt (tested on GCC
+4.4.0/mingw on Windows and GCC 4.1.2 on linux).
+
+Building is done through a standard Qt .pro project file:
+- Go to the libQgpsmm subdirectory of gpsd and execute "qmake" 
+  to create the Makefiles
+- execute "make" to build the library
+- execute "make install" or equivalent to copy libgpsmm.h and the library 
+  to the appropriate location for your platform.
+
+Specifically for linux: You can specify the installation prefix by
+running "qmake PREFIX=<installation_root>". Default value is
+"/usr/local".
+
+Please refer to Qt's documentation at
+http://qt.nokia.com/doc/4.6/platform-specific.html for platform specific
+building documentation
+
+15. There are regression tests to verify proper operation of gpsd, and
 it can be useful to run these to verify that all is well.  To run the
 regression tests, first build gpsd from sources, and then run "make
-testregress".  It is not necessary to install first.  Python is
+check".  It is not necessary to install first.  Python is
 required for regression tests.

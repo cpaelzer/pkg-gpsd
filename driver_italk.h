@@ -1,4 +1,7 @@
-/* $Id: driver_italk.h 5727 2009-07-09 04:03:54Z ckuethe $ */
+/*
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ */
 #ifndef _GPSD_ITALK_H_
 #define _GPSD_ITALK_H_
 

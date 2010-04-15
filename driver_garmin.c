@@ -1,4 +1,3 @@
-/* $Id: driver_garmin.c 7016 2010-03-01 22:29:14Z garyemiller $ */
 /*
  * This file contains two drivers for Garmin receivers and some code
  * shared by both drivers.
@@ -53,7 +52,6 @@
  * sample code in the Linux garmin_gps driver.
  *
  * bad code by: Gary E. Miller <gem@rellim.com>
- * all rights abandoned, a thank would be nice if you use this code.
  *
  * -D 3 = packet trace
  * -D 4 = packet details
@@ -74,6 +72,9 @@
  * TODO:
  *
  *	?? Add probe function for Serial Binary to start PVT output.
+ *
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
  */
 
 #define __USE_POSIX199309 1

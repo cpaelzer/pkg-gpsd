@@ -1,6 +1,4 @@
-/* $Id: bsd-base64.c 6908 2010-01-02 22:29:16Z esr $ */
 /*	$OpenBSD: base64.c,v 1.3 1997/11/08 20:46:55 deraadt Exp $	*/
-
 /*
  * Copyright (c) 1996 by Internet Software Consortium.
  *

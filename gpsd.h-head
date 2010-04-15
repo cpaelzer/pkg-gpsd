@@ -1,6 +1,9 @@
-/* gpsd.h -- fundamental types and structures for the gpsd library */
+/* gpsd.h -- fundamental types and structures for the gpsd library
+ *
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ */
 
-/* $Id: gpsd.h-head 6908 2010-01-02 22:29:16Z esr $ */
 #ifndef _GPSD_H_
 #define _GPSD_H_
 

@@ -1,4 +1,7 @@
-/* $Id: gpsd_dbus.c 6672 2009-12-02 08:14:42Z garyemiller $ */
+/*
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ */
 #include <sys/types.h>
 #include <stdio.h>
 #include "gpsd_config.h"

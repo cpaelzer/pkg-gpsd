@@ -1,6 +1,8 @@
-/* $Id: driver_zodiac.c 6908 2010-01-02 22:29:16Z esr $ */
 /*
  * Handle the Rockwell binary packet format supported by the old Zodiac chipset
+ *
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
  */
 #include <sys/types.h>
 #include <stdio.h>

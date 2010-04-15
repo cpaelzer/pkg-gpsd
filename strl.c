@@ -1,4 +1,7 @@
-/* $Id: strl.c 6185 2009-09-10 18:50:49Z esr $ */
+/*
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ */
 #include <stdio.h>
 #ifndef S_SPLINT_S
 #include <unistd.h>

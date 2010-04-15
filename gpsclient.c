@@ -1,5 +1,7 @@
-/* $Id: gpsclient.c 6839 2009-12-16 04:14:21Z esr $ */
 /*
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ *
  * Python binding for selected libgps library functions
  */
 #include <Python.h>

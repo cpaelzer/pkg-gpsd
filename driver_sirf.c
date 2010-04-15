@@ -1,4 +1,3 @@
-/* $Id: driver_sirf.c 6957 2010-01-29 02:47:03Z garyemiller $ */
 /*
  * This is the gpsd driver for SiRF GPSes operating in binary mode.
  * It also handles uBlox, a SiRF derivative.
@@ -23,6 +22,9 @@
  * "[When we need RINEX data, we can get it from] SiRF Message #5.
  *  If it's no longer implemented on your receiver, messages
  * 7, 28, 29 and 30 will give you the same information."
+ *
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
  */
 
 #include <sys/types.h>
@@ -1139,7 +1141,6 @@ static gps_mask_t sirfbin_parse_input(struct gps_device_t *session)
 	return 0;
 }
 
-#ifdef ALLOW_RECONFIGURE
 static void sirfbin_event_hook(struct gps_device_t *session, event_t event)
 {
     if (event == event_identified || event == event_reactivate) {
@@ -1277,6 +1278,7 @@ static void sirfbin_event_hook(struct gps_device_t *session, event_t event)
     }
 }
 
+#ifdef ALLOW_RECONFIGURE
 static bool sirfbin_speed(struct gps_device_t *session, 
 			  speed_t speed, char parity, int stopbits)
 {

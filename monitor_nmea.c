@@ -1,9 +1,11 @@
-/* $Id: monitor_nmea.c 6662 2009-12-01 20:40:51Z garyemiller $ */
 /*
  * nmeamon.c - gpsmon support for NMEA devices.
  *
  * To do: Support for GPGLL, GPRME, GPZDA, OHPR, PASHR NMEA sentences.
  * Support for Tripmate, Earthmate, True North and Oceanserver devices.
+ *
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
  */
 #include <stdio.h>
 #include <stdlib.h>

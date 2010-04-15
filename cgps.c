@@ -1,18 +1,6 @@
-/* $Id: cgps.c 6856 2009-12-18 03:58:56Z esr $ */
 /*
  * Copyright (c) 2005 Jeff Francis <jeff@gritch.org>
- *
- * Permission to use, copy, modify, and distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
- *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * BSD terms apply: see the filr COPYING in the distribution root for details.
  */
 
 /*
@@ -146,6 +134,11 @@ static int display_sats;
 static bool compass_flag=false;
 #endif /* TRUENORTH */
 
+/* pseudo-signals indicating reason for termination */
+#define CGPS_QUIT	0	/* voluntary yterminastion */
+#define GPS_GONE	-1	/* GPS device went away */
+#define GPS_ERROR	-2	/* low-level failure in GPS read */
+
 /* Convert true heading to magnetic.  Taken from the Aviation
    Formulary v1.43.  Valid to within two degrees within the
    continiental USA except for the following airports: MO49 MO86 MO50
@@ -205,7 +198,7 @@ static float true2magnetic(double lat, double lon, double heading)
 }
 
 /* Function to call when we're all done.  Does a bit of clean-up. */
-static void die(int sig UNUSED)
+static void die(int sig)
 {
     /* Ignore signals. */
     (void)signal(SIGINT,SIG_IGN);
@@ -222,6 +215,19 @@ static void die(int sig UNUSED)
 
     /* We're done talking to gpsd. */
     (void)gps_close(gpsdata);
+
+    switch (sig) {
+    case CGPS_QUIT:
+	break;
+    case GPS_GONE:
+	(void)fprintf(stderr, "cgps: GPS hung up.\n");
+	break;
+    case GPS_ERROR:
+	(void)fprintf(stderr, "cgps: GPS read returned error\n");
+	break;
+    default:
+	(void)fprintf(stderr, "cgps: caught signal %d\n", sig);
+    }
 
     /* Bye! */
     exit(0);
@@ -592,8 +598,10 @@ static void update_gps_panel(struct gps_data_t *gpsdata,
 
     /* Fill in receiver type. */
     if (gpsdata->set & (DEVICE_SET | DEVICELIST_SET)) {
+#ifdef CLIENTDEBUG_ENABLE
 	if (debug > 0)
 	    (void)fprintf(stderr, "Device ID or list set.\n");
+#endif
 	if (gpsdata->set & DEVICE_SET) {
 	    (void)snprintf(scr, sizeof(scr), "%s", gpsdata->dev.driver);
 	} else if (gpsdata->devices.ndevices == 1) {
@@ -723,12 +731,12 @@ int main(int argc, char *argv[])
     /* Process the options.  Print help if requested. */
     while ((option = getopt(argc, argv, "hVl:smuD:")) != -1) {
 	switch (option) {
+#ifdef CLIENTDEBUG_ENABLE
 	case 'D':
 	    debug = atoi(optarg);
-#ifdef CLIENTDEBUG_ENABLE
 	    gps_enable_debug(debug, stderr);
-#endif /* CLIENTDEBUG_ENABLE */
 	    break;
+#endif /* CLIENTDEBUG_ENABLE */
 	case 'm':
 	    magnetic_flag=true;
 	    break;
@@ -822,7 +830,7 @@ int main(int argc, char *argv[])
 
     status_timer = time(NULL);
 
-    (void)gps_stream(gpsdata, WATCH_ENABLE|WATCH_NEWSTYLE, NULL);
+    (void)gps_stream(gpsdata, WATCH_ENABLE, NULL);
 
     /* heart of the client */
     for (;;) {
@@ -842,10 +850,10 @@ int main(int argc, char *argv[])
 	    fprintf( stderr, "cgps: socket error 3\n");
 	    exit(2);
 	} else if( data ) {
-	    /* code that calls gps_poll(gpsdata) */
+	    errno = 0;
 	    if (gps_poll(gpsdata) != 0) {
 		fprintf( stderr, "cgps: socket error 4\n");
-		die(1);
+		die(errno == 0 ? GPS_GONE : GPS_ERROR);
 	    }
 	}
 
@@ -855,7 +863,7 @@ int main(int argc, char *argv[])
 	switch ( c ) {
 	    /* Quit */
 	case 'q':
-	    die(0);
+	    die(CGPS_QUIT);
 	    break;
 
 	    /* Toggle spewage of raw gpsd data. */

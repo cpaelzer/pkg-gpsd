@@ -1,4 +1,7 @@
-/* $Id: monitor_italk.c 6566 2009-11-20 03:51:06Z esr $ */
+/*
+ * This file is Copyright (c) 2010 by the GPSD project
+ * BSD terms apply: see the file COPYING in the distribution root for details.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

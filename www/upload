@@ -1,0 +1,26 @@
+#!/bin/sh 
+#
+# Upload gpsd website contents.
+# Plesase do not introduce bashims into this script.
+#
+# No CGI copy yet, hosting site won't let us send mail
+#
+webdir=shell.berlios.de:/home/groups/gpsd/htdocs
+#cgidir=shell.berlios.de:/home/groups/gpsd/cgi-bin
+
+make all	# Ensure all derived HTML and checksums are up to date.
+
+if [ $1 ]
+then
+    for f in $*; do scp $f $webdir/$f; done
+else
+    (cd performance; xmlto xhtml-nochunks performance.xml)
+    scp *.html *.png *.gif *.css *.js *.txt \
+	performance/*.html performance/*.txt performance/*.png \
+	../TODO ../NEWS \
+	$webdir
+    #scp gps_report.cgi $cgidir
+fi
+
+# End
+

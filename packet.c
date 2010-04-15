@@ -1,4 +1,3 @@
-/* $Id: packet.c 6908 2010-01-02 22:29:16Z esr $ */
 /****************************************************************************
 
 NAME:
@@ -22,6 +21,10 @@ The problem: how do we recognize which kind of packet we're getting?
 No need to handle Garmin USB binary, we know that type by the fact we're
 connected to the Garmin kernel driver.  But we need to be able to tell the
 others apart and distinguish them from baud barf.
+
+PERMISSIONS
+   This file is Copyright (c) 2010 by the GPSD project
+   BSD terms apply: see the file COPYING in the distribution root for details.
 
 ***************************************************************************/
 #include <stdlib.h>
@@ -1018,6 +1021,13 @@ static void character_discard(struct gps_packet_t *lexer)
 
 /* entry points begin here */
 
+void packet_init(struct gps_packet_t *lexer)
+{
+    lexer->char_counter = 0;
+    lexer->retry_counter = 0;
+    packet_reset(lexer);
+}
+
 void packet_parse(struct gps_packet_t *lexer)
 /* grab a packet from the input buffer */
 {
@@ -1099,12 +1109,12 @@ void packet_parse(struct gps_packet_t *lexer)
 #endif /* SIRF_ENABLE */
 #ifdef SUPERSTAR2_ENABLE
 	else if (lexer->state == SUPERSTAR2_RECOGNIZED) {
-	    uint16_t a = 0, b, n;
+	    unsigned a = 0, b;
+	    size_t n;
 	    lexer->length = 4 + (size_t) lexer->inbuffer[3] + 2;
 	    for(n = 0; n < lexer->length - 2; n++)
-		a += (uint16_t)lexer->inbuffer[n];
-	    a = htons(a);
-	    b = (uint16_t)getbeuw(lexer->inbuffer, lexer->length - 2);
+		a += (unsigned)lexer->inbuffer[n];
+	    b = (unsigned)getleuw(lexer->inbuffer, lexer->length - 2);
 	    gpsd_report(LOG_IO, "SuperStarII pkt dump: type %u len %u: %s\n",
 			lexer->inbuffer[1], (unsigned int)lexer->length,
 			gpsd_hexdump_wrapper(lexer->inbuffer, lexer->length, LOG_RAW));
