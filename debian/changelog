@@ -1,3 +1,10 @@
+gpsd (2.95-15~bpo60+1) squeeze-backports; urgency=low
+
+  * Rebuild for squeeze-backports.
+  * [2d906ae2] Updating gbp.conf for backports.
+
+ -- Bernd Zeimetz <bzed@debian.org>  Sun, 04 Dec 2011 16:14:16 +0100
+
 gpsd (2.95-15) unstable; urgency=low
 
   * [3c1beb8b] Fix the broken Danish translation file.
