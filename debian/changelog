@@ -1,3 +1,13 @@
+gpsd (3.6-4+deb7u1) stable-proposed-updates; urgency=low
+
+  * [818fb0a6] Fixing two security bugs in gpsd
+    - one triggered by malformed NMEA packets, making gpsd crash
+    - the other one is a possible DOS in the AIS parser,
+      CVE-2013-2038
+    Thanks to Salvatore Bonaccorso (Closes: #706665)
+
+ -- Bernd Zeimetz <bzed@debian.org>  Fri, 03 May 2013 20:57:35 +0200
+
 gpsd (3.6-4) unstable; urgency=low
 
   * [8607cd96] Add some bugfixes from upstream.
