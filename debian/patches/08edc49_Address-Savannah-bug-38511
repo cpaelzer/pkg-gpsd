@@ -1,0 +1,23 @@
+From 08edc49d8f63c75bfdfb480b083b0d960310f94f Mon Sep 17 00:00:00 2001
+From: "Eric S. Raymond" <esr@thyrsus.com>
+Date: Wed, 10 Apr 2013 22:22:34 -0400
+Subject: [PATCH] Address Savannah bug #38511:
+
+ais_context->bitlen <= sizeof(ais_context->bits)/8 is not checked
+---
+ drivers.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+--- a/driver_aivdm.c
++++ b/driver_aivdm.c
+@@ -183,6 +183,10 @@ bool aivdm_decode(const char *buf, size_
+ 		    (1 << (7 - ais_context->bitlen % 8));
+ 	    }
+ 	    ais_context->bitlen++;
++            if (ais_context->bitlen > sizeof(ais_context->bits)) {
++                gpsd_report(LOG_INF, "overlong AIVDM payload truncated.\n");
++                return false;
++            }
+ 	}
+ 	/*@ +shiftnegative @*/
+     }

@@ -1,0 +1,36 @@
+From dd9c3c2830cb8f8fd8491ce68c82698dc5538f50 Mon Sep 17 00:00:00 2001
+From: "Eric S. Raymond" <esr@thyrsus.com>
+Date: Wed, 24 Apr 2013 07:44:35 -0400
+Subject: [PATCH] Fix a malformed-packet crash.
+
+Under weird circumstances, this line of device input
+
+$GPGGA,030130$GPGLL,2638.1728,N,08011.3893,W,030131.000,A,A*41
+
+could core-dump the packet parser.  The context had to be exactly
+right for it to happen.  The bug was an incorrect attempt at optimizing
+recovery from this rare case.
+---
+ NEWS                      |    3 ++-
+ packet.c                  |    5 ++---
+ test/daemon/triton400.log |   11 ++++++-----
+ www/faq.html.in           |    4 ++--
+ 4 files changed, 12 insertions(+), 11 deletions(-)
+
+--- a/packet.c
++++ b/packet.c
+@@ -382,10 +382,10 @@ static void nextstate(struct gps_packet_
+ 	else if (c == '\n')
+ 	    /* not strictly correct, but helps for interpreting logfiles */
+ 	    lexer->state = NMEA_RECOGNIZED;
+-	else if (c == '$')
+-	    /* faster recovery from missing sentence trailers */
+-	    lexer->state = NMEA_DOLLAR;
+-	else if (!isprint(c))
++	else if (c == '$') {
++            lexer->state = GROUND_STATE;
++            character_pushback(lexer);
++        } else if (!isprint(c))
+ 	    lexer->state = GROUND_STATE;
+ 	break;
+     case NMEA_CR:

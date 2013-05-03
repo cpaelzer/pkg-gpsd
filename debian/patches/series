@@ -7,3 +7,5 @@
 0007-Fixing-several-Python-identation-errors.patch
 0008-Fixing-a-segfault-in-cgps.patch
 0009-Fixes-SEGV-on-reception-of-short-aivdm-type-26-messa.patch
+08edc49_Address-Savannah-bug-38511
+dd9c3c2_Fix-a-malformed-packet-crash
