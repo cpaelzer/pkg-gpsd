@@ -1,4 +1,4 @@
-gpsd (3.6-4+deb7u1) stable-proposed-updates; urgency=low
+gpsd (3.6-4+deb7u1) wheezy; urgency=low
 
   * [818fb0a6] Fixing two security bugs in gpsd
     - one triggered by malformed NMEA packets, making gpsd crash
