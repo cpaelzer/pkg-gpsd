@@ -1,3 +1,14 @@
+gpsd (2.95-8+squeeze1) oldstable-proposed-updates; urgency=low
+
+  * [6a80f8a2] Fixing two security bugs in gpsd
+    - one triggered by malformed NMEA packets, making gpsd crash
+    - the other one is a possible DOS in the AIS parser,
+      CVE-2013-2038
+    Thanks to Salvatore Bonaccorso (Closes: #706665)
+  * [6f76d30e] Updating debian branch in gbp.conf
+
+ -- Bernd Zeimetz <bzed@debian.org>  Wed, 29 May 2013 23:01:01 +0200
+
 gpsd (2.95-8) unstable; urgency=low
 
   * [b6aae9a2] Stripping unnecessary options/comments from
