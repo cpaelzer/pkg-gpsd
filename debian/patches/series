@@ -1,7 +1,7 @@
 full-systemd-support
 gpsd_hotplug_rules_disable_generic_serial_converters
-fix_cppflags_parsing
 1a35ea0_Ensure-the-test_gpsmm-program-compiles
 65f2a7e_Fix-FTBFS-on-hurd
-fix_clock_gettime_check
-fix_timespec_struct_check
+943dec7_time.h-on-linux-defines-__timespec_defined
+20d3c07_Work-around-yet-another-scons-fuckup
+54db139_Buildflags-need-to-be-splitted-into-an-array

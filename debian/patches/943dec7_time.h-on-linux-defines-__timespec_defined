@@ -1,0 +1,26 @@
+From 943dec7435ee2538d53272132e68b163f4470c2b Mon Sep 17 00:00:00 2001
+From: Bernd Zeimetz <bernd@bzed.de>
+Date: Sun, 1 May 2016 12:44:38 +0200
+Subject: [PATCH] time.h on linux defines __timespec_defined.
+
+Enhance the check for struct timespec as building in
+Debian unstable fails otherwise.
+---
+ SConstruct | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+--- a/SConstruct
++++ b/SConstruct
+@@ -745,7 +745,11 @@ typedef int clockid_t;
+ #define CLOCKID_T_DEFINED
+ # endif
+ /* OS X uses _STRUCT_TIMESPEC, but no clock_gettime */
+-#ifndef _STRUCT_TIMESPEC
++#if !defined(_STRUCT_TIMESPEC) && \
++    !defined(_TIMESPEC) && \
++    !defined(_TIMESPEC_DECLARED) && \
++    !defined(__timespec_defined)
++
+ struct timespec {
+     time_t  tv_sec;
+     long    tv_nsec;
