@@ -1,3 +1,10 @@
+gpsd (3.16-1~bpo8+1) jessie-backports; urgency=medium
+
+  * Rebuild for jessie-backports.
+  * Updating debian/gbp.conf
+
+ -- Bernd Zeimetz <bzed@debian.org>  Tue, 10 May 2016 08:32:34 +0200
+
 gpsd (3.16-1) unstable; urgency=medium
 
   * [c3d16637] Merge tag 'upstream/3.16'
