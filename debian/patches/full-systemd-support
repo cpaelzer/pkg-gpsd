@@ -1,6 +1,6 @@
 --- a/systemd/gpsd.service
 +++ b/systemd/gpsd.service
-@@ -6,8 +6,7 @@ After=chronyd.service
+@@ -6,9 +6,7 @@ After=chronyd.service
  
  [Service]
  EnvironmentFile=-/etc/default/gpsd
@@ -9,4 +9,5 @@
 +ExecStart=/usr/sbin/gpsd -N $GPSD_OPTIONS $DEVICES
  
  [Install]
- WantedBy=multi-user.target
+-WantedBy=multi-user.target
+ Also=gpsd.socket
