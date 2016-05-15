@@ -1,3 +1,16 @@
+gpsd (3.16-2) unstable; urgency=medium
+
+  * [ba7d4a11] Various patches were applied upstream.
+    Take them from there, removing our version.
+  * [c439545a] Do not start gpsd.service by default.
+    We use socket based activation only.
+    If one needs a running gpsd.service at boot - without being started by
+    gpsd.socket - you'll have to configure systemd to start it.
+    Too many people have gpsd installed as dependency and do not need yet
+    another running process.
+
+ -- Bernd Zeimetz <bzed@debian.org>  Sun, 15 May 2016 15:16:53 +0200
+
 gpsd (3.16-1) unstable; urgency=medium
 
   * [c3d16637] Merge tag 'upstream/3.16'
