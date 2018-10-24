@@ -176,7 +176,5 @@ Description: Global Positioning System - Qt wrapper for libgps (development)
  a host computer, making all data on the location and movements of the
  sensors available to be queried on TCP port 2947.
  .
- This package provides libQgpsmm, the Qt version of libgpsmm.
- It is a wrapper over libgps, the service library for querying GPS
- devices. libQgpsmm is available on all platforms which are supported
- by Qt4.
+ This package provides the development file for libQgpsmm, the Qt version of
+ libgpsmm. It contains pkgconfig and qmake bits to build with the library.
