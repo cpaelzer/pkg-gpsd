@@ -83,8 +83,8 @@ $(LIBGPS_DEBIAN_FILE_TARGETS): $(LIBGPS_DEBIAN_FILE_SOURCES)
 	done
 
 debian/control: debian/control.in
-		rm -f $@ 
-		sed 's,LIBGPSSONAME,$(LIBGPS_SONAME),g' $< > $@ 
+		rm -f $@
+		sed 's,LIBGPSSONAME,$(LIBGPS_SONAME),g' $< > $@
 		if [ -d .git ]; then \
 			git add debian/control ;\
 			git commit -m 'Updating debian/control from debian/control.in' debian/control ;\
@@ -187,13 +187,13 @@ binary: install-stamp
 	dh_testdir
 	dh_testroot
 	dh_installchangelogs  NEWS
-	dh_installdocs 
-	dh_installman 
-	dh_installmenu 
+	dh_installdocs
+	dh_installman
+	dh_installmenu
 	dh_systemd_enable -pgpsd
 	dh_installinit
 	dh_systemd_start -pgpsd --restart-after-upgrade
-	dh_installexamples 
+	dh_installexamples
 	chmod 755 debian/$(PACKAGE_PY)/usr/lib/python2*/*-packages/gps/gps.py
 	chmod 755 debian/$(PACKAGE_PY3)/usr/lib/python3*/*-packages/gps/gps.py
 	dh_python2 -Ngpsd -Ngpsd-clients -Ngpsd-dbg
@@ -205,11 +205,11 @@ binary: install-stamp
 	dh_python3 -pgpsd-clients usr/bin
 	dh_python3 -pgpsd lib/udev/
 	cp $(CURDIR)/gpsd.rules $(CURDIR)/debian/gpsd.udev
-	dh_installudev 
-	dh_link 
+	dh_installudev
+	dh_link
 	dh_strip --dbgsym-migration='gpsd-dbg (<< 3.16-4~)'
 	dh_buildinfo -p$(PACKAGE_GPSDDBG)
-	dh_compress 
+	dh_compress
 	dh_fixperms  -Xgpsd.hotplug
 	dh_lintian
 ifeq (,$(DEB_BUILD_OPTIONS))
@@ -218,14 +218,14 @@ ifeq (,$(DEB_BUILD_OPTIONS))
 else
 	dh_makeshlibs
 endif
-	dh_shlibdeps 
+	dh_shlibdeps
 ifneq (,$(UDEV_BREAKS))
 	echo "gpsd:Breaks=udev (<< $(UDEV_BREAKS))" >> $(CURDIR)/debian/gpsd.substvars
 endif
-	dh_gencontrol 
-	dh_installdeb 
-	dh_md5sums 
-	dh_builddeb 
+	dh_gencontrol
+	dh_installdeb
+	dh_md5sums
+	dh_builddeb
 
 
 binary-indep: binary

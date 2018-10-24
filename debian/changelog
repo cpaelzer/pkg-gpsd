@@ -234,7 +234,7 @@ gpsd (3.10+dev2~23b0752e-1) experimental; urgency=medium
 
 gpsd (3.10+dev1~a33bfd44-2) unstable; urgency=medium
 
-  * Upload to unstable. 
+  * Upload to unstable.
 
  -- Bernd Zeimetz <bzed@debian.org>  Thu, 20 Mar 2014 22:54:07 +0100
 
@@ -906,7 +906,7 @@ gpsd (2.92-1) unstable; urgency=low
     accordingly.
   * [0293e4f3] Updating symbols file for libgps19.
   * [441f05fb] Don't install gpsd-client binaries in two packages.
-  * [0a6eb429] Require python-gps from gpsd-clients for xgps. 
+  * [0a6eb429] Require python-gps from gpsd-clients for xgps.
   * [cf61c2ab] Bump Standards-Version to 3.8.4. No changes needed.
   * [25a5d53a] Add ${python:Depends} for gpsd-clients.
   * [47c910f1] Add postinst script for gpsd-clients. We need to remove
@@ -933,7 +933,7 @@ gpsd (2.90-2) unstable; urgency=low
   * Upload to unstable.
     This will also fix the following issues:
     - gpsd doesn't support pipelining (Closes: #488913)
-    - FTBFS with binutils-gold (Closes: #554739) 
+    - FTBFS with binutils-gold (Closes: #554739)
 
  -- Bernd Zeimetz <bzed@debian.org>  Tue, 08 Dec 2009 13:51:27 +0100
 
@@ -1269,7 +1269,7 @@ gpsd (2.37-5) unstable; urgency=low
 gpsd (2.37-4) unstable; urgency=low
 
   * debian/po translation updates:
-    - ja.po, thanks to Kenshi Muto (Closes: #483505). 
+    - ja.po, thanks to Kenshi Muto (Closes: #483505).
 
  -- Bernd Zeimetz <bzed@debian.org>  Sat, 31 May 2008 18:07:16 +0200
 
@@ -1314,7 +1314,7 @@ gpsd (2.37-1) unstable; urgency=low
   * debian/gpsd.hotplug.wrappper:
     - Exit gracefully if hotplugging is disabled in /etc/default/gpsd.
   * debian/rules, debian/gpsd.udev:
-    - Ignore non-existing setup.py in the clean target. 
+    - Ignore non-existing setup.py in the clean target.
     - Installing udev rules again, also remove the old udev rules
       symlink /etc/udev/rules.d/025_gpsd.rules, if it still exists
       (Closes: #455036).
@@ -1432,7 +1432,7 @@ gpsd (2.34.dfsg-5) unstable; urgency=low
       (Closes: #448837).
   * debian/control:
     - Updating my email address.
-    - Bumping Standards-Version to 3.7.3. 
+    - Bumping Standards-Version to 3.7.3.
 
  -- Bernd Zeimetz <bzed@debian.org>  Wed, 05 Dec 2007 22:37:14 +0100
 
@@ -1503,7 +1503,7 @@ gpsd (2.34.dfsg-1) unstable; urgency=low
     - Splitting libgps and the according devel files in separate packages
       (Closes: #295375)
   * Installing gpsd in /usr/sbin again. gpsd is a system daemon and only
-    rarely used as user command. 
+    rarely used as user command.
   * Auto discovery of USB GPS devices is disabled by default now, as the USB
     devices use nothing but a standard usb to serial converter. This resulted
     in trouble if you wanted to use a normal serial converter without attached
@@ -1826,7 +1826,7 @@ gpsd (2.7-1) unstable; urgency=low
     - add 01_speedunits.dpatch: use metric system by default
       (closes: #289944)
     - add 05_gps_py_typo.dpatch: fix syntax error in gps.py
-    
+
  -- Tilman Koschnick <til@subnetz.org>  Fri, 14 Jan 2005 23:31:14 +0100
 
 gpsd (2.6-1) unstable; urgency=low
