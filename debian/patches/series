@@ -1,3 +1,5 @@
+# helper script, not an actual patch
+# add_patch.sh
 full-systemd-support
 gpsd_hotplug_rules_disable_generic_serial_converters
 python3_support_in-SConstruct
