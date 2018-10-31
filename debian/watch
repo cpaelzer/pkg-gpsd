@@ -1,4 +1,5 @@
-version=3
+version=4
 
-http://download-mirror.savannah.gnu.org/releases/gpsd/gpsd-(.*).tar.gz
+opts=pgpsigurlmangle=s/$/.sig/ https://download-mirror.savannah.gnu.org/releases/gpsd/gpsd-(.*).tar.gz
+
 
