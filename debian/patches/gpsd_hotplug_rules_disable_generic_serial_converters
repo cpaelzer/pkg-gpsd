@@ -1,3 +1,7 @@
+Disable hotplugging of ftdi/pl2302 usb<>serial adapters.
+These adapters are too common to hit them with the gpsd hotplug script.
+Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=550964
+Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=696020
 --- a/gpsd.rules.in
 +++ b/gpsd.rules.in
 @@ -22,13 +22,18 @@
