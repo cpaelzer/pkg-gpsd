@@ -89,12 +89,12 @@ Recommends: gpsd
 Provides: ${python:Provides}
 Breaks: ${python:Breaks}
 Conflicts: python-json
-Description: Global Positioning System - Python libraries
+Description: Global Positioning System - Python 2 libraries
  The gpsd service daemon can monitor one or more GPS devices connected to
  a host computer, making all data on the location and movements of the
  sensors available to be queried on TCP port 2947.
  .
- This package contains a Python interface to connect to gpsd, together with
+ This package contains a Python 2 interface to connect to gpsd, together with
  a module providing a controlled testing environment. It also ships two tools
  which utilize the interface: gpsprof for latency-profiling, and gpsfake to
  simulate a GPS by playing back a logfile.
@@ -108,12 +108,12 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends},
 Recommends: gpsd
 Provides: ${python:Provides}
 Breaks: ${python:Breaks}
-Description: Global Positioning System - Python libraries
+Description: Global Positioning System - Python 3 libraries
  The gpsd service daemon can monitor one or more GPS devices connected to
  a host computer, making all data on the location and movements of the
  sensors available to be queried on TCP port 2947.
  .
- This package contains a Python interface to connect to gpsd, together with
+ This package contains a Python 3 interface to connect to gpsd, together with
  a module providing a controlled testing environment. It also ships two tools
  which utilize the interface: gpsprof for latency-profiling, and gpsfake to
  simulate a GPS by playing back a logfile.
