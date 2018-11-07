@@ -46,6 +46,9 @@ SCONSOPTS = \
 	gpsd_group=dialout \
 	qt_versioned=5
 
+ifneq (,$(findstring nodoc,$(DEB_BUILD_OPTIONS)))
+	SCONSOPTS += manbuild=no
+endif
 
 ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
 	SCONSOPTS += debug=yes
