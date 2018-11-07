@@ -17,16 +17,6 @@ case "$1" in
 
     ;;
 
-
-    abort-install|abort-upgrade)
-        if dpkg --compare-versions "$2" lt '3.10-1~' ; then
-            # move config file back
-            if [ -f /etc/default/gpsd.dpkg-pre_3.10 ]; then
-                mv /etc/default/gpsd.dpkg-pre_3.10 /etc/default/gpsd
-            fi
-        fi
-    ;;
-
     remove|upgrade|failed-upgrade|disappear)
     ;;
 

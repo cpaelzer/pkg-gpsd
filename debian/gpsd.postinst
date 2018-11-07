@@ -5,13 +5,6 @@ set -e
 
 if [ "$1" = "configure" ] ; then
 
-    if dpkg --compare-versions "$2" lt '3.10-1~' ; then
-        # move config file back
-        if [ -f /etc/default/gpsd.dpkg-pre_3.10 ]; then
-            rm -f /etc/default/gpsd.dpkg-pre_3.10
-        fi
-    fi
-
     echo "Creating/updating gpsd user account..."
     adduser --system --ingroup dialout --home /run/gpsd \
             --gecos "GPSD system user" --shell /bin/false \
