@@ -50,7 +50,6 @@ Description: Global Positioning System - daemon
 Package: gpsd-dbg
 Architecture: any
 Section: debug
-Priority: extra
 Suggests: gpsd-dbgsym
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends},
  libgpsLIBGPSSONAME (= ${binary:Version}) | gpsd (= ${binary:Version}) | gpsd-clients (= ${binary:Version}) | python-gps (= ${binary:Version})
