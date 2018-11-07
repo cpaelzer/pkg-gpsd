@@ -195,6 +195,7 @@ binary: install-stamp
 	dh_installman
 	dh_installmenu
 	dh_systemd_enable -pgpsd
+	dh_apparmor --profile-name=usr.sbin.gpsd -pgpsd
 	dh_installinit
 	dh_systemd_start -pgpsd --restart-after-upgrade
 	dh_installexamples

@@ -24,6 +24,7 @@ Build-Depends: debhelper (>= 11),
  scons (>= 2.0.1), chrpath,
  dh-buildinfo,
  dh-python,
+ dh-apparmor,
  pps-tools (>= 0.20120406+g0deb9c7e-2~) [linux-any],
  pkg-config
 Standards-Version: 4.2.1
@@ -41,7 +42,7 @@ Depends: netbase | systemd-sysv, lsb-base (>= 3.2-13),
  libgpsLIBGPSSONAME (= ${binary:Version})
 Recommends: udev [linux-any], ${python:Depends}, python
 Breaks: ${gpsd:Breaks}
-Suggests: gpsd-clients, dbus
+Suggests: gpsd-clients, dbus, apparmor
 Conflicts: fso-gpsd
 Multi-Arch: foreign
 Description: Global Positioning System - daemon
