@@ -2,12 +2,12 @@
 .\"     Title: gpsd_json
 .\"    Author: [see the "AUTHOR" section]
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 28 Aug 2011
+.\"      Date: 17 Jun 2018
 .\"    Manual: GPSD Documentation
 .\"    Source: The GPSD Project
 .\"  Language: English
 .\"
-.TH "GPSD_JSON" "5" "28 Aug 2011" "The GPSD Project" "GPSD Documentation"
+.TH "GPSD_JSON" "5" "17 Jun 2018" "The GPSD Project" "GPSD Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -82,6 +82,15 @@ T}:T{
 Description
 T}
 .T&
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
 l l l l
 l l l l
 l l l l
@@ -229,6 +238,15 @@ T}:T{
 Course over ground, degrees from true north\&.
 T}
 T{
+magtrack
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+Course over ground, degrees magnetic\&.
+T}
+T{
 speed
 T}:T{
 No
@@ -273,6 +291,78 @@ T}:T{
 numeric
 T}:T{
 Climb/sink error estimate in meters/sec, 95% confidence\&.
+T}
+T{
+ecefx
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+ECEF X position in meters\&.
+T}
+T{
+ecefy
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+ECEF Y position in meters\&.
+T}
+T{
+ecefz
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+ECEF Z position in meters\&.
+T}
+T{
+ecefpAcc
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+ECEF position error in meters\&.
+T}
+T{
+ecefvx
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+ECEF X velocity in meters/second\&.
+T}
+T{
+ecefvy
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+ECEF Y velocity in meters/second\&.
+T}
+T{
+ecefvz
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+ECEF Z velocity in meters/second\&.
+T}
+T{
+ecefvAcc
+T}:T{
+No
+T}:T{
+numeric
+T}:T{
+ECEF velocity error in meters/second\&.
 T}
 .TE
 .sp 1
@@ -351,7 +441,7 @@ time
 T}:T{
 No
 T}:T{
-numeric
+string
 T}:T{
 Time/date stamp in ISO8601 format, UTC\&. May have a
 	fractional part of up to \&.001sec precision\&.
@@ -606,10 +696,10 @@ time
 T}:T{
 No
 T}:T{
-numeric
+string
 T}:T{
-Seconds since the Unix epoch, UTC\&. May have a
-fractional part of up to \&.001sec precision\&.
+Time/date stamp in ISO8601 format, UTC\&. May have a
+	fractional part of up to \&.001sec precision\&.
 T}
 T{
 rms
@@ -765,9 +855,9 @@ time
 T}:T{
 No
 T}:T{
-numeric
+string
 T}:T{
-Seconds since the Unix epoch, UTC\&. May have a
+Time/date stamp in ISO8601 format, UTC\&. May have a
 	fractional part of up to \&.001sec precision\&.
 T}
 T{

@@ -12,7 +12,7 @@
 
 const char *gps_maskdump(gps_mask_t set)
 {
-    static char buf[207];
+    static char buf[222];
     const struct {
         gps_mask_t      mask;
         const char      *name;
@@ -52,6 +52,9 @@ const char *gps_maskdump(gps_mask_t set)
         {PPS_SET,	"PPS"},
         {NAVDATA_SET,	"NAVDATA"},
         {OSCILLATOR_SET,	"OSCILLATOR"},
+        {ECEF_SET,	"ECEF"},
+        {VECEF_SET,	"VECEF"},
+        {MAGNETIC_TRACK_SET,	"MAGNETIC_TRACK"},
         {RAW_IS,	"RAW"},
         {USED_IS,	"USED"},
         {DRIVER_IS,	"DRIVER"},

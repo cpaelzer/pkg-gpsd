@@ -2,17 +2,17 @@
 
 #ifndef GPSD_CONFIG_H
 
-#define VERSION "3.17"
+#define VERSION "3.18.1"
 
 #define GPSD_URL "http://catb.org/gpsd"
 
-/* #undef HAVE_LIBUSB */
+#define HAVE_LIBUSB 1
 
 #define HAVE_LIBRT 1
 
-/* #undef HAVE_DBUS */
+#define HAVE_DBUS 1
 
-/* #undef ENABLE_BLUEZ */
+#define ENABLE_BLUEZ 1
 
 #define HAVE_LINUX_CAN_H 1
 
@@ -72,7 +72,7 @@
 #define BINDIR "bin"
 
 /* BlueZ support for Bluetooth devices */
-/* #undef BLUEZ_ENABLE */
+#define BLUEZ_ENABLE 1
 
 /* client debugging support */
 #define CLIENTDEBUG_ENABLE 1
@@ -87,7 +87,7 @@
 /* #undef COVERAGING_ENABLE */
 
 /* enable DBUS export support */
-/* #undef DBUS_EXPORT_ENABLE */
+#define DBUS_EXPORT_ENABLE 1
 
 /* include debug information in build */
 /* #undef DEBUG_ENABLE */
@@ -132,13 +132,16 @@
 #define GPSD_ENABLE 1
 
 /* privilege revocation group */
-#define GPSD_GROUP "dialout"
+#define GPSD_GROUP "uucp"
 
 /* privilege revocation user */
 #define GPSD_USER "nobody"
 
 /* gspd client programs */
 #define GPSDCLIENTS_ENABLE 1
+
+/* Javad GREIS support */
+#define GREIS_ENABLE 1
 
 /* implicit linkage is supported in shared libs */
 #define IMPLICIT_LINK_ENABLE 1
@@ -333,10 +336,10 @@
 #define XGPS_ENABLE 1
 
 /* Magic device which, if present, means to grab a static /dev/pps0 for KPPS */
-#define MAGIC_HAT_GPS	"/dev/ttyAMA0"
+#define MAGIC_HAT_GPS   "/dev/ttyAMA0"
 /* Generic device which, if present, means: */
 /* to grab a static /dev/pps0 for KPPS */
-#define MAGIC_LINK_GPS	"/dev/gpsd0"
+#define MAGIC_LINK_GPS  "/dev/gpsd0"
 
 
 #define GPSD_CONFIG_H

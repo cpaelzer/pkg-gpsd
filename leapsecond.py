@@ -43,7 +43,7 @@ ftp://maia.usno.navy.mil/ser7/tai-utc.dat
 leapseconds.cache
 
 This file is Copyright (c) 2013 by the GPSD project
-BSD terms apply: see the file COPYING in the distribution root for details.
+SPDX-License-Identifier: BSD-2-clause
 
 """
 # This code runs compatibly under Python 2 and 3.x for x >= 2.
@@ -97,8 +97,10 @@ else:  # Otherwise we do something real
 
 
 def isotime(s):
-    "Convert timestamps in ISO8661 format to and from Unix time including " \
-    "optional fractional seconds."
+    """Convert timestamps in ISO8661 format to and from Unix time including
+    optional fractional seconds.
+    """
+
     if isinstance(s, int):
         return time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(s))
     elif isinstance(s, float):
@@ -121,6 +123,7 @@ def isotime(s):
         raise TypeError
 
 # *** End of duplicated code ***
+
 
 verbose = 0
 
@@ -189,23 +192,25 @@ def last_insertion_time():
     tm_hour = tm_min = tm_sec = 0
     tm_mon = 1
     jan_t = (tm_year, tm_mon, tm_mday, tm_hour, tm_min,
-           tm_sec, tm_wday, tm_yday, tm_isdst)
+             tm_sec, tm_wday, tm_yday, tm_isdst)
     jan = int(calendar.timegm(jan_t))
     tm_mon = 7
     jul_t = (tm_year, tm_mon, tm_mday, tm_hour, tm_min,
-           tm_sec, tm_wday, tm_yday, tm_isdst)
+             tm_sec, tm_wday, tm_yday, tm_isdst)
     jul = int(calendar.timegm(jul_t))
     # We have the UTC times of the potential insertion points this year.
     now = time.time()
     if now > jul:
         return jul
-    else:
-        return jan
+
+    return jan
 
 
 def save_leapseconds(outfile):
-    "Fetch the leap-second history data and make a leap-second list since " \
-    "Unix epoch GMT (1970-01-01T00:00:00)."
+    """Fetch the leap-second history data and make a leap-second list since
+    Unix epoch GMT (1970-01-01T00:00:00).
+    """
+
     random.shuffle(__locations)  # To spread the load
     for (_, _, _, _, url) in __locations:
         skip = True
@@ -246,8 +251,10 @@ def fetch_leapsecs(filename):
 
 
 def make_leapsecond_include(infile):
-    "Get the current leap second count and century from the local cache " \
-    "usable as C preprocessor #define"
+    """Get the current leap second count and century from the local cache
+    usable as C preprocessor #define
+    """
+
     # Underscore prefixes avoids warning W0612 from pylint,
     # which doesn't count substitution through locals() as use.
     leapjumps = fetch_leapsecs(infile)
@@ -274,8 +281,10 @@ def make_leapsecond_include(infile):
 
 
 def conditional_leapsecond_fetch(outfile, timeout):
-    "Conditionally fetch leapsecond data, " \
-    "w. timeout in case of evil firewalls."
+    """Conditionally fetch leapsecond data,
+    w. timeout in case of evil firewalls.
+    """
+
     if not os.path.exists(outfile):
         stale = True
     else:
@@ -285,25 +294,26 @@ def conditional_leapsecond_fetch(outfile, timeout):
         stale = last_insertion_time() > os.path.getmtime(outfile)
     if not stale:
         return True
-    else:
-        def handler(_signum, _frame):
-            raise IOError
-        try:
-            signal.signal(signal.SIGALRM, handler)
-        except ValueError:
-            # Parallel builds trigger this - signal only works in main thread
-            sys.stdout.write("Signal set failed; ")
-            return False
-        signal.alarm(timeout)
-        sys.stdout.write("Attempting leap-second fetch...")
-        try:
-            save_leapseconds(outfile)
-            sys.stdout.write("succeeded.\n")
-        except IOError:
-            sys.stdout.write("failed; ")
-            return False
-        signal.alarm(0)
-        return True
+
+    def handler(_signum, _frame):
+        raise IOError
+
+    try:
+        signal.signal(signal.SIGALRM, handler)
+    except ValueError:
+        # Parallel builds trigger this - signal only works in main thread
+        sys.stdout.write("Signal set failed; ")
+        return False
+    signal.alarm(timeout)
+    sys.stdout.write("Attempting leap-second fetch...")
+    try:
+        save_leapseconds(outfile)
+        sys.stdout.write("succeeded.\n")
+    except IOError:
+        sys.stdout.write("failed; ")
+        return False
+    signal.alarm(0)
+    return True
 
 
 def leastsquares(tuples):
@@ -423,6 +433,7 @@ def leapbound(year, month):
 def usage():
     print(__doc__)
     raise SystemExit(0)
+
 
 if __name__ == '__main__':
     import getopt

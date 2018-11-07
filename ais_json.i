@@ -3,8 +3,6 @@
  */
  #define NITEMS(x) (int)(sizeof(x)/sizeof(x[0]))
 
-/*@ -fullinitblock */
-
 
     const struct json_attr_t json_ais1[] = {
 	AIS_HEADER
@@ -1212,7 +1210,6 @@
     };
 
 
-/*@ +fullinitblock */
 
 /* Generated code ends. */
 
