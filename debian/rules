@@ -1,9 +1,9 @@
 #!/usr/bin/make -f
 
+include /usr/share/dpkg/pkg-info.mk
+
 #uncomment if debhelper should be verbose
 #export DH_VERBOSE=1
-
-DEBIAN_VERSION := $(strip $(shell dpkg-parsechangelog| awk '/Version/{print $$2}'))
 
 LIBGPS_SONAME := $(strip $(shell grep -E '^libgps_version_current' SConstruct | sed 's,.*=[^0-9]*\([0-9]*\).*,\1,'))
 
@@ -93,7 +93,7 @@ debian/control: debian/control.in
 SConstruct.deb_revision: SConstruct
 	if [ ! -f $@ ]; then \
 		cp $< $@ ;\
-		sed -i '/^revision=/s/%(.*)/%("$(DEBIAN_VERSION)",)/' $< ;\
+		sed -i '/^revision=/s/%(.*)/%("$(DEB_VERSION)",)/' $< ;\
 	fi
 	touch $@
 
