@@ -23,3 +23,6 @@ usr/share/man/man1/gpxlogger.1
 usr/share/man/man1/gps2udp.1
 usr/bin/ntpshmmon
 usr/share/man/man1/ntpshmmon.1
+packaging/X11/xgps.desktop usr/share/applications
+packaging/X11/xgpsspeed.desktop usr/share/applications
+packaging/X11/gpsd-logo.png /usr/share/gpsd
