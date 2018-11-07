@@ -1,3 +1,6 @@
+Update SConstruct form gpsd git head
+This is required to support building with python3.
+Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=883286
 --- a/SConstruct
 +++ b/SConstruct
 @@ -14,7 +14,7 @@
