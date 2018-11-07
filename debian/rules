@@ -7,6 +7,7 @@ include /usr/share/dpkg/pkg-info.mk
 
 LIBGPS_SONAME := $(strip $(shell grep -E '^libgps_version_current' SConstruct | sed 's,.*=[^0-9]*\([0-9]*\).*,\1,'))
 
+export QT_SELECT=qt5
 
 LIBGPS_DEBIAN_FILE_SOURCES := $(strip $(shell ls -1 debian/*LIBGPSSONAME* ))
 LIBGPS_DEBIAN_FILE_TARGETS := $(strip $(shell echo $(LIBGPS_DEBIAN_FILE_SOURCES) | sed 's,LIBGPSSONAME,$(LIBGPS_SONAME),g'))
