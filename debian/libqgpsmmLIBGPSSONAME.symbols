@@ -38,8 +38,8 @@ libQgpsmm.so.LIBGPSSONAME libqgpsmmLIBGPSSONAME #MINVER#
  (c++)"gpsmm::~gpsmm()@Base" 3.3
  (c++)"gpsmm::~gpsmm()@Base" 3.3
  (c++)"gpsmm::~gpsmm()@Base" 3.3
- (c++|optional)"QDebug::~QDebug()@Base" 3.3
- (c++|optional)"QDebug::~QDebug()@Base" 3.3
+#MISSING: 3.18# (c++|optional)"QDebug::~QDebug()@Base" 3.3
+#MISSING: 3.18# (c++|optional)"QDebug::~QDebug()@Base" 3.3
  (c++|optional)"QString::~QString()@Base" 3.3
  (c++|optional)"QString::~QString()@Base" 3.3
  (c++|optional)"QList<QString>::~QList()@Base" 3.5
@@ -47,8 +47,8 @@ libQgpsmm.so.LIBGPSSONAME libqgpsmmLIBGPSSONAME #MINVER#
  (c++)"typeinfo for gpsmm@Base" 3.3
  (c++)"typeinfo name for gpsmm@Base" 3.3
  (c++)"vtable for gpsmm@Base" 3.3
- (c++|optional)"QByteArray::~QByteArray()@Base" 3.3
- (c++|optional)"QByteArray::~QByteArray()@Base" 3.3
+#MISSING: 3.18# (c++|optional)"QByteArray::~QByteArray()@Base" 3.3
+#MISSING: 3.18# (c++|optional)"QByteArray::~QByteArray()@Base" 3.3
  (c++)"shiftleft(unsigned char*, int, unsigned short)@Base" 3.12
 #MISSING: 3.17# (c++)"shm_get(int, bool, bool)@Base" 3.15
 #MISSING: 3.17# (c++)"ntp_name(int)@Base" 3.15
@@ -91,6 +91,7 @@ libQgpsmm.so.LIBGPSSONAME libqgpsmmLIBGPSSONAME #MINVER#
 #MISSING: 3.5-1# export_default@Base 3.3
 #MISSING: 3.5-1# export_list@Base 3.3
 #MISSING: 3.5-1# export_lookup@Base 3.3
+ gps_clear_att@Base 3.18
  gps_clear_dop@Base 3.3
  gps_clear_fix@Base 3.3
  gps_close@Base 3.3
