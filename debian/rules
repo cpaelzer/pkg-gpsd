@@ -174,7 +174,8 @@ install-stamp: build-stamp build-static-stamp $(LIBGPS_DEBIAN_FILE_TARGETS)
 	rm -f debian/tmp/usr/share/man/man3/libQgpsmm.3
 	ln -s libgpsmm.3.gz debian/tmp/usr/share/man/man3/libQgpsmm.3.gz
 	# install everything
-	dh_install --fail-missing
+	dh_install
+	dh_missing --fail-missing
 	# remove rpaths
 	find debian -type f -exec file {} \; |\
 	    grep ELF |\
