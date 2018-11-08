@@ -173,6 +173,10 @@ install-stamp: build-stamp build-static-stamp $(LIBGPS_DEBIAN_FILE_TARGETS)
 	done
 	rm -f debian/tmp/usr/share/man/man3/libQgpsmm.3
 	ln -s libgpsmm.3.gz debian/tmp/usr/share/man/man3/libQgpsmm.3.gz
+	# scons insists on python artifactes being placed in /usr/local despite
+	# prefix settings, fix this up before dh*install
+	mkdir -p debian/tmp/usr/lib/
+	mv -v debian/tmp/usr/local/lib/* debian/tmp/usr/lib/
 	# install everything
 	dh_install
 	dh_missing --fail-missing
