@@ -24,6 +24,7 @@ libgps.so.LIBGPSSONAME libgpsLIBGPSSONAME #MINVER#
  getbef32@Base 3.9
  getled64@Base 3.9
  getlef32@Base 3.9
+ gps_clear_att@Base 3.18
  gps_clear_dop@Base 3.3
  gps_clear_fix@Base 3.3
  gps_close@Base 3.3
