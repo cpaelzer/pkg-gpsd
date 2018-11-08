@@ -108,7 +108,7 @@ build: build-stamp build-static-stamp
 build-stamp: SConstruct.deb_revision
 	set -e; \
 	    for py in $(PYTHONS); do \
-	    	$(SCONS_ENV) $${py} /usr/bin/scons $(SCONSOPTS); \
+	    	$(SCONS_ENV) $${py} /usr/bin/scons $(SCONSOPTS) target_python=$${py} ; \
 	    done
 ifeq (,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
 	# disable tests on hurd due to weird ipv6 errors
@@ -130,7 +130,7 @@ clean: debian/control
 	dh_testroot
 	set -e; \
 	    for py in $(PYTHONS); do \
-	    	$(SCONS_ENV) $${py} /usr/bin/scons $(SCONSOPTS) --clean ; \
+	    	$(SCONS_ENV) $${py} /usr/bin/scons $(SCONSOPTS) target_python=$${py} --clean ; \
 	    done
 	$(SCONS_ENV) python /usr/bin/scons $(SCONSOPTS) sconsclean || true
 	# revert revision changes in SConstruct
@@ -158,7 +158,7 @@ install-stamp: build-stamp build-static-stamp $(LIBGPS_DEBIAN_FILE_TARGETS)
 	dh_prep
 	set -e ;\
 	    for py in $(PYTHONS); do \
-	    	$(SCONS_ENV) DESTDIR=`pwd`/debian/tmp $${py} /usr/bin/scons install $(SCONSOPTS) ;\
+	    	$(SCONS_ENV) DESTDIR=`pwd`/debian/tmp $${py} /usr/bin/scons install $(SCONSOPTS) target_python=$${py} ;\
 	    done
 	# install static lib
 	cp libgps.a debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)
