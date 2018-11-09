@@ -89,7 +89,6 @@ Description: Global Positioning System - clients
 Package: python-gps
 Architecture: any
 Section: python
-Replaces: gpsd-clients (<< 2.34.dfsg-1)
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends},
  python (>= 2.6) | python-simplejson
 Recommends: gpsd
@@ -107,7 +106,6 @@ Description: Global Positioning System - Python 2 libraries
 Package: python3-gps
 Architecture: any
 Section: python
-Replaces: gpsd-clients (<< 2.34.dfsg-1)
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}
 Recommends: gpsd
 Provides: ${python:Provides}
@@ -143,7 +141,6 @@ Package: libgps-dev
 Architecture: any
 Section: libdevel
 Depends: libgpsLIBGPSSONAME (= ${binary:Version}), ${misc:Depends}, pkg-config
-Conflicts: gpsd (<< 2.34.dfsg-1)
 Description: Global Positioning System - development files
  The gpsd service daemon can monitor one or more GPS devices connected to
  a host computer, making all data on the location and movements of the
