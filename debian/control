@@ -73,7 +73,7 @@ Package: gpsd-clients
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
  libgps23 (= ${binary:Version}),
- python-gps, python-gtk2, python-cairo, ${python:Depends}
+ python-gps, python3-gps, python-gtk2, python-cairo, ${python:Depends}
 Suggests: gpsd
 Conflicts: gps
 Breaks: ${python:Breaks}
