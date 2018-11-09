@@ -109,8 +109,7 @@ Package: python3-gps
 Architecture: any
 Section: python
 Replaces: gpsd-clients (<< 2.34.dfsg-1)
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends},
- python (>= 3.2)
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}
 Recommends: gpsd
 Provides: ${python:Provides}
 Breaks: ${python:Breaks}
