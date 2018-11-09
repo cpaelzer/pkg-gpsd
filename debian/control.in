@@ -76,14 +76,15 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
  python-gps, python3-gps, python-gtk2, python-cairo, gir1.2-gtk-3.0, python-serial, python-gi-cairo, ${python:Depends}
 Suggests: gpsd
 Conflicts: gps
-Breaks: ${python:Breaks}
+Breaks: ${python:Breaks}, python-gps (<<3.18.1-1)
+Replaces: python-gps (<<3.18.1-1)
 Description: Global Positioning System - clients
  The gpsd service daemon can monitor one or more GPS devices connected to
  a host computer, making all data on the location and movements of the
  sensors available to be queried on TCP port 2947.
  .
- This package contains auxiliary tools and example clients for monitoring and
- testing gpsd.
+ This package contains auxiliary tools and example clients for monitoring,
+ testing, latency-profiling, device configuration and simulating gpsd.
 
 Package: python-gps
 Architecture: any
@@ -93,7 +94,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends},
  python (>= 2.6) | python-simplejson
 Recommends: gpsd
 Provides: ${python:Provides}
-Breaks: ${python:Breaks}
+Breaks: ${python:Breaks}, gpsd-clients (<<3.18.1-1)
 Conflicts: python-json
 Description: Global Positioning System - Python 2 libraries
  The gpsd service daemon can monitor one or more GPS devices connected to
@@ -101,9 +102,7 @@ Description: Global Positioning System - Python 2 libraries
  sensors available to be queried on TCP port 2947.
  .
  This package contains a Python 2 interface to connect to gpsd, together with
- a module providing a controlled testing environment. It also ships two tools
- which utilize the interface: gpsprof for latency-profiling, and gpsfake to
- simulate a GPS by playing back a logfile.
+ a module providing a controlled testing environment.
 
 Package: python3-gps
 Architecture: any
@@ -119,9 +118,7 @@ Description: Global Positioning System - Python 3 libraries
  sensors available to be queried on TCP port 2947.
  .
  This package contains a Python 3 interface to connect to gpsd, together with
- a module providing a controlled testing environment. It also ships two tools
- which utilize the interface: gpsprof for latency-profiling, and gpsfake to
- simulate a GPS by playing back a logfile.
+ a module providing a controlled testing environment.
 
 Package: libgpsLIBGPSSONAME
 Architecture: any

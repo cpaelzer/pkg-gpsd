@@ -11,6 +11,9 @@ usr/bin/gegps
 usr/bin/gps2udp
 usr/bin/ubxtool
 usr/bin/zerk
+usr/bin/gpscat
+usr/bin/gpsfake
+usr/bin/gpsprof
 usr/share/man/man1/gps.1
 usr/share/man/man1/gpspipe.1
 usr/share/man/man1/gpsmon.1
@@ -25,6 +28,9 @@ usr/share/man/man1/gpxlogger.1
 usr/share/man/man1/gps2udp.1
 usr/share/man/man1/ubxtool.1
 usr/share/man/man1/zerk.1
+usr/share/man/man1/gpsfake.1
+usr/share/man/man1/gpscat.1
+usr/share/man/man1/gpsprof.1
 usr/bin/ntpshmmon
 usr/share/man/man1/ntpshmmon.1
 packaging/X11/xgps.desktop usr/share/applications
