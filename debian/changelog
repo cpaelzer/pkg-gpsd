@@ -1,3 +1,73 @@
+gpsd (3.18.1-1) UNRELEASED; urgency=medium
+
+  * Lintian/Standarts/Compat-level fixes
+    - [7f88e6a6] d/copyright: update to dep-5 format and for project changes
+    - [1260d1f4] d/p/series: mention the purpose of add_patch.sh
+    - [900bdc19] d/patches/gpsd_hotplug_rules_disable_generic_serial_converters
+      add dep-3 header
+    - [03a2b421] add minimal header to debian/patches/full-systemd-support
+    - [6759d5f2] d/gpsd.init: remove sysV to not jeopardize socket activation
+    - [090182f8] d/gpsd.maintscript: clean up dropped sysV init (conffile)
+    - [405bf8c1] add autopkgtest to verify service/socket
+    - [373e3f23] d/rules: use pkg-info.mk to detect the package version
+    - [8022d1d5] d/p/python3_support_in-SConstruct: add minimal dep-3 patch
+      header
+    - [00b447e6] d/control{.in}: point to current packaging repo with secure url
+    - [7640cb28] d/control{.in}: update debhelper build dependencies per lintian
+      warnings
+    - [1b87b0c0] d/rules, d/control{.in}: do not depend on qt5-default meta
+      package
+    - [b7db9f61] d/source/lintian-overrides: mark gpsd-dbg not being a package
+      with debug symbols
+    - [7e4513b8] d/gpsd.{pre,post}{rm,inst}: drop code only needed for upgrades
+      from oldoldstable
+    - [53f3ec60] d/compat: bump to compat 11, no further changes needed
+    - [40505722] standards-version 3.9.8: switch deprecated menu to FreeDesktop
+      entries
+    - [3d6613a5] standards-version 4.0.0: do not build man pages if nodoc is set
+      in DEB_BUILD_OPTIONS
+    - [dd9396d4] standards-version 4.0.1: Use priority 'optional' instead of
+      deprecated priority 'extra'
+    - [d3563a42] debian/watch: use https and signature verification
+    - [397d7744] d/control{.in}: bump Standards-Version to 4.2.1
+    - [cd2c0ad1] d/rules: switch to dh_missing to prepare for compat 12
+    - [2e9946c7] d/rules: use dh_installsystemd for compat >=11
+    - [0031cfc8] d/control{.in}: simplify by dropping conflicts/breaks not even
+      in oldoldstable anymore
+  * complete python3 support that was started in 3.17-6 (Closes: #883286)
+    - [30da0ff0] d/control{.in}: fix duplicate-long-description in
+      python[3]-gps packages
+    - [c088a6d7] d/control.in: add missing python3 changes
+    - [96a7df91] d/control{.in}: scons for python3 will need >=3.5
+    - [cf5d6e63] d/control{.in}: remove ancient X-Python-Version
+    - [f15fbbe8] d/rules: scons need target_python set for py2/py3
+    - [91daffd9] d/python3-gps.install: follow subversion specific py3 shared
+      objects naming convention
+    - [f53cd4a2] d/control{.in}: let gpsd-clients also depend on python3 bits
+    - [fd7ff117] d/control{.in}, d/gpsd-clients.install, d/python3-gps.install:
+      tools gpscat, gpsfake and gpsprof are python2 and part of the cli tools,
+      so move them from python3-gps to gpsd-clients
+    - [69de7b75] d/control: add ${python3:Depends} to gpsd-clients in case
+      upstream switches to python3
+    - [2f1dc482] d/control{.in}: add python dependencies not picked up by
+      dh_python
+    - [25a79e9f] d/control{.in}: remove manual python dependency
+      python:Depends will take care
+    - [02c1d28c] d/rules: remap wrong install prefix enforced by scons
+  * [fd58e624] New upstream version 3.18.1
+    - [0abe62cb] d/p/full-systemd-support: update for 3.18.1
+    - [d6e6fe9a] d/p/python3_support_in-SConstruct: dropped as it is in 3.18.1
+    - [324d2966] d/control{.in}: add python dependencies for better checks in
+      3.18.1
+    - [7fd30c38] d/gpsd-clients.install: add new ubxtool and zerk to manage
+      JAVAD and u-blox GPS
+    - [1caba4b3] d/libgpsLIBGPSSONAME.symbols: update symbols to 3.18
+    - [6eb6d26a] d/libqgpsmmLIBGPSSONAME.symbols: update symbols to 3.18
+  * [d5ee2b3e] d/control[.in}, d/rules, d/usr.sbin.gpsd, d/gpsd.install: add
+    apparmor profile for gpsd
+
+ -- Christian Ehrhardt <christian.ehrhardt@canonical.com>  Fri, 09 Nov 2018 15:46:21 +0100
+
 gpsd (3.17-6) unstable; urgency=medium
 
   * [0e1dce7c] Build python3-gps. (Closes: #883286)
