@@ -2,7 +2,7 @@ Source: gpsd
 Section: misc
 Priority: optional
 Maintainer: Bernd Zeimetz <bzed@debian.org>
-Build-Depends: debhelper (>= 11),
+Build-Depends: debhelper (>= 12~),
  po-debconf,
  python-all-dev (>= 2.6.6-3),
  python-all-dbg (>= 2.6.6-3),
@@ -43,6 +43,7 @@ Recommends: udev [linux-any], ${python:Depends}, python
 Breaks: ${gpsd:Breaks}
 Suggests: gpsd-clients, dbus, apparmor
 Conflicts: fso-gpsd
+Pre-Depends: ${misc:Pre-Depends}
 Multi-Arch: foreign
 Description: Global Positioning System - daemon
  The gpsd service daemon can monitor one or more GPS devices connected to

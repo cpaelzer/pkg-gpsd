@@ -207,7 +207,7 @@ binary: install-stamp
 	dh_apparmor --profile-name=usr.sbin.gpsd -pgpsd
 	dh_installsystemd -pgpsd --restart-after-upgrade gpsdctl@.service gpsd.socket
 	dh_installsystemd -pgpsd --no-enable --no-start gpsd.service
-	dh_installinit
+	dh_installinit --no-start
 	dh_installsystemd -pgpsd --restart-after-upgrade
 	dh_installexamples
 	chmod 755 debian/$(PACKAGE_PY)/usr/lib/python2*/*-packages/gps/gps.py
