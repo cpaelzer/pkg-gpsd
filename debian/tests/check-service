@@ -16,7 +16,7 @@ systemctl list-unit-files | grep -e "^gpsd.socket\s*enabled\s*$"
 systemctl show gpsd.socket -p ActiveState | grep '^ActiveState=active$'
 # service is activated indirect (via socket) and inactive after install
 echo "Check service being inactive"
-systemctl list-unit-files | grep -e "^gpsd.service\s*indirect\s*$"
+systemctl list-unit-files | grep -e "^gpsd.service\s*disabled\s*$"
 systemctl show gpsd.service -p ActiveState | grep '^ActiveState=inactive$'
 
 # service has to get up on the socket call to respond correctly
